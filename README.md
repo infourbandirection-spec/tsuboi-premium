@@ -233,6 +233,27 @@ await db.prepare('INSERT INTO reservations ...').run()
 
 詳細は [`RACE_CONDITION_REPORT.md`](./RACE_CONDITION_REPORT.md) を参照。
 
+## 🎬 デモンストレーション用セットアップ
+
+**デモ用に在庫を990冊に設定**（残り10冊の状態）:
+
+```bash
+# デモ用データ投入（165件 × 6冊 = 990冊）
+npm run db:reset:demo
+
+# 在庫状態確認
+curl http://localhost:3000/api/status
+# → { "totalReserved": 990, "remaining": 10, "isAccepting": true }
+```
+
+**デモシナリオ**:
+1. **動的冊数制限** - 残り10冊で最大6冊、残り5冊で最大5冊選択可能
+2. **在庫少量警告** - 残り5冊以下で警告表示
+3. **在庫上限到達** - 10冊分予約後、自動的に受付停止
+4. **競合状態テスト** - 残り2冊で3人同時予約テスト
+
+詳細は [`DEMO_SETUP_GUIDE.md`](./DEMO_SETUP_GUIDE.md) を参照。
+
 ## 🛠️ 開発環境セットアップ
 
 ```bash
@@ -267,8 +288,9 @@ npm run dev:sandbox
 # データベース操作
 npm run db:migrate:local    # ローカルマイグレーション
 npm run db:migrate:prod     # 本番マイグレーション
-npm run db:seed             # テストデータ投入
+npm run db:seed             # テストデータ投入（5件）
 npm run db:reset            # データベースリセット
+npm run db:reset:demo       # デモ用データ投入（990冊）
 
 # デプロイ
 npm run deploy              # プレビューデプロイ
