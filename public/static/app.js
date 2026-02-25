@@ -5,8 +5,6 @@ class ReservationApp {
     this.currentStep = 1
     this.formData = {
       birthDate: '',
-      address: '',
-      addressType: 'workplace', // 'workplace' or 'home'
       fullName: '',
       phoneNumber: '',
       quantity: 1,
@@ -164,13 +162,12 @@ class ReservationApp {
   renderProgressBar() {
     const steps = [
       { num: 1, label: '生年月日' },
-      { num: 2, label: '住所' },
-      { num: 3, label: '氏名' },
-      { num: 4, label: '電話番号' },
-      { num: 5, label: '冊数' },
-      { num: 6, label: '店舗' },
-      { num: 7, label: '日時' },
-      { num: 8, label: '確認' }
+      { num: 2, label: '氏名' },
+      { num: 3, label: '電話番号' },
+      { num: 4, label: '冊数' },
+      { num: 5, label: '店舗' },
+      { num: 6, label: '日時' },
+      { num: 7, label: '確認' }
     ]
 
     return `
@@ -185,7 +182,7 @@ class ReservationApp {
               </div>
               <span class="text-xs text-gray-600 text-center hidden md:block">${step.label}</span>
             </div>
-            ${step.num < 8 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
+            ${step.num < 7 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
           `).join('')}
         </div>
       </div>
@@ -201,7 +198,6 @@ class ReservationApp {
       case 5: return this.renderStep5()
       case 6: return this.renderStep6()
       case 7: return this.renderStep7()
-      case 8: return this.renderStep8()
       default: return ''
     }
   }
@@ -234,62 +230,6 @@ class ReservationApp {
   renderStep2() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
-        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
-        住所を入力してください
-      </h2>
-      <div class="max-w-md space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">住所</label>
-          <input type="text" id="address" 
-                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 value="${this.formData.address}"
-                 placeholder="例: 熊本県熊本市中央区上通町1-1"
-                 maxlength="100">
-          <p class="mt-2 text-sm text-gray-500">
-            <i class="fas fa-info-circle mr-1"></i>
-            市区町村から番地までご入力ください
-          </p>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-3">住所の種類</label>
-          <div class="space-y-3">
-            <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${this.formData.addressType === 'workplace' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'}">
-              <input type="radio" name="addressType" value="workplace" 
-                     ${this.formData.addressType === 'workplace' ? 'checked' : ''}
-                     class="w-5 h-5 text-blue-500 focus:ring-blue-500">
-              <span class="ml-3 flex items-center">
-                <i class="fas fa-briefcase text-gray-600 mr-2"></i>
-                <span class="font-medium">職場</span>
-              </span>
-            </label>
-            
-            <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${this.formData.addressType === 'home' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'}">
-              <input type="radio" name="addressType" value="home"
-                     ${this.formData.addressType === 'home' ? 'checked' : ''}
-                     class="w-5 h-5 text-blue-500 focus:ring-blue-500">
-              <span class="ml-3 flex items-center">
-                <i class="fas fa-home text-gray-600 mr-2"></i>
-                <span class="font-medium">自宅</span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="mt-8 flex justify-between">
-        <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
-          <i class="fas fa-arrow-left mr-2"></i> 戻る
-        </button>
-        <button onclick="app.nextStep()" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
-          次へ <i class="fas fa-arrow-right ml-2"></i>
-        </button>
-      </div>
-    `
-  }
-
-  renderStep3() {
-    return `
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-user text-blue-500 mr-2"></i>
         お名前を入力してください
       </h2>
@@ -316,7 +256,7 @@ class ReservationApp {
     `
   }
 
-  renderStep4() {
+  renderStep3() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-phone text-blue-500 mr-2"></i>
@@ -345,7 +285,7 @@ class ReservationApp {
     `
   }
 
-  renderStep5() {
+  renderStep4() {
     const maxQuantity = Math.min(6, this.systemStatus.remaining)
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
@@ -382,7 +322,7 @@ class ReservationApp {
     `
   }
 
-  renderStep6() {
+  renderStep5() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
@@ -426,7 +366,7 @@ class ReservationApp {
     `
   }
 
-  renderStep7() {
+  renderStep6() {
     const today = new Date()
     const dates = []
     for (let i = 0; i < 7; i++) {
@@ -494,8 +434,7 @@ class ReservationApp {
     `
   }
 
-  renderStep8() {
-    const addressTypeLabel = this.formData.addressType === 'workplace' ? '職場' : '自宅'
+  renderStep7() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-check-circle text-blue-500 mr-2"></i>
@@ -505,14 +444,6 @@ class ReservationApp {
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">生年月日</p>
           <p class="text-lg font-bold">${this.formData.birthDate}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 mb-1">住所</p>
-          <p class="text-lg font-bold">${this.formData.address}</p>
-          <p class="text-sm text-gray-500 mt-1">
-            <i class="fas fa-${this.formData.addressType === 'workplace' ? 'briefcase' : 'home'} mr-1"></i>
-            ${addressTypeLabel}
-          </p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">氏名</p>
@@ -579,20 +510,6 @@ class ReservationApp {
         this.formData.birthDate = birthDate
         break
       case 2:
-        const address = document.getElementById('address')?.value
-        const addressType = document.querySelector('input[name="addressType"]:checked')?.value
-        if (!address || address.trim().length < 5) {
-          alert('住所を正しく入力してください')
-          return
-        }
-        if (!addressType) {
-          alert('住所の種類を選択してください')
-          return
-        }
-        this.formData.address = address.trim()
-        this.formData.addressType = addressType
-        break
-      case 3:
         const fullName = document.getElementById('fullName')?.value
         if (!fullName || fullName.trim().length < 2) {
           alert('氏名を正しく入力してください')
@@ -600,7 +517,7 @@ class ReservationApp {
         }
         this.formData.fullName = fullName.trim()
         break
-      case 4:
+      case 3:
         const phoneNumber = document.getElementById('phoneNumber')?.value
         if (!phoneNumber || !/^0\d{1,4}-?\d{1,4}-?\d{4}$/.test(phoneNumber)) {
           alert('電話番号を正しく入力してください')
@@ -608,7 +525,7 @@ class ReservationApp {
         }
         this.formData.phoneNumber = phoneNumber
         break
-      case 5:
+      case 4:
         const quantity = parseInt(document.getElementById('quantity')?.value)
         if (!quantity || quantity < 1 || quantity > 6) {
           alert('冊数を選択してください')
@@ -616,13 +533,13 @@ class ReservationApp {
         }
         this.formData.quantity = quantity
         break
-      case 6:
+      case 5:
         if (!this.formData.store) {
           alert('受け取り店舗を選択してください')
           return
         }
         break
-      case 7:
+      case 6:
         const pickupDate = document.getElementById('pickupDate')?.value
         const pickupTime = document.getElementById('pickupTime')?.value
         if (!pickupDate || !pickupTime) {
