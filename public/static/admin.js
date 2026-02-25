@@ -130,6 +130,7 @@ class AdminApp {
   renderNavigation() {
     const tabs = [
       { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
+      { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '予約一覧' },
       { id: 'search', icon: 'fa-search', label: '予約検索' }
     ]
@@ -155,6 +156,7 @@ class AdminApp {
   renderCurrentView() {
     switch (this.currentView) {
       case 'dashboard': return this.renderDashboard()
+      case 'heatmap': return this.renderHeatmap()
       case 'reservations': return this.renderReservationsList()
       case 'search': return this.renderSearch()
       default: return ''
@@ -885,6 +887,307 @@ class AdminApp {
         </div>
       `
     }
+  }
+
+  // 混雑状況ヒートマップビュー
+  renderHeatmap() {
+    if (!this.reservations || this.reservations.length === 0) {
+      return `
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+          <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+          <p class="text-xl text-gray-500">予約データがありません</p>
+        </div>
+      `
+    }
+
+    // 日別データ集計
+    const dateMap = {}
+    const storeTimeMap = {}
+    const stores = ['パスート24上通', 'パスート24銀座プレス', 'パスート24辛島公園', 'パスート24熊本中央', '熊本市辛島公園地下駐車場']
+    const timeSlots = [
+      '09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
+      '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00'
+    ]
+
+    this.reservations.forEach(r => {
+      if (r.status !== 'reserved') return
+
+      // 日別集計
+      if (!dateMap[r.pickup_date]) {
+        dateMap[r.pickup_date] = { count: 0, quantity: 0, stores: {} }
+      }
+      dateMap[r.pickup_date].count++
+      dateMap[r.pickup_date].quantity += r.quantity
+
+      if (!dateMap[r.pickup_date].stores[r.store_location]) {
+        dateMap[r.pickup_date].stores[r.store_location] = { count: 0, quantity: 0 }
+      }
+      dateMap[r.pickup_date].stores[r.store_location].count++
+      dateMap[r.pickup_date].stores[r.store_location].quantity += r.quantity
+
+      // 店舗×時間帯マトリックス
+      const key = `${r.store_location}|${r.pickup_time_slot}`
+      if (!storeTimeMap[key]) {
+        storeTimeMap[key] = { count: 0, quantity: 0 }
+      }
+      storeTimeMap[key].count++
+      storeTimeMap[key].quantity += r.quantity
+    })
+
+    // 日付をソート
+    const dates = Object.keys(dateMap).sort()
+
+    // 最大値を計算（色の濃さ用）
+    const maxQuantity = Math.max(...Object.values(storeTimeMap).map(v => v.quantity), 1)
+
+    return `
+      <div class="space-y-6">
+        <!-- ページヘッダー -->
+        <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-lg p-6 text-white">
+          <h2 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-fire mr-3"></i>
+            混雑状況分析
+          </h2>
+          <p class="mt-2">どの店舗・時間帯に予約が集中しているかを確認できます</p>
+        </div>
+
+        <!-- 日別予約状況 -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            日別予約状況
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">日付</th>
+                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約件数</th>
+                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約冊数</th>
+                  <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">店舗別内訳</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dates.map((date, index) => {
+                  const data = dateMap[date]
+                  const dayOfWeek = new Date(date).toLocaleDateString('ja-JP', { weekday: 'short' })
+                  return `
+                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition">
+                      <td class="px-4 py-3 text-sm font-medium">
+                        ${date} (${dayOfWeek})
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-800">
+                          ${data.count}件
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-800">
+                          ${data.quantity}冊
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-sm">
+                        <div class="flex flex-wrap gap-2">
+                          ${stores.map(store => {
+                            const storeData = data.stores[store]
+                            if (!storeData) return ''
+                            return `
+                              <span class="px-2 py-1 bg-gray-100 rounded text-xs">
+                                ${store.replace('パスート24', '').replace('熊本市', '')}: ${storeData.quantity}冊
+                              </span>
+                            `
+                          }).join('')}
+                        </div>
+                      </td>
+                    </tr>
+                  `
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 店舗×時間帯ヒートマップ -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+              <i class="fas fa-th text-orange-600 mr-2"></i>
+              店舗×時間帯 混雑ヒートマップ
+            </h3>
+            <div class="flex items-center gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
+                <span>空き</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
+                <span>やや混雑</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
+                <span>混雑</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
+                <span>非常に混雑</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mb-4">
+            <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+            赤く表示されている時間帯は予約が集中しています。ヘルプ要員の配置を検討してください。
+          </p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-left text-sm font-bold text-gray-700 bg-gray-100 border sticky left-0 z-10">
+                    店舗 / 時間帯
+                  </th>
+                  ${timeSlots.map(time => `
+                    <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
+                      ${time.replace(':00', '')}
+                    </th>
+                  `).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${stores.map((store, sIndex) => {
+                  return `
+                    <tr class="${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                      <td class="px-3 py-3 text-sm font-medium text-gray-800 border sticky left-0 z-10 ${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                        ${store}
+                      </td>
+                      ${timeSlots.map(time => {
+                        const key = `${store}|${time}`
+                        const data = storeTimeMap[key]
+                        const quantity = data ? data.quantity : 0
+                        const count = data ? data.count : 0
+                        
+                        // 色の濃さを計算（0-100%）
+                        const intensity = maxQuantity > 0 ? (quantity / maxQuantity) * 100 : 0
+                        
+                        let bgColor = 'bg-gray-50'
+                        let textColor = 'text-gray-400'
+                        let alertIcon = ''
+                        
+                        if (intensity > 75) {
+                          bgColor = 'bg-red-400'
+                          textColor = 'text-white font-bold'
+                          alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
+                        } else if (intensity > 50) {
+                          bgColor = 'bg-orange-300'
+                          textColor = 'text-gray-900 font-semibold'
+                          alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
+                        } else if (intensity > 25) {
+                          bgColor = 'bg-yellow-200'
+                          textColor = 'text-gray-800'
+                        } else if (intensity > 0) {
+                          bgColor = 'bg-green-100'
+                          textColor = 'text-gray-700'
+                        }
+                        
+                        return `
+                          <td class="px-2 py-3 text-center text-xs border ${bgColor} ${textColor} transition-all hover:scale-105 cursor-pointer"
+                              title="${store}\n${time}\n予約: ${count}件 / ${quantity}冊">
+                            <div class="flex flex-col items-center justify-center">
+                              ${alertIcon}
+                              ${quantity > 0 ? `<div class="font-bold">${quantity}</div><div class="text-xs opacity-75">${count}件</div>` : '-'}
+                            </div>
+                          </td>
+                        `
+                      }).join('')}
+                    </tr>
+                  `
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 混雑予測アラート -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-bell text-red-600 mr-2"></i>
+            混雑予測アラート
+          </h3>
+          ${this.renderCongestionAlerts(storeTimeMap, maxQuantity)}
+        </div>
+      </div>
+    `
+  }
+
+  renderCongestionAlerts(storeTimeMap, maxQuantity) {
+    const alerts = []
+    
+    Object.entries(storeTimeMap).forEach(([key, data]) => {
+      const [store, time] = key.split('|')
+      const intensity = (data.quantity / maxQuantity) * 100
+      
+      if (intensity > 75) {
+        alerts.push({
+          level: 'critical',
+          store,
+          time,
+          count: data.count,
+          quantity: data.quantity,
+          message: '非常に混雑が予想されます。追加スタッフの配置を強く推奨します。'
+        })
+      } else if (intensity > 50) {
+        alerts.push({
+          level: 'warning',
+          store,
+          time,
+          count: data.count,
+          quantity: data.quantity,
+          message: '混雑が予想されます。スタッフ配置の検討をお勧めします。'
+        })
+      }
+    })
+
+    // 重要度順にソート
+    alerts.sort((a, b) => b.quantity - a.quantity)
+
+    if (alerts.length === 0) {
+      return `
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+          <p class="text-lg font-medium">現在、特に混雑が予想される時間帯はありません</p>
+          <p class="text-sm mt-2">すべての時間帯が比較的均等に予約されています。</p>
+        </div>
+      `
+    }
+
+    return `
+      <div class="space-y-3">
+        ${alerts.map(alert => {
+          const iconClass = alert.level === 'critical' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'
+          const bgClass = alert.level === 'critical' ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-300'
+          const iconColor = alert.level === 'critical' ? 'text-red-600' : 'text-orange-600'
+          
+          return `
+            <div class="border-2 ${bgClass} rounded-lg p-4">
+              <div class="flex items-start gap-4">
+                <i class="fas ${iconClass} text-2xl ${iconColor} mt-1"></i>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-bold text-gray-800 text-lg">${alert.store}</h4>
+                    <span class="px-3 py-1 bg-white rounded-full text-sm font-bold ${iconColor}">
+                      ${alert.time}
+                    </span>
+                  </div>
+                  <p class="text-gray-700 mb-2">${alert.message}</p>
+                  <div class="flex gap-4 text-sm">
+                    <span class="font-semibold">予約件数: <span class="text-blue-600">${alert.count}件</span></span>
+                    <span class="font-semibold">予約冊数: <span class="text-green-600">${alert.quantity}冊</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+        }).join('')}
+      </div>
+    `
   }
 
   logout() {
