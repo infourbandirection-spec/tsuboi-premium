@@ -903,6 +903,7 @@ class AdminApp {
     // 日別データ集計
     const dateMap = {}
     const storeTimeMap = {}
+    const storeTimeDateMap = {} // 日付情報も含む
     const stores = ['パスート24上通', 'パスート24銀座プレス', 'パスート24辛島公園', 'パスート24熊本中央', '熊本市辛島公園地下駐車場']
     const timeSlots = [
       '09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
@@ -932,6 +933,14 @@ class AdminApp {
       }
       storeTimeMap[key].count++
       storeTimeMap[key].quantity += r.quantity
+
+      // 店舗×時間帯×日付マトリックス
+      const dateKey = `${r.store_location}|${r.pickup_time_slot}|${r.pickup_date}`
+      if (!storeTimeDateMap[dateKey]) {
+        storeTimeDateMap[dateKey] = { count: 0, quantity: 0 }
+      }
+      storeTimeDateMap[dateKey].count++
+      storeTimeDateMap[dateKey].quantity += r.quantity
     })
 
     // 日付をソート
@@ -1111,18 +1120,34 @@ class AdminApp {
             <i class="fas fa-bell text-red-600 mr-2"></i>
             混雑予測アラート
           </h3>
-          ${this.renderCongestionAlerts(storeTimeMap, maxQuantity)}
+          ${this.renderCongestionAlerts(storeTimeMap, storeTimeDateMap, maxQuantity)}
         </div>
       </div>
     `
   }
 
-  renderCongestionAlerts(storeTimeMap, maxQuantity) {
+  renderCongestionAlerts(storeTimeMap, storeTimeDateMap, maxQuantity) {
     const alerts = []
     
     Object.entries(storeTimeMap).forEach(([key, data]) => {
       const [store, time] = key.split('|')
       const intensity = (data.quantity / maxQuantity) * 100
+      
+      // この店舗×時間帯の日付別内訳を取得
+      const dateBreakdown = []
+      Object.entries(storeTimeDateMap).forEach(([dateKey, dateData]) => {
+        const [dateStore, dateTime, date] = dateKey.split('|')
+        if (dateStore === store && dateTime === time) {
+          dateBreakdown.push({
+            date,
+            count: dateData.count,
+            quantity: dateData.quantity
+          })
+        }
+      })
+      
+      // 日付順にソート
+      dateBreakdown.sort((a, b) => a.date.localeCompare(b.date))
       
       if (intensity > 75) {
         alerts.push({
@@ -1131,6 +1156,7 @@ class AdminApp {
           time,
           count: data.count,
           quantity: data.quantity,
+          dateBreakdown,
           message: '非常に混雑が予想されます。追加スタッフの配置を強く推奨します。'
         })
       } else if (intensity > 50) {
@@ -1140,6 +1166,7 @@ class AdminApp {
           time,
           count: data.count,
           quantity: data.quantity,
+          dateBreakdown,
           message: '混雑が予想されます。スタッフ配置の検討をお勧めします。'
         })
       }
@@ -1177,10 +1204,29 @@ class AdminApp {
                     </span>
                   </div>
                   <p class="text-gray-700 mb-2">${alert.message}</p>
-                  <div class="flex gap-4 text-sm">
+                  <div class="flex gap-4 text-sm mb-3">
                     <span class="font-semibold">予約件数: <span class="text-blue-600">${alert.count}件</span></span>
                     <span class="font-semibold">予約冊数: <span class="text-green-600">${alert.quantity}冊</span></span>
                   </div>
+                  ${alert.dateBreakdown && alert.dateBreakdown.length > 0 ? `
+                    <div class="bg-white rounded-lg p-3 border border-gray-200">
+                      <h5 class="text-xs font-bold text-gray-600 mb-2 flex items-center">
+                        <i class="fas fa-calendar text-blue-500 mr-2"></i>
+                        日付別内訳
+                      </h5>
+                      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        ${alert.dateBreakdown.map(d => {
+                          const dayOfWeek = new Date(d.date).toLocaleDateString('ja-JP', { weekday: 'short' })
+                          return `
+                            <div class="bg-gray-50 rounded px-2 py-1 text-xs">
+                              <div class="font-medium text-gray-700">${d.date} (${dayOfWeek})</div>
+                              <div class="text-gray-600">${d.count}件 / ${d.quantity}冊</div>
+                            </div>
+                          `
+                        }).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             </div>
