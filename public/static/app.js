@@ -17,6 +17,20 @@ class ReservationApp {
     this.init()
   }
 
+  // HTMLエスケープ関数（XSS対策）
+  escapeHtml(text) {
+    if (!text) return ''
+    const map = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '/': '&#x2F;'
+    }
+    return String(text).replace(/[<>&"'/]/g, (m) => map[m])
+  }
+
   async init() {
     await this.loadSystemStatus()
     await this.loadStores()
@@ -153,6 +167,13 @@ class ReservationApp {
                 </ul>
               </div>
             </div>
+          </div>
+
+          <!-- プライバシーポリシーリンク -->
+          <div class="mt-4 text-center">
+            <a href="/privacy" class="text-sm text-gray-600 hover:text-blue-600 underline">
+              <i class="fas fa-shield-alt mr-1"></i>プライバシーポリシー
+            </a>
           </div>
         </div>
       </div>
@@ -443,27 +464,27 @@ class ReservationApp {
       <div class="space-y-4">
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">生年月日</p>
-          <p class="text-lg font-bold">${this.formData.birthDate}</p>
+          <p class="text-lg font-bold">${this.escapeHtml(this.formData.birthDate)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">氏名</p>
-          <p class="text-lg font-bold">${this.formData.fullName}</p>
+          <p class="text-lg font-bold">${this.escapeHtml(this.formData.fullName)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">電話番号</p>
-          <p class="text-lg font-bold">${this.formData.phoneNumber}</p>
+          <p class="text-lg font-bold">${this.escapeHtml(this.formData.phoneNumber)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">購入冊数</p>
-          <p class="text-lg font-bold">${this.formData.quantity} 冊</p>
+          <p class="text-lg font-bold">${this.escapeHtml(String(this.formData.quantity))} 冊</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">受け取り店舗</p>
-          <p class="text-lg font-bold">${this.formData.store}</p>
+          <p class="text-lg font-bold">${this.escapeHtml(this.formData.store)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">受け取り日時</p>
-          <p class="text-lg font-bold">${this.formData.pickupDate} ${this.formData.pickupTime}</p>
+          <p class="text-lg font-bold">${this.escapeHtml(this.formData.pickupDate)} ${this.escapeHtml(this.formData.pickupTime)}</p>
         </div>
       </div>
       <div class="mt-8 flex justify-between">

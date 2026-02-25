@@ -49,10 +49,66 @@ function basicAuth(c: any) {
 // CORS設定
 app.use('/api/*', cors())
 
+// アクセスログミドルウェア（セキュリティ対策）
+app.use('*', async (c, next) => {
+  const startTime = Date.now()
+  const ip = c.req.header('CF-Connecting-IP') || 'unknown'
+  const userAgent = c.req.header('User-Agent') || 'unknown'
+  const path = c.req.path
+  const method = c.req.method
+
+  await next()
+
+  const duration = Date.now() - startTime
+  const status = c.res.status
+
+  // アクセスログ出力（Cloudflare Workers Logsで確認可能）
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    ip,
+    method,
+    path,
+    status,
+    duration: `${duration}ms`,
+    userAgent: userAgent.substring(0, 100)
+  }))
+})
+
+// セキュリティヘッダーミドルウェア
+app.use('*', async (c, next) => {
+  await next()
+
+  // セキュリティヘッダー設定
+  c.res.headers.set('X-Content-Type-Options', 'nosniff')
+  c.res.headers.set('X-Frame-Options', 'DENY')
+  c.res.headers.set('X-XSS-Protection', '1; mode=block')
+  c.res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  c.res.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+  
+  // Content Security Policy
+  c.res.headers.set('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
+    "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
+    "font-src 'self' https://cdn.jsdelivr.net; " +
+    "img-src 'self' data:; " +
+    "connect-src 'self'"
+  )
+})
+
 // 静的ファイル配信
 app.use('/static/*', serveStatic({ root: './public' }))
 
 // ===== ユーティリティ関数 =====
+
+// 入力サニタイゼーション（セキュリティ対策）
+function sanitizeInput(input: string): string {
+  if (!input) return ''
+  return String(input)
+    .trim()
+    .replace(/[<>]/g, '') // HTMLタグ除去
+    .substring(0, 100) // 最大長制限
+}
 
 // 予約ID生成
 function generateReservationId(): string {
@@ -67,6 +123,11 @@ function generateReservationId(): string {
 
 // バリデーション
 function validateReservation(data: any): { valid: boolean; error?: string } {
+  // 入力サニタイゼーション（セキュリティ対策）
+  if (data.fullName) data.fullName = sanitizeInput(data.fullName)
+  if (data.phoneNumber) data.phoneNumber = sanitizeInput(data.phoneNumber)
+  if (data.store) data.store = sanitizeInput(data.store)
+
   // 必須項目チェック
   const required = ['birthDate', 'fullName', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
   for (const field of required) {
@@ -602,6 +663,119 @@ app.get('/admin', (c) => {
     <body class="bg-gray-50">
         <div id="admin-app"></div>
         <script src="/static/admin.js"></script>
+    </body>
+    </html>
+  `)
+})
+
+// プライバシーポリシーページ（セキュリティ対策・法令遵守）
+app.get('/privacy', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>プライバシーポリシー - プレミアム商品券予約システム</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50 py-8 px-4">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-shield-alt text-blue-500 mr-3"></i>
+                プライバシーポリシー
+            </h1>
+            
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">1. 個人情報の収集</h2>
+                <p class="text-gray-700 mb-3">
+                    当システムでは、プレミアム商品券の予約管理のために、以下の個人情報を収集します：
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                    <li>氏名（フルネーム）</li>
+                    <li>生年月日</li>
+                    <li>電話番号</li>
+                    <li>受取店舗および受取日時</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">2. 利用目的</h2>
+                <p class="text-gray-700 mb-3">
+                    収集した個人情報は、以下の目的でのみ使用します：
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                    <li>プレミアム商品券の予約管理</li>
+                    <li>予約内容の確認</li>
+                    <li>本人確認</li>
+                    <li>予約に関する連絡・通知</li>
+                    <li>統計情報の作成（個人を特定できない形式）</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">3. 第三者提供</h2>
+                <p class="text-gray-700">
+                    個人情報は、以下の場合を除き、第三者に提供することはありません：
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mt-3">
+                    <li>ご本人の同意がある場合</li>
+                    <li>法令に基づく場合</li>
+                    <li>人の生命、身体または財産の保護のために必要がある場合</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">4. 安全管理措置</h2>
+                <p class="text-gray-700 mb-3">
+                    個人情報の安全管理のため、以下の措置を講じています：
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                    <li><strong>通信の暗号化</strong>: HTTPS通信により、データの送受信を暗号化</li>
+                    <li><strong>アクセス制限</strong>: 管理者のみがデータにアクセス可能</li>
+                    <li><strong>ログ管理</strong>: アクセスログを記録し、不正アクセスを監視</li>
+                    <li><strong>セキュリティヘッダー</strong>: XSS、CSRF等の攻撃を防止</li>
+                    <li><strong>入力検証</strong>: SQLインジェクション等の攻撃を防止</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">5. 個人情報の保存期間</h2>
+                <p class="text-gray-700">
+                    個人情報は、商品券の配布完了後、一定期間保管した後、適切に削除します。
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">6. Cookie等の使用</h2>
+                <p class="text-gray-700">
+                    当システムでは、管理画面のログイン状態を維持するために、ブラウザのローカルストレージを使用します。
+                    これらの情報は、個人を特定するものではありません。
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-3">7. お問い合わせ</h2>
+                <p class="text-gray-700">
+                    個人情報の取扱いに関するお問い合わせ、開示請求、訂正、削除等のご要望は、
+                    予約時にご登録いただいた電話番号にてお問い合わせください。
+                </p>
+            </section>
+
+            <section class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p class="text-sm text-gray-700">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <strong>最終更新日:</strong> ${new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+            </section>
+
+            <div class="mt-8 text-center">
+                <a href="/" class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
+                    <i class="fas fa-home mr-2"></i>トップページに戻る
+                </a>
+            </div>
+        </div>
     </body>
     </html>
   `)
