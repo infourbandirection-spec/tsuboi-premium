@@ -581,9 +581,14 @@ class ReservationApp {
       if (data.success) {
         this.showSuccessPage(data)
       } else {
-        alert(data.error || '予約に失敗しました')
-        submitBtn.disabled = false
-        submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 予約を確定する'
+        // 在庫不足エラーの場合は詳細を表示
+        if (data.remainingBooks !== undefined) {
+          this.showInventoryError(data)
+        } else {
+          alert(data.error || '予約に失敗しました')
+          submitBtn.disabled = false
+          submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 予約を確定する'
+        }
       }
     } catch (error) {
       console.error('Reservation error:', error)
@@ -591,6 +596,68 @@ class ReservationApp {
       submitBtn.disabled = false
       submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 予約を確定する'
     }
+  }
+
+  showInventoryError(data) {
+    const app = document.getElementById('app')
+    app.innerHTML = `
+      <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
+          <div class="text-center mb-8">
+            <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">予約できませんでした</h1>
+            <p class="text-gray-600">在庫状況が変更されました</p>
+          </div>
+
+          <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg mb-6">
+            <p class="font-bold text-red-800 mb-3">
+              ${data.error}
+            </p>
+            <div class="text-sm text-red-700 space-y-2">
+              <p>
+                <i class="fas fa-info-circle mr-2"></i>
+                現在の残り冊数: <span class="font-bold text-lg">${data.remainingBooks}冊</span>
+              </p>
+              ${data.requestedQuantity ? `
+                <p>
+                  <i class="fas fa-shopping-cart mr-2"></i>
+                  ご希望の冊数: <span class="font-bold">${data.requestedQuantity}冊</span>
+                </p>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6">
+            <p class="text-sm text-blue-700">
+              <i class="fas fa-lightbulb mr-2"></i>
+              <strong>お手数ですが、以下の対応をお願いします：</strong>
+            </p>
+            <ul class="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
+              ${data.remainingBooks > 0 ? `
+                <li>冊数を${data.remainingBooks}冊以下に変更して再度お試しください</li>
+              ` : `
+                <li>申し訳ございません。予約受付を終了いたしました</li>
+              `}
+              <li>最新の在庫状況を確認してください</li>
+            </ul>
+          </div>
+
+          <div class="flex gap-4">
+            ${data.remainingBooks > 0 ? `
+              <button onclick="location.reload()" 
+                      class="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
+                <i class="fas fa-redo mr-2"></i> 最初からやり直す
+              </button>
+            ` : `
+              <button onclick="location.reload()" 
+                      class="flex-1 px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-bold">
+                <i class="fas fa-home mr-2"></i> トップに戻る
+              </button>
+            `}
+          </div>
+        </div>
+      </div>
+    `
   }
 
   showSuccessPage(data) {
