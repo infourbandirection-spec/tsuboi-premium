@@ -1002,7 +1002,7 @@ class AdminApp {
                             if (!storeData) return ''
                             return `
                               <span class="px-2 py-1 bg-gray-100 rounded text-xs">
-                                ${store.replace('パスート24', '').replace('熊本市', '')}: ${storeData.quantity}冊
+                                ${store.replace('パスート24', '').replace('熊本市', '')}: ${storeData.count}件 ${storeData.quantity}冊
                               </span>
                             `
                           }).join('')}
