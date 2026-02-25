@@ -14,8 +14,58 @@ class AdminApp {
   }
 
   async init() {
+    // 認証チェック
+    const isAuthenticated = await this.checkAuthentication()
+    if (!isAuthenticated) {
+      this.showLoginRequired()
+      return
+    }
+
     await this.loadData()
     this.render()
+  }
+
+  async checkAuthentication() {
+    const token = localStorage.getItem('adminToken')
+    
+    if (!token) {
+      return false
+    }
+
+    try {
+      const response = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token })
+      })
+
+      const data = await response.json()
+      return data.success && data.valid
+    } catch (error) {
+      console.error('Auth check error:', error)
+      return false
+    }
+  }
+
+  showLoginRequired() {
+    const app = document.getElementById('admin-app')
+    app.innerHTML = `
+      <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full text-center">
+          <i class="fas fa-lock text-6xl text-red-500 mb-4"></i>
+          <h1 class="text-3xl font-bold text-gray-800 mb-4">アクセスが拒否されました</h1>
+          <p class="text-gray-600 mb-6">
+            この画面にアクセスするには、管理者ログインが必要です。
+          </p>
+          <button onclick="window.location.href='/'" 
+                  class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg">
+            <i class="fas fa-arrow-left mr-2"></i> トップページへ戻る
+          </button>
+        </div>
+      </div>
+    `
   }
 
   async loadData() {
@@ -62,10 +112,16 @@ class AdminApp {
     return `
       <header class="bg-blue-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 class="text-3xl font-bold flex items-center">
-            <i class="fas fa-cog mr-3"></i>
-            プレミアム商品券 管理画面
-          </h1>
+          <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold flex items-center">
+              <i class="fas fa-cog mr-3"></i>
+              プレミアム商品券 管理画面
+            </h1>
+            <button onclick="adminApp.logout()" 
+                    class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-bold transition">
+              <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
+            </button>
+          </div>
         </div>
       </header>
     `
@@ -601,6 +657,13 @@ class AdminApp {
           }
         }
       })
+    }
+  }
+
+  logout() {
+    if (confirm('ログアウトしますか？')) {
+      localStorage.removeItem('adminToken')
+      window.location.href = '/'
     }
   }
 }

@@ -91,11 +91,21 @@ class ReservationApp {
         <div class="max-w-4xl mx-auto">
           <!-- ヘッダー -->
           <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
-              <i class="fas fa-ticket-alt text-blue-500 mr-3"></i>
-              プレミアム商品券予約システム
-            </h1>
-            <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
+            <div class="flex justify-between items-start">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
+                  <i class="fas fa-ticket-alt text-blue-500 mr-3"></i>
+                  プレミアム商品券予約システム
+                </h1>
+                <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
+              </div>
+              <!-- 管理者ボタン -->
+              <button onclick="app.showAdminLogin()" 
+                      class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition flex items-center text-sm">
+                <i class="fas fa-user-shield mr-2"></i>
+                管理者
+              </button>
+            </div>
           </div>
 
           <!-- システム状態 -->
@@ -652,6 +662,103 @@ class ReservationApp {
     }).catch(err => {
       console.error('Copy failed:', err)
     })
+  }
+
+  showAdminLogin() {
+    const app = document.getElementById('app')
+    app.innerHTML = `
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+          <div class="text-center mb-8">
+            <i class="fas fa-user-shield text-6xl text-blue-600 mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">管理者ログイン</h1>
+            <p class="text-gray-600">パスワードを入力してください</p>
+          </div>
+
+          <div id="loginError" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 p-4 rounded">
+            <p class="text-sm text-red-700">
+              <i class="fas fa-exclamation-circle mr-2"></i>
+              <span id="loginErrorText"></span>
+            </p>
+          </div>
+
+          <form onsubmit="app.handleAdminLogin(event)" class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-lock mr-2"></i>パスワード
+              </label>
+              <input type="password" id="adminPassword" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="パスワードを入力"
+                     required>
+            </div>
+
+            <button type="submit" id="loginBtn"
+                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+              <i class="fas fa-sign-in-alt mr-2"></i> ログイン
+            </button>
+
+            <button type="button" onclick="location.reload()"
+                    class="w-full px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold transition">
+              <i class="fas fa-arrow-left mr-2"></i> トップに戻る
+            </button>
+          </form>
+
+          <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <p class="text-sm text-blue-700">
+              <i class="fas fa-info-circle mr-2"></i>
+              <strong>開発環境のデフォルトパスワード:</strong> admin123
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  async handleAdminLogin(event) {
+    event.preventDefault()
+    
+    const loginBtn = document.getElementById('loginBtn')
+    const passwordInput = document.getElementById('adminPassword')
+    const errorDiv = document.getElementById('loginError')
+    const errorText = document.getElementById('loginErrorText')
+    
+    loginBtn.disabled = true
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 認証中...'
+    errorDiv.classList.add('hidden')
+
+    try {
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          password: passwordInput.value
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // トークンをlocalStorageに保存
+        localStorage.setItem('adminToken', data.token)
+        
+        // 管理画面にリダイレクト
+        window.location.href = '/admin'
+      } else {
+        errorText.textContent = data.error || 'ログインに失敗しました'
+        errorDiv.classList.remove('hidden')
+        loginBtn.disabled = false
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> ログイン'
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      errorText.textContent = '通信エラーが発生しました。もう一度お試しください。'
+      errorDiv.classList.remove('hidden')
+      loginBtn.disabled = false
+      loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> ログイン'
+    }
   }
 }
 

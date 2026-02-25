@@ -1,0 +1,6 @@
+# Development Environment Variables
+# Copy this file to .dev.vars for local development
+
+# Admin password for management access
+# Default: admin123 (change this for production!)
+ADMIN_PASSWORD=admin123

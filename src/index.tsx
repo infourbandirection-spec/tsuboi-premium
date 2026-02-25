@@ -4,6 +4,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   DB: D1Database
+  ADMIN_PASSWORD?: string
 }
 
 type Reservation = {
@@ -17,6 +18,33 @@ type Reservation = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
+
+// 簡易認証ミドルウェア
+function basicAuth(c: any) {
+  const authHeader = c.req.header('Authorization')
+  
+  if (!authHeader) {
+    return c.json({ success: false, error: '認証が必要です' }, 401)
+  }
+
+  const [scheme, credentials] = authHeader.split(' ')
+  
+  if (scheme !== 'Basic') {
+    return c.json({ success: false, error: '認証方式が無効です' }, 401)
+  }
+
+  const decoded = atob(credentials)
+  const [username, password] = decoded.split(':')
+  
+  // 簡易認証（本番環境では環境変数から取得）
+  const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+  
+  if (username !== 'admin' || password !== adminPassword) {
+    return c.json({ success: false, error: '認証に失敗しました' }, 401)
+  }
+  
+  return null // 認証成功
+}
 
 // CORS設定
 app.use('/api/*', cors())
@@ -272,6 +300,70 @@ app.post('/api/search', async (c) => {
 
   } catch (error) {
     console.error('Search error:', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 管理者認証チェック
+app.post('/api/admin/auth', async (c) => {
+  try {
+    const { password } = await c.req.json()
+    const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+    
+    if (password === adminPassword) {
+      // 簡易トークン生成（本番環境ではJWT等を使用）
+      const token = btoa(`admin:${password}:${Date.now()}`)
+      return c.json({
+        success: true,
+        token,
+        message: '認証に成功しました'
+      })
+    } else {
+      return c.json({
+        success: false,
+        error: 'パスワードが正しくありません'
+      }, 401)
+    }
+  } catch (error) {
+    console.error('Auth error:', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// トークン検証
+app.post('/api/admin/verify', async (c) => {
+  try {
+    const { token } = await c.req.json()
+    
+    if (!token) {
+      return c.json({ success: false, valid: false })
+    }
+    
+    try {
+      const decoded = atob(token)
+      const [username, password, timestamp] = decoded.split(':')
+      const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+      
+      // トークンの有効期限チェック（24時間）
+      const tokenAge = Date.now() - parseInt(timestamp)
+      const isExpired = tokenAge > 24 * 60 * 60 * 1000
+      
+      if (username === 'admin' && password === adminPassword && !isExpired) {
+        return c.json({ success: true, valid: true })
+      }
+    } catch {
+      // トークンのデコードに失敗
+    }
+    
+    return c.json({ success: true, valid: false })
+  } catch (error) {
+    console.error('Verify error:', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
