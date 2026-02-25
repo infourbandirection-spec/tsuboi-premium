@@ -240,21 +240,45 @@ class AdminApp {
         </div>
 
         <!-- チャート -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6">
           <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">店舗別予約状況</h2>
-            <canvas id="storeChart" width="400" height="300"></canvas>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-gray-800">店舗別予約状況</h2>
+              <span class="text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                店舗ごとの予約冊数を表示
+              </span>
+            </div>
+            <div style="height: 300px;">
+              <canvas id="storeChart"></canvas>
+            </div>
           </div>
 
           <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">日付別予約状況</h2>
-            <canvas id="dateChart" width="400" height="300"></canvas>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-gray-800">日付別予約推移</h2>
+              <span class="text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                日ごとの予約推移を表示
+              </span>
+            </div>
+            <div style="height: 300px;">
+              <canvas id="dateChart"></canvas>
+            </div>
           </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-bold text-gray-800 mb-4">時間帯別予約状況</h2>
-          <canvas id="timeChart" width="800" height="300"></canvas>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-gray-800">時間帯別予約状況</h2>
+              <span class="text-sm text-gray-600">
+                <i class="fas fa-info-circle mr-1"></i>
+                時間帯ごとの混雑状況を表示
+              </span>
+            </div>
+            <div style="height: 300px;">
+              <canvas id="timeChart"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     `
@@ -583,9 +607,13 @@ class AdminApp {
   renderCharts() {
     if (!this.statistics) return
 
+    // Chart.jsのデフォルト設定
+    Chart.defaults.font.family = "'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif"
+    Chart.defaults.font.size = 13
+
     // 店舗別チャート
     const storeCtx = document.getElementById('storeChart')
-    if (storeCtx) {
+    if (storeCtx && this.statistics.byStore.length > 0) {
       new Chart(storeCtx, {
         type: 'bar',
         data: {
@@ -593,50 +621,189 @@ class AdminApp {
           datasets: [{
             label: '予約冊数',
             data: this.statistics.byStore.map(s => s.total_quantity),
-            backgroundColor: 'rgba(59, 130, 246, 0.5)',
-            borderColor: 'rgba(59, 130, 246, 1)',
-            borderWidth: 1
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.7)',
+              'rgba(16, 185, 129, 0.7)',
+              'rgba(245, 158, 11, 0.7)',
+              'rgba(139, 92, 246, 0.7)',
+              'rgba(236, 72, 153, 0.7)'
+            ],
+            borderColor: [
+              'rgba(59, 130, 246, 1)',
+              'rgba(16, 185, 129, 1)',
+              'rgba(245, 158, 11, 1)',
+              'rgba(139, 92, 246, 1)',
+              'rgba(236, 72, 153, 1)'
+            ],
+            borderWidth: 2
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  const store = context.chart.data.labels[context.dataIndex]
+                  const quantity = context.parsed.y
+                  const storeData = this.statistics.byStore.find(s => s.store_location === store)
+                  return [
+                    `予約冊数: ${quantity}冊`,
+                    `予約件数: ${storeData.count}件`
+                  ]
+                }.bind(this)
+              }
+            }
+          },
           scales: {
-            y: { beginAtZero: true }
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return value + '冊'
+                }
+              },
+              title: {
+                display: true,
+                text: '予約冊数',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
           }
         }
       })
+    } else if (storeCtx) {
+      storeCtx.parentElement.innerHTML = `
+        <div class="text-center py-12 text-gray-400">
+          <i class="fas fa-chart-bar text-6xl mb-4"></i>
+          <p>予約データがありません</p>
+        </div>
+      `
     }
 
     // 日付別チャート
     const dateCtx = document.getElementById('dateChart')
-    if (dateCtx) {
+    if (dateCtx && this.statistics.byDate.length > 0) {
       new Chart(dateCtx, {
         type: 'line',
         data: {
-          labels: this.statistics.byDate.map(d => d.pickup_date),
+          labels: this.statistics.byDate.map(d => {
+            const date = new Date(d.pickup_date)
+            return `${date.getMonth() + 1}/${date.getDate()}`
+          }),
           datasets: [{
             label: '予約冊数',
             data: this.statistics.byDate.map(d => d.total_quantity),
             backgroundColor: 'rgba(16, 185, 129, 0.2)',
             borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 2,
-            fill: true
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                title: function(context) {
+                  const date = this.statistics.byDate[context[0].dataIndex].pickup_date
+                  return `${date} の予約状況`
+                }.bind(this),
+                label: function(context) {
+                  const dateData = this.statistics.byDate[context.dataIndex]
+                  return [
+                    `予約冊数: ${dateData.total_quantity}冊`,
+                    `予約件数: ${dateData.count}件`
+                  ]
+                }.bind(this)
+              }
+            }
+          },
           scales: {
-            y: { beginAtZero: true }
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return value + '冊'
+                }
+              },
+              title: {
+                display: true,
+                text: '予約冊数',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: '受け取り日',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            }
           }
         }
       })
+    } else if (dateCtx) {
+      dateCtx.parentElement.innerHTML = `
+        <div class="text-center py-12 text-gray-400">
+          <i class="fas fa-chart-line text-6xl mb-4"></i>
+          <p>予約データがありません</p>
+        </div>
+      `
     }
 
     // 時間帯別チャート
     const timeCtx = document.getElementById('timeChart')
-    if (timeCtx) {
+    if (timeCtx && this.statistics.byTime.length > 0) {
       new Chart(timeCtx, {
         type: 'bar',
         data: {
@@ -644,19 +811,79 @@ class AdminApp {
           datasets: [{
             label: '予約冊数',
             data: this.statistics.byTime.map(t => t.total_quantity),
-            backgroundColor: 'rgba(139, 92, 246, 0.5)',
+            backgroundColor: 'rgba(139, 92, 246, 0.7)',
             borderColor: 'rgba(139, 92, 246, 1)',
-            borderWidth: 1
+            borderWidth: 2
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  const timeSlot = context.chart.data.labels[context.dataIndex]
+                  const quantity = context.parsed.y
+                  const timeData = this.statistics.byTime.find(t => t.pickup_time_slot === timeSlot)
+                  return [
+                    `予約冊数: ${quantity}冊`,
+                    `予約件数: ${timeData.count}件`
+                  ]
+                }.bind(this)
+              }
+            }
+          },
           scales: {
-            y: { beginAtZero: true }
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return value + '冊'
+                }
+              },
+              title: {
+                display: true,
+                text: '予約冊数',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: '受け取り時間帯',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            }
           }
         }
       })
+    } else if (timeCtx) {
+      timeCtx.parentElement.innerHTML = `
+        <div class="text-center py-12 text-gray-400">
+          <i class="fas fa-clock text-6xl mb-4"></i>
+          <p>予約データがありません</p>
+        </div>
+      `
     }
   }
 
