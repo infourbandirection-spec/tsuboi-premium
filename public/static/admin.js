@@ -900,6 +900,9 @@ class AdminApp {
       `
     }
 
+    // 選択された日付を取得（デフォルトは今日）
+    const selectedDate = this.selectedHeatmapDate || new Date().toISOString().split('T')[0]
+
     // 日別データ集計
     const dateMap = {}
     const storeTimeMap = {}
@@ -926,7 +929,7 @@ class AdminApp {
       dateMap[r.pickup_date].stores[r.store_location].count++
       dateMap[r.pickup_date].stores[r.store_location].quantity += r.quantity
 
-      // 店舗×時間帯マトリックス
+      // 店舗×時間帯マトリックス（全日付）
       const key = `${r.store_location}|${r.pickup_time_slot}`
       if (!storeTimeMap[key]) {
         storeTimeMap[key] = { count: 0, quantity: 0 }
@@ -946,8 +949,18 @@ class AdminApp {
     // 日付をソート
     const dates = Object.keys(dateMap).sort()
 
-    // 最大値を計算（色の濃さ用）
-    const maxQuantity = Math.max(...Object.values(storeTimeMap).map(v => v.quantity), 1)
+    // 選択された日付用の店舗×時間帯マトリックスを生成
+    const filteredStoreTimeMap = {}
+    Object.entries(storeTimeDateMap).forEach(([dateKey, data]) => {
+      const [store, time, date] = dateKey.split('|')
+      if (date === selectedDate) {
+        const key = `${store}|${time}`
+        filteredStoreTimeMap[key] = data
+      }
+    })
+
+    // 最大値を計算（色の濃さ用）- 選択日付のデータで計算
+    const maxQuantity = Math.max(...Object.values(filteredStoreTimeMap).map(v => v.quantity), 1)
 
     return `
       <div class="space-y-6">
@@ -1018,28 +1031,56 @@ class AdminApp {
 
         <!-- 店舗×時間帯ヒートマップ -->
         <div class="bg-white rounded-lg shadow-lg p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800 flex items-center">
-              <i class="fas fa-th text-orange-600 mr-2"></i>
-              店舗×時間帯 混雑ヒートマップ
-            </h3>
-            <div class="flex items-center gap-4 text-sm">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <div>
+              <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-th text-orange-600 mr-2"></i>
+                店舗×時間帯 混雑ヒートマップ
+              </h3>
+              <p class="text-sm text-gray-600 mt-2">
+                ${new Date(selectedDate).toLocaleDateString('ja-JP', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  weekday: 'short'
+                })} の混雑状況
+              </p>
+            </div>
+            <div class="flex items-center gap-4">
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                <span>空き</span>
+                <label class="text-sm font-medium text-gray-700">
+                  <i class="fas fa-calendar-day mr-1"></i>日付選択:
+                </label>
+                <select 
+                  id="heatmapDateSelector" 
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onchange="adminApp.changeHeatmapDate(this.value)"
+                >
+                  ${dates.map(date => {
+                    const isSelected = date === selectedDate ? 'selected' : ''
+                    const dayOfWeek = new Date(date).toLocaleDateString('ja-JP', { weekday: 'short' })
+                    return `<option value="${date}" ${isSelected}>${date} (${dayOfWeek})</option>`
+                  }).join('')}
+                </select>
               </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
-                <span>やや混雑</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
-                <span>混雑</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
-                <span>非常に混雑</span>
-              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-sm mb-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
+              <span>空き</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
+              <span>やや混雑</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
+              <span>混雑</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
+              <span>非常に混雑</span>
             </div>
           </div>
           <p class="text-sm text-gray-600 mb-4">
@@ -1069,7 +1110,7 @@ class AdminApp {
                       </td>
                       ${timeSlots.map(time => {
                         const key = `${store}|${time}`
-                        const data = storeTimeMap[key]
+                        const data = filteredStoreTimeMap[key]
                         const quantity = data ? data.quantity : 0
                         const count = data ? data.count : 0
                         
@@ -1120,34 +1161,25 @@ class AdminApp {
             <i class="fas fa-bell text-red-600 mr-2"></i>
             混雑予測アラート
           </h3>
-          ${this.renderCongestionAlerts(storeTimeMap, storeTimeDateMap, maxQuantity)}
+          ${this.renderCongestionAlerts(filteredStoreTimeMap, storeTimeDateMap, maxQuantity, selectedDate)}
         </div>
       </div>
     `
   }
 
-  renderCongestionAlerts(storeTimeMap, storeTimeDateMap, maxQuantity) {
+  renderCongestionAlerts(storeTimeMap, storeTimeDateMap, maxQuantity, selectedDate) {
     const alerts = []
     
     Object.entries(storeTimeMap).forEach(([key, data]) => {
       const [store, time] = key.split('|')
       const intensity = (data.quantity / maxQuantity) * 100
       
-      // この店舗×時間帯の日付別内訳を取得
-      const dateBreakdown = []
-      Object.entries(storeTimeDateMap).forEach(([dateKey, dateData]) => {
-        const [dateStore, dateTime, date] = dateKey.split('|')
-        if (dateStore === store && dateTime === time) {
-          dateBreakdown.push({
-            date,
-            count: dateData.count,
-            quantity: dateData.quantity
-          })
-        }
-      })
-      
-      // 日付順にソート
-      dateBreakdown.sort((a, b) => a.date.localeCompare(b.date))
+      // 選択された日付のデータのみを表示
+      const dateBreakdown = [{
+        date: selectedDate,
+        count: data.count,
+        quantity: data.quantity
+      }]
       
       if (intensity > 75) {
         alerts.push({
@@ -1236,6 +1268,11 @@ class AdminApp {
     `
   }
 
+  changeHeatmapDate(date) {
+    this.selectedHeatmapDate = date
+    this.render()
+  }
+
   logout() {
     if (confirm('ログアウトしますか？')) {
       localStorage.removeItem('adminToken')
@@ -1248,4 +1285,5 @@ class AdminApp {
 let adminApp
 document.addEventListener('DOMContentLoaded', () => {
   adminApp = new AdminApp()
+  window.adminApp = adminApp // グローバルに公開
 })
