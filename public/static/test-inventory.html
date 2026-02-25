@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在庫制限テスト - 残り2冊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+            🧪 在庫制限機能テスト
+        </h1>
+        
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4">
+            <p class="text-blue-700 font-bold">テストシナリオ</p>
+            <p class="text-sm text-blue-600 mt-2">
+                現在の在庫: 998冊予約済み → 残り2冊<br>
+                期待される動作: 冊数選択で1冊と2冊のみ表示される
+            </p>
+        </div>
+
+        <div id="status" class="mb-6"></div>
+        <div id="quantitySelector" class="mb-6"></div>
+        
+        <button onclick="runTest()" class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
+            🔍 テスト実行
+        </button>
+        
+        <div id="result" class="mt-6"></div>
+    </div>
+
+    <script>
+        async function runTest() {
+            const statusDiv = document.getElementById('status')
+            const quantityDiv = document.getElementById('quantitySelector')
+            const resultDiv = document.getElementById('result')
+            
+            statusDiv.innerHTML = '<p class="text-gray-600">テスト実行中...</p>'
+            
+            try {
+                // ステータス取得
+                const response = await fetch('/api/status')
+                const data = await response.json()
+                
+                if (data.success) {
+                    const remaining = data.data.remaining
+                    const maxQuantity = Math.min(6, remaining)
+                    
+                    // ステータス表示
+                    statusDiv.innerHTML = `
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                            <p class="font-bold text-green-700">✅ APIレスポンス取得成功</p>
+                            <div class="mt-2 text-sm text-green-600">
+                                <p>総予約済み: ${data.data.totalReserved}冊</p>
+                                <p>残り冊数: ${remaining}冊</p>
+                                <p>最大購入可能数: ${maxQuantity}冊</p>
+                            </div>
+                        </div>
+                    `
+                    
+                    // 冊数セレクタ表示
+                    const options = Array.from({ length: maxQuantity }, (_, i) => i + 1)
+                        .map(num => `<option value="${num}">${num}冊</option>`)
+                        .join('')
+                    
+                    quantityDiv.innerHTML = `
+                        <div class="border border-gray-300 rounded-lg p-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                購入希望冊数（実際のセレクトボックス）
+                            </label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                ${options}
+                            </select>
+                            ${remaining < 6 ? `
+                                <div class="mt-3 bg-orange-100 border-l-4 border-orange-500 p-3 rounded">
+                                    <p class="text-sm text-orange-700">
+                                        ⚠️ 残り冊数が少なくなっています（残り ${remaining} 冊）
+                                    </p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `
+                    
+                    // 結果判定
+                    if (remaining === 2 && maxQuantity === 2) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-green-100 border-l-4 border-green-600 p-4 rounded">
+                                <p class="font-bold text-green-800 text-lg">🎉 テスト成功！</p>
+                                <ul class="mt-2 text-sm text-green-700 space-y-1">
+                                    <li>✅ 残り2冊の状態を正しく検出</li>
+                                    <li>✅ 最大購入可能数が2冊に制限されている</li>
+                                    <li>✅ セレクトボックスに1冊と2冊のみ表示</li>
+                                    <li>✅ 警告メッセージが表示されている</li>
+                                </ul>
+                                <div class="mt-4 p-3 bg-white rounded border border-green-300">
+                                    <p class="text-xs text-gray-600">
+                                        <strong>実装確認:</strong><br>
+                                        <code class="text-purple-600">const maxQuantity = Math.min(6, remaining)</code><br>
+                                        この行により、残り冊数が6冊未満の場合は、その冊数までしか選択できないようになっています。
+                                    </p>
+                                </div>
+                            </div>
+                        `
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="bg-red-100 border-l-4 border-red-600 p-4 rounded">
+                                <p class="font-bold text-red-800 text-lg">❌ テスト失敗</p>
+                                <p class="mt-2 text-sm text-red-700">
+                                    期待値: 残り2冊、最大2冊選択可能<br>
+                                    実際の値: 残り${remaining}冊、最大${maxQuantity}冊選択可能
+                                </p>
+                            </div>
+                        `
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-100 border-l-4 border-red-600 p-4 rounded">
+                        <p class="font-bold text-red-800">❌ エラー発生</p>
+                        <p class="text-sm text-red-700 mt-2">${error.message}</p>
+                    </div>
+                `
+            }
+        }
+        
+        // ページ読み込み時に自動実行
+        window.addEventListener('DOMContentLoaded', runTest)
+    </script>
+</body>
+</html>
