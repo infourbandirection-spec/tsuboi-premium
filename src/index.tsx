@@ -9,6 +9,8 @@ type Bindings = {
 
 type Reservation = {
   birthDate: string
+  address: string
+  addressType: 'workplace' | 'home'
   fullName: string
   phoneNumber: string
   quantity: number
@@ -68,11 +70,21 @@ function generateReservationId(): string {
 // バリデーション
 function validateReservation(data: any): { valid: boolean; error?: string } {
   // 必須項目チェック
-  const required = ['birthDate', 'fullName', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
+  const required = ['birthDate', 'address', 'addressType', 'fullName', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
   for (const field of required) {
     if (!data[field]) {
       return { valid: false, error: `${field}は必須です` }
     }
+  }
+
+  // 住所チェック
+  if (data.address.length < 5) {
+    return { valid: false, error: '住所を正しく入力してください' }
+  }
+
+  // 住所タイプチェック
+  if (data.addressType !== 'workplace' && data.addressType !== 'home') {
+    return { valid: false, error: '住所の種類が無効です' }
   }
 
   // 冊数チェック
@@ -250,12 +262,14 @@ app.post('/api/reserve', async (c) => {
     // 予約挿入
     await db.prepare(`
       INSERT INTO reservations 
-      (reservation_id, birth_date, full_name, phone_number, quantity, 
+      (reservation_id, birth_date, address, address_type, full_name, phone_number, quantity, 
        store_location, pickup_date, pickup_time_slot, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
     `).bind(
       reservationId,
       data.birthDate,
+      data.address,
+      data.addressType,
       data.fullName,
       data.phoneNumber,
       data.quantity,
