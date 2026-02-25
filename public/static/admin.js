@@ -1,0 +1,612 @@
+// プレミアム商品券予約システム - 管理画面
+
+class AdminApp {
+  constructor() {
+    this.currentView = 'dashboard'
+    this.reservations = []
+    this.statistics = null
+    this.filters = {
+      status: '',
+      store: '',
+      date: ''
+    }
+    this.init()
+  }
+
+  async init() {
+    await this.loadData()
+    this.render()
+  }
+
+  async loadData() {
+    try {
+      // 予約一覧取得
+      const reservationsResponse = await fetch('/api/admin/reservations')
+      const reservationsData = await reservationsResponse.json()
+      if (reservationsData.success) {
+        this.reservations = reservationsData.data
+      }
+
+      // 統計データ取得
+      const statsResponse = await fetch('/api/admin/statistics')
+      const statsData = await statsResponse.json()
+      if (statsData.success) {
+        this.statistics = statsData.data
+      }
+    } catch (error) {
+      console.error('Data load error:', error)
+    }
+  }
+
+  render() {
+    const app = document.getElementById('admin-app')
+    app.innerHTML = `
+      <div class="min-h-screen bg-gray-100">
+        ${this.renderHeader()}
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          ${this.renderNavigation()}
+          ${this.renderCurrentView()}
+        </div>
+      </div>
+    `
+
+    // チャート描画（ダッシュボード表示時のみ）
+    if (this.currentView === 'dashboard' && this.statistics) {
+      setTimeout(() => {
+        this.renderCharts()
+      }, 100)
+    }
+  }
+
+  renderHeader() {
+    return `
+      <header class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-cog mr-3"></i>
+            プレミアム商品券 管理画面
+          </h1>
+        </div>
+      </header>
+    `
+  }
+
+  renderNavigation() {
+    const tabs = [
+      { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
+      { id: 'reservations', icon: 'fa-list', label: '予約一覧' },
+      { id: 'search', icon: 'fa-search', label: '予約検索' }
+    ]
+
+    return `
+      <nav class="bg-white rounded-lg shadow mb-6">
+        <div class="flex border-b">
+          ${tabs.map(tab => `
+            <button onclick="adminApp.switchView('${tab.id}')"
+                    class="flex-1 px-6 py-4 text-center font-medium transition
+                           ${this.currentView === tab.id ? 
+                             'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 
+                             'text-gray-600 hover:bg-gray-50'}">
+              <i class="fas ${tab.icon} mr-2"></i>
+              ${tab.label}
+            </button>
+          `).join('')}
+        </div>
+      </nav>
+    `
+  }
+
+  renderCurrentView() {
+    switch (this.currentView) {
+      case 'dashboard': return this.renderDashboard()
+      case 'reservations': return this.renderReservationsList()
+      case 'search': return this.renderSearch()
+      default: return ''
+    }
+  }
+
+  renderDashboard() {
+    if (!this.statistics) {
+      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>'
+    }
+
+    const stats = this.statistics.total
+    const remaining = 1000 - (stats.reserved_books || 0)
+
+    return `
+      <div class="space-y-6">
+        <!-- サマリーカード -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">総予約数</p>
+                <p class="text-3xl font-bold text-gray-800">${stats.total_reservations || 0}</p>
+              </div>
+              <i class="fas fa-ticket-alt text-4xl text-blue-500"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">予約済み冊数</p>
+                <p class="text-3xl font-bold text-green-600">${stats.reserved_books || 0}</p>
+              </div>
+              <i class="fas fa-shopping-cart text-4xl text-green-500"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">受取完了冊数</p>
+                <p class="text-3xl font-bold text-purple-600">${stats.completed_books || 0}</p>
+              </div>
+              <i class="fas fa-check-circle text-4xl text-purple-500"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">残り冊数</p>
+                <p class="text-3xl font-bold text-orange-600">${remaining}</p>
+              </div>
+              <i class="fas fa-box text-4xl text-orange-500"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 進捗バー -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-lg font-bold text-gray-800 mb-4">予約状況</h2>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span>予約済み</span>
+                <span class="font-bold">${((stats.reserved_books || 0) / 1000 * 100).toFixed(1)}%</span>
+              </div>
+              <div class="bg-gray-200 rounded-full h-4">
+                <div class="bg-green-500 rounded-full h-4" style="width: ${((stats.reserved_books || 0) / 1000 * 100).toFixed(1)}%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span>受取完了</span>
+                <span class="font-bold">${((stats.completed_books || 0) / 1000 * 100).toFixed(1)}%</span>
+              </div>
+              <div class="bg-gray-200 rounded-full h-4">
+                <div class="bg-purple-500 rounded-full h-4" style="width: ${((stats.completed_books || 0) / 1000 * 100).toFixed(1)}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- チャート -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">店舗別予約状況</h2>
+            <canvas id="storeChart" width="400" height="300"></canvas>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">日付別予約状況</h2>
+            <canvas id="dateChart" width="400" height="300"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-lg font-bold text-gray-800 mb-4">時間帯別予約状況</h2>
+          <canvas id="timeChart" width="800" height="300"></canvas>
+        </div>
+      </div>
+    `
+  }
+
+  renderReservationsList() {
+    return `
+      <div class="bg-white rounded-lg shadow">
+        <!-- フィルター -->
+        <div class="p-6 border-b">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
+              <select id="filterStatus" onchange="adminApp.applyFilters()" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="">すべて</option>
+                <option value="reserved">予約済み</option>
+                <option value="completed">受取完了</option>
+                <option value="canceled">キャンセル</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">店舗</label>
+              <select id="filterStore" onchange="adminApp.applyFilters()" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="">すべて</option>
+                <option value="パスート24上通">パスート24上通</option>
+                <option value="パスート24銀座プレス">パスート24銀座プレス</option>
+                <option value="パスート24辛島公園">パスート24辛島公園</option>
+                <option value="パスート24熊本中央">パスート24熊本中央</option>
+                <option value="熊本市辛島公園地下駐車場">熊本市辛島公園地下駐車場</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">受取日</label>
+              <input type="date" id="filterDate" onchange="adminApp.applyFilters()"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            </div>
+          </div>
+          <div class="mt-4 flex gap-4">
+            <button onclick="adminApp.exportCSV()" 
+                    class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+              <i class="fas fa-download mr-2"></i> CSV出力
+            </button>
+            <button onclick="adminApp.resetFilters()" 
+                    class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+              <i class="fas fa-redo mr-2"></i> リセット
+            </button>
+          </div>
+        </div>
+
+        <!-- テーブル -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">予約ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">氏名</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">冊数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">店舗</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">受取日時</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${this.getFilteredReservations().map(reservation => `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                    ${reservation.reservation_id}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${reservation.full_name}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${reservation.phone_number}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${reservation.quantity} 冊
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${reservation.store_location}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${reservation.pickup_date}<br>
+                    ${reservation.pickup_time_slot}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    ${this.renderStatusBadge(reservation.status)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <select onchange="adminApp.updateStatus(${reservation.id}, this.value)"
+                            class="px-3 py-1 border border-gray-300 rounded">
+                      <option value="">操作選択</option>
+                      <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>予約済みに変更</option>
+                      <option value="completed" ${reservation.status === 'completed' ? 'disabled' : ''}>受取完了に変更</option>
+                      <option value="canceled" ${reservation.status === 'canceled' ? 'disabled' : ''}>キャンセルに変更</option>
+                    </select>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${this.getFilteredReservations().length === 0 ? `
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-inbox text-6xl mb-4"></i>
+            <p class="text-lg">該当する予約がありません</p>
+          </div>
+        ` : ''}
+      </div>
+    `
+  }
+
+  renderSearch() {
+    return `
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">予約検索</h2>
+        
+        <div class="max-w-2xl space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">検索タイプ</label>
+            <select id="searchType" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+              <option value="id">予約IDで検索</option>
+              <option value="phone">電話番号で検索</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">検索値</label>
+            <input type="text" id="searchValue" placeholder="予約IDまたは電話番号を入力"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+          </div>
+
+          <button onclick="adminApp.searchReservation()" 
+                  class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
+            <i class="fas fa-search mr-2"></i> 検索
+          </button>
+        </div>
+
+        <div id="searchResults" class="mt-8"></div>
+      </div>
+    `
+  }
+
+  renderStatusBadge(status) {
+    const statusConfig = {
+      reserved: { label: '予約済み', color: 'bg-green-100 text-green-800' },
+      completed: { label: '受取完了', color: 'bg-purple-100 text-purple-800' },
+      canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
+    }
+    const config = statusConfig[status] || { label: status, color: 'bg-gray-100 text-gray-800' }
+    return `<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color}">${config.label}</span>`
+  }
+
+  getFilteredReservations() {
+    return this.reservations.filter(r => {
+      if (this.filters.status && r.status !== this.filters.status) return false
+      if (this.filters.store && r.store_location !== this.filters.store) return false
+      if (this.filters.date && r.pickup_date !== this.filters.date) return false
+      return true
+    })
+  }
+
+  switchView(view) {
+    this.currentView = view
+    this.render()
+  }
+
+  applyFilters() {
+    this.filters.status = document.getElementById('filterStatus')?.value || ''
+    this.filters.store = document.getElementById('filterStore')?.value || ''
+    this.filters.date = document.getElementById('filterDate')?.value || ''
+    this.render()
+  }
+
+  resetFilters() {
+    this.filters = { status: '', store: '', date: '' }
+    this.render()
+  }
+
+  async updateStatus(id, status) {
+    if (!status) return
+
+    if (!confirm(`ステータスを「${status}」に変更しますか？`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/reservations/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('ステータスを更新しました')
+        await this.loadData()
+        this.render()
+      } else {
+        alert(data.error || '更新に失敗しました')
+      }
+    } catch (error) {
+      console.error('Update error:', error)
+      alert('通信エラーが発生しました')
+    }
+  }
+
+  async searchReservation() {
+    const searchType = document.getElementById('searchType')?.value
+    const searchValue = document.getElementById('searchValue')?.value
+
+    if (!searchValue) {
+      alert('検索値を入力してください')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ searchType, searchValue })
+      })
+
+      const data = await response.json()
+
+      const resultsDiv = document.getElementById('searchResults')
+      
+      if (data.success && data.data.length > 0) {
+        resultsDiv.innerHTML = `
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="bg-gray-50 px-6 py-3 border-b">
+              <h3 class="font-bold text-gray-800">検索結果（${data.data.length}件）</h3>
+            </div>
+            <div class="divide-y">
+              ${data.data.map(r => `
+                <div class="p-6">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <p class="text-sm text-gray-600">予約ID</p>
+                      <p class="font-bold font-mono">${r.reservation_id}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">ステータス</p>
+                      ${this.renderStatusBadge(r.status)}
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">氏名</p>
+                      <p class="font-bold">${r.full_name}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">電話番号</p>
+                      <p class="font-bold">${r.phone_number}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">冊数</p>
+                      <p class="font-bold">${r.quantity} 冊</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">店舗</p>
+                      <p class="font-bold">${r.store_location}</p>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-sm text-gray-600">受取日時</p>
+                      <p class="font-bold">${r.pickup_date} ${r.pickup_time_slot}</p>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `
+      } else {
+        resultsDiv.innerHTML = `
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-search text-6xl mb-4"></i>
+            <p class="text-lg">該当する予約が見つかりませんでした</p>
+          </div>
+        `
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      alert('検索エラーが発生しました')
+    }
+  }
+
+  exportCSV() {
+    const data = this.getFilteredReservations()
+    
+    if (data.length === 0) {
+      alert('出力するデータがありません')
+      return
+    }
+
+    const headers = ['予約ID', '生年月日', '氏名', '電話番号', '冊数', '店舗', '受取日', '受取時間', 'ステータス', '予約日時']
+    const rows = data.map(r => [
+      r.reservation_id,
+      r.birth_date,
+      r.full_name,
+      r.phone_number,
+      r.quantity,
+      r.store_location,
+      r.pickup_date,
+      r.pickup_time_slot,
+      r.status,
+      r.created_at
+    ])
+
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const bom = '\uFEFF'
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `reservations_${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+  }
+
+  renderCharts() {
+    if (!this.statistics) return
+
+    // 店舗別チャート
+    const storeCtx = document.getElementById('storeChart')
+    if (storeCtx) {
+      new Chart(storeCtx, {
+        type: 'bar',
+        data: {
+          labels: this.statistics.byStore.map(s => s.store_location),
+          datasets: [{
+            label: '予約冊数',
+            data: this.statistics.byStore.map(s => s.total_quantity),
+            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      })
+    }
+
+    // 日付別チャート
+    const dateCtx = document.getElementById('dateChart')
+    if (dateCtx) {
+      new Chart(dateCtx, {
+        type: 'line',
+        data: {
+          labels: this.statistics.byDate.map(d => d.pickup_date),
+          datasets: [{
+            label: '予約冊数',
+            data: this.statistics.byDate.map(d => d.total_quantity),
+            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 2,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      })
+    }
+
+    // 時間帯別チャート
+    const timeCtx = document.getElementById('timeChart')
+    if (timeCtx) {
+      new Chart(timeCtx, {
+        type: 'bar',
+        data: {
+          labels: this.statistics.byTime.map(t => t.pickup_time_slot),
+          datasets: [{
+            label: '予約冊数',
+            data: this.statistics.byTime.map(t => t.total_quantity),
+            backgroundColor: 'rgba(139, 92, 246, 0.5)',
+            borderColor: 'rgba(139, 92, 246, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      })
+    }
+  }
+}
+
+// アプリケーション初期化
+let adminApp
+document.addEventListener('DOMContentLoaded', () => {
+  adminApp = new AdminApp()
+})
