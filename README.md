@@ -6,6 +6,7 @@
 
 - **予約画面（一般ユーザー）**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/
 - **管理画面**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/admin
+- **競合状態テストツール**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/static/test-race-condition.html
 - **開発環境**: `http://localhost:3000`
 
 ## ✨ 主な機能
@@ -45,7 +46,9 @@
    - 1000冊上限管理
    - リアルタイム在庫計算
    - 重複予約防止（電話番号チェック）
-   - 排他制御によるデータ整合性保証
+   - **二重チェック排他制御**（詳細は後述）
+   - 動的冊数制限（残り5冊→1〜5冊のみ選択可能）
+   - 在庫ゼロ時の自動受付停止
 
 3. **認証システム**
    - パスワードベースのログイン
@@ -169,6 +172,66 @@
    - 予約IDで検索
    - 電話番号で検索
 7. 作業終了後、右上の「**ログアウト**」ボタンでログアウト
+
+### 開発者・テスター（排他制御テスト）
+1. **競合状態テストツール**にアクセス
+   https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/static/test-race-condition.html
+2. 現在の在庫状態を確認
+3. 「3人同時予約テストを実行」ボタンをクリック
+4. テスト結果を確認
+   - User A（2冊予約）: 成功
+   - User B（1冊予約）: 失敗（在庫超過エラー）
+   - User C（1冊予約）: 失敗（在庫超過エラー）
+5. 最終在庫状態でデータ整合性を検証
+
+## 🔒 排他制御と競合状態対応
+
+### 実装されている二重チェック機構
+
+本システムでは、**残り2冊で3人が同時に予約**するような競合状態でも、データ整合性を完全に保証します。
+
+#### シナリオ例
+- **初期状態**: 残り2冊
+- **User A**: 2冊予約 → ✅ **成功**（予約ID発行）
+- **User B**: 1冊予約 → ❌ **失敗**（「予約上限に達しました」エラー）
+- **User C**: 1冊予約 → ❌ **失敗**（「予約上限に達しました」エラー）
+- **結果**: 在庫1000冊（超過なし）、予約受付自動停止
+
+#### 排他制御の仕組み
+
+```typescript
+// 【第1段階】Cloudflare D1 BATCHによる初期チェック
+const results = await db.batch([
+  db.prepare('SELECT SUM(quantity) as total FROM reservations WHERE status = "reserved"'),
+  db.prepare('SELECT id FROM reservations WHERE phone_number = ? AND status = "reserved"').bind(phoneNumber)
+])
+
+// 在庫チェック
+if (currentReserved + requestedQuantity > 1000) {
+  return error('予約上限に達しました')
+}
+
+// 【第2段階】挿入直前の最終防衛ライン
+const finalCheck = await db.prepare('SELECT SUM(quantity) as total FROM reservations WHERE status = "reserved"').first()
+
+if (finalReserved + requestedQuantity > 1000) {
+  return error('他の方の予約が完了し、予約上限に達しました')
+}
+
+// 問題なければ挿入実行
+await db.prepare('INSERT INTO reservations ...').run()
+```
+
+#### テスト方法
+
+1. **在庫を998冊に設定**（テスト用）
+2. **3人同時予約を実行**（競合状態テストツール使用）
+3. **結果確認**:
+   - 1人のみ成功（2冊予約）
+   - 2人は失敗（適切なエラーメッセージ表示）
+   - 最終在庫: 1000冊（整合性保証）
+
+詳細は [`RACE_CONDITION_REPORT.md`](./RACE_CONDITION_REPORT.md) を参照。
 
 ## 🛠️ 開発環境セットアップ
 
