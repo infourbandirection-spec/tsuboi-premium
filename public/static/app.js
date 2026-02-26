@@ -589,10 +589,20 @@ class ReservationApp {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 処理中...'
 
     try {
+      // CSRFトークン取得（セキュリティ対策）
+      const csrfResponse = await fetch('/api/csrf-token')
+      const csrfData = await csrfResponse.json()
+      
+      if (!csrfData.success || !csrfData.token) {
+        throw new Error('セキュリティトークンの取得に失敗しました')
+      }
+      
+      // 予約リクエスト送信
       const response = await fetch('/api/reserve', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfData.token
         },
         body: JSON.stringify(this.formData)
       })

@@ -5,6 +5,8 @@ import { serveStatic } from 'hono/cloudflare-workers'
 type Bindings = {
   DB: D1Database
   ADMIN_PASSWORD?: string
+  CSRF_KV?: KVNamespace
+  RATE_LIMIT_KV?: KVNamespace
 }
 
 type Reservation = {
@@ -85,6 +87,9 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   c.res.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
   
+  // HSTS（HTTPS強制）- 本番環境では1年間有効
+  c.res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  
   // Content Security Policy
   c.res.headers.set('Content-Security-Policy', 
     "default-src 'self'; " +
@@ -98,6 +103,102 @@ app.use('*', async (c, next) => {
 
 // 静的ファイル配信
 app.use('/static/*', serveStatic({ root: './public' }))
+
+// ===== CSRF保護関連 =====
+
+// CSRFトークン生成
+function generateCsrfToken(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+// CSRFトークン検証ミドルウェア
+async function verifyCsrfToken(c: any): Promise<Response | null> {
+  const token = c.req.header('X-CSRF-Token')
+  const ip = c.req.header('CF-Connecting-IP') || 'unknown'
+  
+  if (!token) {
+    return c.json({
+      success: false,
+      error: 'CSRFトークンが見つかりません'
+    }, 403)
+  }
+
+  // KVがない場合はメモリベースで検証（開発環境用）
+  if (!c.env.CSRF_KV) {
+    // 開発環境: トークン形式のみチェック
+    if (token.length !== 64) {
+      return c.json({
+        success: false,
+        error: '無効なCSRFトークンです'
+      }, 403)
+    }
+    return null // 検証成功
+  }
+
+  // 本番環境: KVからトークン検証
+  const storedToken = await c.env.CSRF_KV.get(`csrf:${ip}:${token}`)
+  
+  if (!storedToken) {
+    return c.json({
+      success: false,
+      error: 'CSRFトークンが無効または期限切れです'
+    }, 403)
+  }
+
+  // トークン使用後は削除（ワンタイムトークン）
+  await c.env.CSRF_KV.delete(`csrf:${ip}:${token}`)
+  
+  return null // 検証成功
+}
+
+// ===== レート制限関連（セキュリティ対策） =====
+
+// レート制限チェック
+async function checkRateLimit(c: any, endpoint: string = 'reserve', limit: number = 10, windowSeconds: number = 60): Promise<Response | null> {
+  const ip = c.req.header('CF-Connecting-IP') || 'unknown'
+  const now = Math.floor(Date.now() / 1000)
+  const windowKey = Math.floor(now / windowSeconds)
+  const key = `rate:${endpoint}:${ip}:${windowKey}`
+  
+  // KVがない場合は制限なし（開発環境用）
+  if (!c.env.RATE_LIMIT_KV) {
+    return null
+  }
+  
+  // 現在のリクエスト数を取得
+  const currentCount = await c.env.RATE_LIMIT_KV.get(key)
+  const count = currentCount ? parseInt(currentCount) : 0
+  
+  if (count >= limit) {
+    return c.json({
+      success: false,
+      error: 'リクエスト数が制限を超えました。しばらく待ってから再度お試しください。'
+    }, 429)
+  }
+  
+  // カウントを増やす（有効期限付き）
+  await c.env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: windowSeconds * 2 })
+  
+  return null // 制限内
+}
+
+// ===== エラーハンドリング（セキュリティ対策） =====
+
+// セキュアなエラーログ出力（内部情報を詳細にログ、ユーザーには汎用メッセージ）
+function logSecureError(context: string, error: any) {
+  // サーバーログには詳細を出力（Cloudflare Workers Logsで確認）
+  console.error(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    context,
+    error: error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    } : String(error)
+  }))
+}
 
 // ===== ユーティリティ関数 =====
 
@@ -121,7 +222,85 @@ function generateReservationId(): string {
   return `PRE-${date}-${random}`
 }
 
-// バリデーション
+// ===== 強化された入力バリデーション（セキュリティ対策） =====
+
+// 氏名バリデーション
+function validateFullName(name: string): { valid: boolean; error?: string } {
+  if (!name || name.trim().length === 0) {
+    return { valid: false, error: '氏名を入力してください' }
+  }
+  
+  // 長さチェック（2～50文字）
+  const trimmedName = name.trim()
+  if (trimmedName.length < 2 || trimmedName.length > 50) {
+    return { valid: false, error: '氏名は2～50文字で入力してください' }
+  }
+  
+  // 日本語・英字・空白のみ許可（数字や記号は不可）
+  const nameRegex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFa-zA-Z\s]+$/
+  if (!nameRegex.test(trimmedName)) {
+    return { valid: false, error: '氏名は日本語またはアルファベットで入力してください' }
+  }
+  
+  return { valid: true }
+}
+
+// 生年月日バリデーション
+function validateBirthDate(birthDate: string): { valid: boolean; error?: string } {
+  if (!birthDate) {
+    return { valid: false, error: '生年月日を入力してください' }
+  }
+  
+  const birth = new Date(birthDate)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  // 未来日チェック
+  if (birth > today) {
+    return { valid: false, error: '生年月日に未来の日付は指定できません' }
+  }
+  
+  // 年齢チェック（0歳～150歳）
+  const age = Math.floor((today.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  if (age < 0 || age > 150) {
+    return { valid: false, error: '生年月日が正しくありません' }
+  }
+  
+  // 1900年以降かチェック
+  if (birth.getFullYear() < 1900) {
+    return { valid: false, error: '1900年以降の日付を入力してください' }
+  }
+  
+  return { valid: true }
+}
+
+// 電話番号バリデーション（強化版）
+function validatePhoneNumber(phone: string): { valid: boolean; error?: string } {
+  if (!phone || phone.trim().length === 0) {
+    return { valid: false, error: '電話番号を入力してください' }
+  }
+  
+  // ハイフンを除去
+  const cleanPhone = phone.replace(/-/g, '')
+  
+  // 日本の電話番号形式（10～11桁の数字）
+  const phoneRegex = /^0\d{9,10}$/
+  if (!phoneRegex.test(cleanPhone)) {
+    return { valid: false, error: '電話番号は10～11桁の数字で入力してください（例: 090-1234-5678）' }
+  }
+  
+  // 携帯電話・固定電話の番号体系チェック
+  const mobileRegex = /^(070|080|090)\d{8}$/ // 携帯電話
+  const landlineRegex = /^0\d{9}$/ // 固定電話（市外局番含む）
+  
+  if (!mobileRegex.test(cleanPhone) && !landlineRegex.test(cleanPhone)) {
+    return { valid: false, error: '有効な電話番号を入力してください' }
+  }
+  
+  return { valid: true }
+}
+
+// 総合バリデーション
 function validateReservation(data: any): { valid: boolean; error?: string } {
   // 入力サニタイゼーション（セキュリティ対策）
   if (data.fullName) data.fullName = sanitizeInput(data.fullName)
@@ -135,23 +314,29 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
       return { valid: false, error: `${field}は必須です` }
     }
   }
+  
+  // 氏名バリデーション（強化）
+  const nameValidation = validateFullName(data.fullName)
+  if (!nameValidation.valid) {
+    return nameValidation
+  }
+  
+  // 生年月日バリデーション（強化）
+  const birthDateValidation = validateBirthDate(data.birthDate)
+  if (!birthDateValidation.valid) {
+    return birthDateValidation
+  }
+  
+  // 電話番号バリデーション（強化）
+  const phoneValidation = validatePhoneNumber(data.phoneNumber)
+  if (!phoneValidation.valid) {
+    return phoneValidation
+  }
 
   // 冊数チェック
   const quantity = parseInt(data.quantity)
   if (isNaN(quantity) || quantity < 1 || quantity > 6) {
     return { valid: false, error: '冊数は1～6の範囲で指定してください' }
-  }
-
-  // 電話番号形式チェック
-  const phoneRegex = /^0\d{1,4}-?\d{1,4}-?\d{4}$/
-  if (!phoneRegex.test(data.phoneNumber)) {
-    return { valid: false, error: '電話番号の形式が正しくありません' }
-  }
-
-  // 生年月日チェック（未来日不可）
-  const birthDate = new Date(data.birthDate)
-  if (birthDate > new Date()) {
-    return { valid: false, error: '生年月日に未来の日付は指定できません' }
   }
 
   // 受け取り日チェック（1週間以内）
@@ -169,6 +354,31 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
 }
 
 // ===== APIエンドポイント =====
+
+// CSRFトークン取得
+app.get('/api/csrf-token', async (c) => {
+  try {
+    const token = generateCsrfToken()
+    const ip = c.req.header('CF-Connecting-IP') || 'unknown'
+    
+    // KVがある場合はトークンを保存（本番環境）
+    if (c.env.CSRF_KV) {
+      // 10分間有効なトークン
+      await c.env.CSRF_KV.put(`csrf:${ip}:${token}`, '1', { expirationTtl: 600 })
+    }
+    
+    return c.json({
+      success: true,
+      token
+    })
+  } catch (error) {
+    logSecureError('CSRF token generation', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
 
 // システム状態取得
 app.get('/api/status', async (c) => {
@@ -205,7 +415,7 @@ app.get('/api/status', async (c) => {
       }
     })
   } catch (error) {
-    console.error('Status fetch error:', error)
+    logSecureError('Status fetch', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -226,7 +436,7 @@ app.get('/api/stores', async (c) => {
       data: stores.results
     })
   } catch (error) {
-    console.error('Stores fetch error:', error)
+    logSecureError('Stores fetch', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -237,6 +447,14 @@ app.get('/api/stores', async (c) => {
 // 予約作成
 app.post('/api/reserve', async (c) => {
   try {
+    // レート制限チェック（1分間に10リクエストまで）
+    const rateLimitError = await checkRateLimit(c, 'reserve', 10, 60)
+    if (rateLimitError) return rateLimitError
+    
+    // CSRF検証
+    const csrfError = await verifyCsrfToken(c)
+    if (csrfError) return csrfError
+    
     const data: Reservation = await c.req.json()
     const db = c.env.DB
 
@@ -340,7 +558,7 @@ app.post('/api/reserve', async (c) => {
     })
 
   } catch (error) {
-    console.error('Reservation error:', error)
+    logSecureError('Reservation', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました。しばらく後に再度お試しください。'
@@ -385,7 +603,7 @@ app.post('/api/search', async (c) => {
     })
 
   } catch (error) {
-    console.error('Search error:', error)
+    logSecureError('Search', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -414,7 +632,7 @@ app.post('/api/admin/auth', async (c) => {
       }, 401)
     }
   } catch (error) {
-    console.error('Auth error:', error)
+    logSecureError('Admin auth', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -449,7 +667,7 @@ app.post('/api/admin/verify', async (c) => {
     
     return c.json({ success: true, valid: false })
   } catch (error) {
-    console.error('Verify error:', error)
+    logSecureError('Token verify', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -514,7 +732,7 @@ app.get('/api/admin/reservations', async (c) => {
     })
 
   } catch (error) {
-    console.error('Admin reservations fetch error:', error)
+    logSecureError('Admin reservations fetch', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -548,7 +766,7 @@ app.put('/api/admin/reservations/:id/status', async (c) => {
     })
 
   } catch (error) {
-    console.error('Status update error:', error)
+    logSecureError('Status update', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
@@ -619,7 +837,7 @@ app.get('/api/admin/statistics', async (c) => {
     })
 
   } catch (error) {
-    console.error('Statistics fetch error:', error)
+    logSecureError('Statistics fetch', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
