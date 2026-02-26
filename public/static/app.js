@@ -388,13 +388,13 @@ class ReservationApp {
   }
 
   renderStep6() {
+    // 今日の日付と1週間後の日付を取得
     const today = new Date()
-    const dates = []
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today)
-      date.setDate(date.getDate() + i)
-      dates.push(date)
-    }
+    const minDate = today.toISOString().split('T')[0]
+    
+    const oneWeekLater = new Date(today)
+    oneWeekLater.setDate(oneWeekLater.getDate() + 7)
+    const maxDate = oneWeekLater.toISOString().split('T')[0]
 
     const timeSlots = [
       '10:00～11:00', '11:00～12:00', '12:00～13:00',
@@ -409,21 +409,20 @@ class ReservationApp {
       </h2>
       <div class="grid md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">受け取り日</label>
-          <select id="pickupDate" 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <option value="">選択してください</option>
-            ${dates.map(date => {
-              const dateStr = date.toISOString().split('T')[0]
-              const dayNames = ['日', '月', '火', '水', '木', '金', '土']
-              const dayName = dayNames[date.getDay()]
-              return `
-                <option value="${dateStr}" ${this.formData.pickupDate === dateStr ? 'selected' : ''}>
-                  ${date.getMonth() + 1}月${date.getDate()}日（${dayName}）
-                </option>
-              `
-            }).join('')}
-          </select>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            受け取り日
+            <span class="text-xs text-gray-500 ml-2">（本日から1週間以内）</span>
+          </label>
+          <input type="date" 
+                 id="pickupDate" 
+                 min="${minDate}"
+                 max="${maxDate}"
+                 value="${this.formData.pickupDate || ''}"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                 style="color-scheme: light;">
+          <p class="text-xs text-gray-500 mt-1">
+            📅 カレンダーから日付を選択してください
+          </p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">受け取り時間</label>
