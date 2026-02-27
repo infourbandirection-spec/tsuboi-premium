@@ -234,6 +234,7 @@ class SearchApp {
               <i class="fas fa-user mr-2"></i>氏名
             </p>
             <p class="text-lg font-bold">${this.escapeHtml(reservation.full_name)}</p>
+            ${reservation.kana ? `<p class="text-sm text-gray-500 mt-1">（${this.escapeHtml(reservation.kana)}）</p>` : ''}
           </div>
           
           <div class="bg-gray-50 p-4 rounded-lg">

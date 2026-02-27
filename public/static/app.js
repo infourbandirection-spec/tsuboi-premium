@@ -6,6 +6,7 @@ class ReservationApp {
     this.formData = {
       birthDate: '',
       fullName: '',
+      kana: '',
       phoneNumber: '',
       quantity: 1,
       store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
@@ -250,17 +251,34 @@ class ReservationApp {
         <i class="fas fa-user text-blue-500 mr-2"></i>
         お名前を入力してください
       </h2>
-      <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">氏名　（かな）</label>
-        <input type="text" id="fullName" 
-               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-               value="${this.formData.fullName}"
-               placeholder="例: やまだ たろう"
-               maxlength="50">
-        <p class="mt-2 text-sm text-gray-500">
-          <i class="fas fa-info-circle mr-1"></i>
-          ひらがなで姓名の間にスペースを入れてください
-        </p>
+      <div class="max-w-md space-y-6">
+        <!-- 氏名（漢字） -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">氏名</label>
+          <input type="text" id="fullName" 
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                 value="${this.formData.fullName}"
+                 placeholder="例: 山田 太郎"
+                 maxlength="50">
+          <p class="mt-2 text-sm text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            姓名の間にスペースを入れてください
+          </p>
+        </div>
+        
+        <!-- かな（ひらがな） -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">かな</label>
+          <input type="text" id="kana" 
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                 value="${this.formData.kana}"
+                 placeholder="例: やまだ たろう"
+                 maxlength="50">
+          <p class="mt-2 text-sm text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            ひらがなで姓名の間にスペースを入れてください
+          </p>
+        </div>
       </div>
       <div class="mt-8 flex justify-between">
         <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
@@ -467,6 +485,7 @@ class ReservationApp {
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">氏名</p>
           <p class="text-lg font-bold">${this.escapeHtml(this.formData.fullName)}</p>
+          <p class="text-sm text-gray-500 mt-1">（${this.escapeHtml(this.formData.kana)}）</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">電話番号</p>
@@ -525,11 +544,22 @@ class ReservationApp {
         break
       case 2:
         const fullName = document.getElementById('fullName')?.value
+        const kana = document.getElementById('kana')?.value
         if (!fullName || fullName.trim().length < 2) {
           alert('氏名を正しく入力してください')
           return
         }
+        if (!kana || kana.trim().length < 2) {
+          alert('かなを正しく入力してください')
+          return
+        }
+        // ひらがなのみのチェック
+        if (!/^[ぁ-んー\s]+$/.test(kana)) {
+          alert('かなはひらがなで入力してください')
+          return
+        }
         this.formData.fullName = fullName.trim()
+        this.formData.kana = kana.trim()
         break
       case 3:
         const phoneNumber = document.getElementById('phoneNumber')?.value

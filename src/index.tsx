@@ -12,6 +12,7 @@ type Bindings = {
 type Reservation = {
   birthDate: string
   fullName: string
+  kana: string
   phoneNumber: string
   quantity: number
   store: string
@@ -245,6 +246,27 @@ function validateFullName(name: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
+// かなバリデーション（ひらがなのみ）
+function validateKana(kana: string): { valid: boolean; error?: string } {
+  if (!kana || kana.trim().length === 0) {
+    return { valid: false, error: 'かなを入力してください' }
+  }
+  
+  // 長さチェック（2～50文字）
+  const trimmedKana = kana.trim()
+  if (trimmedKana.length < 2 || trimmedKana.length > 50) {
+    return { valid: false, error: 'かなは2～50文字で入力してください' }
+  }
+  
+  // ひらがな・空白・長音記号のみ許可
+  const kanaRegex = /^[ぁ-んー\s]+$/
+  if (!kanaRegex.test(trimmedKana)) {
+    return { valid: false, error: 'かなはひらがなで入力してください' }
+  }
+  
+  return { valid: true }
+}
+
 // 生年月日バリデーション
 function validateBirthDate(birthDate: string): { valid: boolean; error?: string } {
   if (!birthDate) {
@@ -304,11 +326,12 @@ function validatePhoneNumber(phone: string): { valid: boolean; error?: string } 
 function validateReservation(data: any): { valid: boolean; error?: string } {
   // 入力サニタイゼーション（セキュリティ対策）
   if (data.fullName) data.fullName = sanitizeInput(data.fullName)
+  if (data.kana) data.kana = sanitizeInput(data.kana)
   if (data.phoneNumber) data.phoneNumber = sanitizeInput(data.phoneNumber)
   if (data.store) data.store = sanitizeInput(data.store)
 
   // 必須項目チェック
-  const required = ['birthDate', 'fullName', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
+  const required = ['birthDate', 'fullName', 'kana', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
   for (const field of required) {
     if (!data[field]) {
       return { valid: false, error: `${field}は必須です` }
@@ -319,6 +342,12 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
   const nameValidation = validateFullName(data.fullName)
   if (!nameValidation.valid) {
     return nameValidation
+  }
+  
+  // かなバリデーション（ひらがなのみ）
+  const kanaValidation = validateKana(data.kana)
+  if (!kanaValidation.valid) {
+    return kanaValidation
   }
   
   // 生年月日バリデーション（強化）
@@ -515,13 +544,14 @@ app.post('/api/reserve', async (c) => {
     // 予約挿入
     await db.prepare(`
       INSERT INTO reservations 
-      (reservation_id, birth_date, full_name, phone_number, quantity, 
+      (reservation_id, birth_date, full_name, kana, phone_number, quantity, 
        store_location, pickup_date, pickup_time_slot, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
     `).bind(
       reservationId,
       data.birthDate,
       data.fullName,
+      data.kana,
       data.phoneNumber,
       data.quantity,
       data.store,
