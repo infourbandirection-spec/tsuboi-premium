@@ -251,7 +251,7 @@ class ReservationApp {
         お名前を入力してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">氏名（かな）</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">氏名　（かな）</label>
         <input type="text" id="fullName" 
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.fullName}"
