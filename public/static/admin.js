@@ -5,6 +5,8 @@ class AdminApp {
     this.currentView = 'dashboard'
     this.reservations = []
     this.statistics = null
+    this.settings = null
+    this.lotteryResults = null
     this.filters = {
       status: '',
       store: '',
@@ -83,6 +85,20 @@ class AdminApp {
       if (statsData.success) {
         this.statistics = statsData.data
       }
+
+      // システム設定取得
+      const settingsResponse = await fetch('/api/admin/settings')
+      const settingsData = await settingsResponse.json()
+      if (settingsData.success) {
+        this.settings = settingsData.settings
+      }
+
+      // 抽選結果取得
+      const lotteryResponse = await fetch('/api/admin/lottery/results')
+      const lotteryData = await lotteryResponse.json()
+      if (lotteryData.success) {
+        this.lotteryResults = lotteryData.results
+      }
     } catch (error) {
       console.error('Data load error:', error)
     }
@@ -130,6 +146,7 @@ class AdminApp {
   renderNavigation() {
     const tabs = [
       { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
+      { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '予約一覧' },
       { id: 'search', icon: 'fa-search', label: '予約検索' }
@@ -156,6 +173,7 @@ class AdminApp {
   renderCurrentView() {
     switch (this.currentView) {
       case 'dashboard': return this.renderDashboard()
+      case 'lottery': return this.renderLottery()
       case 'heatmap': return this.renderHeatmap()
       case 'reservations': return this.renderReservationsList()
       case 'search': return this.renderSearch()
@@ -1161,6 +1179,272 @@ class AdminApp {
   changeHeatmapDate(date) {
     this.selectedHeatmapDate = date
     this.render()
+  }
+
+  // 抽選管理画面
+  renderLottery() {
+    const lotteryExecuted = this.settings?.lottery_executed === 'true'
+    const reservationEnabled = this.settings?.reservation_enabled === 'true'
+    const currentPhase = parseInt(this.settings?.current_phase || '1')
+    
+    // Phase 1の予約統計
+    const phase1Reservations = this.reservations.filter(r => 
+      r.reservation_phase === 1 && r.status === 'reserved'
+    )
+    const phase1Total = phase1Reservations.reduce((sum, r) => sum + r.quantity, 0)
+    const phase1Count = phase1Reservations.length
+
+    // 当選者統計
+    const winners = this.reservations.filter(r => r.lottery_status === 'won')
+    const winnersTotal = winners.reduce((sum, r) => sum + r.quantity, 0)
+
+    return `
+      <div class="space-y-6">
+        <!-- ヘッダー -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+            抽選管理
+          </h2>
+          <p class="text-gray-600">予約の抽選実行と当選者管理</p>
+        </div>
+
+        <!-- システム状態 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 mb-1">抽選状態</p>
+                <p class="text-2xl font-bold ${lotteryExecuted ? 'text-green-600' : 'text-yellow-600'}">
+                  ${lotteryExecuted ? '実行済み' : '未実行'}
+                </p>
+              </div>
+              <i class="fas ${lotteryExecuted ? 'fa-check-circle' : 'fa-clock'} text-4xl ${lotteryExecuted ? 'text-green-500' : 'text-yellow-500'}"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 mb-1">予約受付</p>
+                <p class="text-2xl font-bold ${reservationEnabled ? 'text-green-600' : 'text-red-600'}">
+                  ${reservationEnabled ? '受付中' : '停止中'}
+                </p>
+              </div>
+              <i class="fas ${reservationEnabled ? 'fa-play-circle' : 'fa-stop-circle'} text-4xl ${reservationEnabled ? 'text-green-500' : 'text-red-500'}"></i>
+            </div>
+            <button onclick="adminApp.toggleReservationEnabled()" 
+                    class="mt-4 w-full px-4 py-2 ${reservationEnabled ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded font-bold transition">
+              ${reservationEnabled ? '受付停止' : '受付再開'}
+            </button>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 mb-1">現在フェーズ</p>
+                <p class="text-2xl font-bold text-blue-600">Phase ${currentPhase}</p>
+              </div>
+              <i class="fas fa-layer-group text-4xl text-blue-500"></i>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              ${currentPhase === 1 ? '固定日予約期間' : '自由日選択期間'}
+            </p>
+          </div>
+        </div>
+
+        <!-- Phase 1 応募状況 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-users mr-2"></i>
+            Phase 1 応募状況
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+              <p class="text-sm text-blue-600 mb-1">応募者数</p>
+              <p class="text-3xl font-bold text-blue-700">${phase1Count} 名</p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+              <p class="text-sm text-purple-600 mb-1">応募総冊数</p>
+              <p class="text-3xl font-bold text-purple-700">${phase1Total} 冊</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-500">
+              <p class="text-sm text-gray-600 mb-1">抽選判定</p>
+              <p class="text-2xl font-bold ${phase1Total <= 1000 ? 'text-green-600' : 'text-red-600'}">
+                ${phase1Total <= 1000 ? '全員当選' : '抽選必要'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 抽選実行 -->
+        ${!lotteryExecuted ? `
+          <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow p-6 border-2 border-yellow-300">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+              <i class="fas fa-dice mr-2 text-yellow-600"></i>
+              抽選実行
+            </h3>
+            <p class="text-gray-700 mb-4">
+              Phase 1の予約に対して抽選を実行します。
+              ${phase1Total <= 1000 ? 
+                '応募総数が1000冊以下のため、<strong>全員が自動的に当選</strong>します。' : 
+                '応募総数が1000冊を超えているため、<strong>ランダム抽選</strong>を実行します。'}
+            </p>
+            <div class="bg-yellow-100 border border-yellow-300 rounded p-4 mb-4">
+              <p class="text-sm text-yellow-800">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <strong>注意:</strong> 抽選は一度のみ実行可能です。実行後は取り消せません。
+              </p>
+            </div>
+            <button onclick="adminApp.executeLottery()" 
+                    class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transition"
+                    ${phase1Count === 0 ? 'disabled' : ''}>
+              <i class="fas fa-trophy mr-2"></i>
+              抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
+            </button>
+          </div>
+        ` : `
+          <div class="bg-green-50 rounded-lg shadow p-6 border-2 border-green-300">
+            <h3 class="text-xl font-bold text-green-800 mb-4">
+              <i class="fas fa-check-circle mr-2"></i>
+              抽選完了
+            </h3>
+            <p class="text-gray-700 mb-4">
+              抽選は既に実行済みです。当選者は ${winners.length} 名、合計 ${winnersTotal} 冊です。
+            </p>
+            ${this.lotteryResults && this.lotteryResults.length > 0 ? `
+              <div class="bg-white rounded p-4 mb-4">
+                <p class="text-sm text-gray-600 mb-2">実行日時: ${new Date(this.lotteryResults[0].execution_date).toLocaleString('ja-JP')}</p>
+                <p class="text-sm text-gray-700">${this.lotteryResults[0].notes || ''}</p>
+              </div>
+            ` : ''}
+            <a href="/lottery-results" target="_blank" 
+               class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition">
+              <i class="fas fa-external-link-alt mr-2"></i>
+              当選者掲示板を開く
+            </a>
+          </div>
+        `}
+
+        <!-- 抽選結果履歴 -->
+        ${this.lotteryResults && this.lotteryResults.length > 0 ? `
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+              <i class="fas fa-history mr-2"></i>
+              抽選結果履歴
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">実行日時</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">応募者数</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">応募冊数</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">当選者数</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">当選冊数</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">落選者数</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">備考</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  ${this.lotteryResults.map(result => `
+                    <tr>
+                      <td class="px-4 py-3 text-sm text-gray-900">${new Date(result.execution_date).toLocaleString('ja-JP')}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900">${result.total_applications}名</td>
+                      <td class="px-4 py-3 text-sm text-gray-900">${result.total_quantity_requested}冊</td>
+                      <td class="px-4 py-3 text-sm font-bold text-green-600">${result.winners_count}名</td>
+                      <td class="px-4 py-3 text-sm font-bold text-green-600">${result.winners_quantity}冊</td>
+                      <td class="px-4 py-3 text-sm text-red-600">${result.losers_count}名</td>
+                      <td class="px-4 py-3 text-sm text-gray-600">${result.notes || '-'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `
+  }
+
+  // 予約受付ON/OFF切替
+  async toggleReservationEnabled() {
+    const currentValue = this.settings?.reservation_enabled === 'true'
+    const newValue = !currentValue
+
+    if (!confirm(`予約受付を${newValue ? '再開' : '停止'}しますか？`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'reservation_enabled',
+          value: newValue.toString()
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`予約受付を${newValue ? '再開' : '停止'}しました`)
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Toggle reservation error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  // 抽選実行
+  async executeLottery() {
+    if (!confirm('抽選を実行しますか？\n\n⚠️ 一度実行すると取り消せません。')) {
+      return
+    }
+
+    if (!confirm('本当に実行しますか？\n\n当選者が決定され、結果が公開されます。')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/lottery/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        const result = data.result
+        let message = `抽選が完了しました！\n\n`
+        message += `応募者数: ${result.totalApplications}名\n`
+        message += `応募冊数: ${result.totalQuantity}冊\n\n`
+        message += `当選者数: ${result.winnersCount}名\n`
+        message += `当選冊数: ${result.winnersQuantity}冊\n\n`
+        
+        if (result.allWon) {
+          message += `✅ 応募総数が1000冊未満のため全員当選です！`
+        } else {
+          message += `落選者数: ${result.losersCount}名\n`
+          message += `落選冊数: ${result.losersQuantity}冊`
+        }
+
+        alert(message)
+        
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Execute lottery error:', error)
+      alert('システムエラーが発生しました')
+    }
   }
 
   logout() {

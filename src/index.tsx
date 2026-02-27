@@ -491,6 +491,18 @@ app.post('/api/reserve', async (c) => {
     const data: Reservation = await c.req.json()
     const db = c.env.DB
 
+    // 予約受付停止チェック
+    const reservationEnabledCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'reservation_enabled'"
+    ).first()
+
+    if (reservationEnabledCheck?.setting_value === 'false') {
+      return c.json({
+        success: false,
+        error: '現在、予約受付を停止しています。しばらく後に再度お試しください。'
+      }, 403)
+    }
+
     // バリデーション
     const validation = validateReservation(data)
     if (!validation.valid) {
@@ -901,6 +913,26 @@ app.get('/search', (c) => {
   `)
 })
 
+// 当選者掲示板ルート
+app.get('/lottery-results', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>当選者発表 - プレミアム商品券予約・抽選システム</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <div id="lottery-app"></div>
+        <script src="/static/lottery.js"></script>
+    </body>
+    </html>
+  `)
+})
+
 // 管理画面ルート
 app.get('/admin', (c) => {
   return c.html(`
@@ -1033,6 +1065,361 @@ app.get('/privacy', (c) => {
     </body>
     </html>
   `)
+})
+
+// ===== 抽選システムAPI =====
+
+// システム設定取得
+app.get('/api/admin/settings', async (c) => {
+  const authResponse = basicAuth(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const settings = await db.prepare('SELECT * FROM system_settings').all()
+    
+    const settingsObj: Record<string, string> = {}
+    settings.results.forEach((row: any) => {
+      settingsObj[row.setting_key] = row.setting_value
+    })
+
+    return c.json({
+      success: true,
+      settings: settingsObj
+    })
+  } catch (error) {
+    logSecureError('GetSettings', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// システム設定更新
+app.put('/api/admin/settings', async (c) => {
+  const authResponse = basicAuth(c)
+  if (authResponse) return authResponse
+
+  try {
+    const { key, value } = await c.req.json()
+    const db = c.env.DB
+
+    await db.prepare(`
+      INSERT INTO system_settings (setting_key, setting_value, updated_at)
+      VALUES (?, ?, datetime('now'))
+      ON CONFLICT(setting_key) DO UPDATE SET
+        setting_value = excluded.setting_value,
+        updated_at = datetime('now')
+    `).bind(key, value).run()
+
+    return c.json({
+      success: true,
+      message: '設定を更新しました'
+    })
+  } catch (error) {
+    logSecureError('UpdateSettings', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選実行
+app.post('/api/admin/lottery/execute', async (c) => {
+  const authResponse = basicAuth(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+
+    // 既に抽選済みかチェック
+    const lotteryCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'"
+    ).first()
+
+    if (lotteryCheck?.setting_value === 'true') {
+      return c.json({
+        success: false,
+        error: '抽選は既に実行済みです'
+      }, 400)
+    }
+
+    // Phase 1の予約を取得（status='reserved', lottery_status='pending'）
+    const reservations = await db.prepare(`
+      SELECT * FROM reservations 
+      WHERE status = 'reserved' 
+      AND reservation_phase = 1
+      AND (lottery_status = 'pending' OR lottery_status IS NULL)
+      ORDER BY created_at ASC
+    `).all()
+
+    const totalApplications = reservations.results.length
+    const totalQuantity = reservations.results.reduce((sum: number, r: any) => sum + r.quantity, 0)
+    const maxQuantity = 1000
+
+    // 1000冊未満の場合は全員当選
+    if (totalQuantity <= maxQuantity) {
+      // 全員を当選に設定
+      for (const reservation of reservations.results) {
+        await db.prepare(`
+          UPDATE reservations 
+          SET lottery_status = 'won', lottery_executed_at = datetime('now')
+          WHERE id = ?
+        `).bind((reservation as any).id).run()
+      }
+
+      // 抽選結果を記録
+      await db.prepare(`
+        INSERT INTO lottery_results 
+        (total_applications, total_quantity_requested, winners_count, winners_quantity, losers_count, losers_quantity, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        totalApplications,
+        totalQuantity,
+        totalApplications,
+        totalQuantity,
+        0,
+        0,
+        '応募総数が1000冊未満のため全員当選'
+      ).run()
+
+      // lottery_executed フラグを更新
+      await db.prepare(`
+        UPDATE system_settings 
+        SET setting_value = 'true', updated_at = datetime('now')
+        WHERE setting_key = 'lottery_executed'
+      `).run()
+
+      await db.prepare(`
+        UPDATE system_settings 
+        SET setting_value = datetime('now'), updated_at = datetime('now')
+        WHERE setting_key = 'lottery_executed_at'
+      `).run()
+
+      return c.json({
+        success: true,
+        message: '抽選が完了しました（全員当選）',
+        result: {
+          totalApplications,
+          totalQuantity,
+          winnersCount: totalApplications,
+          winnersQuantity: totalQuantity,
+          losersCount: 0,
+          losersQuantity: 0,
+          allWon: true
+        }
+      })
+    }
+
+    // 1000冊超過の場合はランダム抽選
+    const shuffled = [...reservations.results].sort(() => Math.random() - 0.5)
+    let currentTotal = 0
+    const winners: any[] = []
+    const losers: any[] = []
+
+    for (const reservation of shuffled) {
+      const res = reservation as any
+      if (currentTotal + res.quantity <= maxQuantity) {
+        winners.push(res)
+        currentTotal += res.quantity
+        
+        // 当選に設定
+        await db.prepare(`
+          UPDATE reservations 
+          SET lottery_status = 'won', lottery_executed_at = datetime('now')
+          WHERE id = ?
+        `).bind(res.id).run()
+      } else {
+        losers.push(res)
+        
+        // 落選に設定
+        await db.prepare(`
+          UPDATE reservations 
+          SET lottery_status = 'lost', lottery_executed_at = datetime('now')
+          WHERE id = ?
+        `).bind(res.id).run()
+      }
+    }
+
+    const winnersQuantity = winners.reduce((sum, r) => sum + r.quantity, 0)
+    const losersQuantity = losers.reduce((sum, r) => sum + r.quantity, 0)
+
+    // 抽選結果を記録
+    await db.prepare(`
+      INSERT INTO lottery_results 
+      (total_applications, total_quantity_requested, winners_count, winners_quantity, losers_count, losers_quantity, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      totalApplications,
+      totalQuantity,
+      winners.length,
+      winnersQuantity,
+      losers.length,
+      losersQuantity,
+      `ランダム抽選により${winners.length}名が当選`
+    ).run()
+
+    // lottery_executed フラグを更新
+    await db.prepare(`
+      UPDATE system_settings 
+      SET setting_value = 'true', updated_at = datetime('now')
+      WHERE setting_key = 'lottery_executed'
+    `).run()
+
+    await db.prepare(`
+      UPDATE system_settings 
+      SET setting_value = datetime('now'), updated_at = datetime('now')
+      WHERE setting_key = 'lottery_executed_at'
+    `).run()
+
+    return c.json({
+      success: true,
+      message: '抽選が完了しました',
+      result: {
+        totalApplications,
+        totalQuantity,
+        winnersCount: winners.length,
+        winnersQuantity,
+        losersCount: losers.length,
+        losersQuantity,
+        allWon: false
+      }
+    })
+
+  } catch (error) {
+    logSecureError('ExecuteLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選結果取得（管理者用）
+app.get('/api/admin/lottery/results', async (c) => {
+  const authResponse = basicAuth(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const results = await db.prepare(`
+      SELECT * FROM lottery_results ORDER BY execution_date DESC LIMIT 10
+    `).all()
+
+    return c.json({
+      success: true,
+      results: results.results
+    })
+  } catch (error) {
+    logSecureError('GetLotteryResults', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 当選者リスト取得（公開API）
+app.get('/api/lottery/winners', async (c) => {
+  try {
+    const db = c.env.DB
+    
+    // 抽選実行済みかチェック
+    const lotteryCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'"
+    ).first()
+
+    if (lotteryCheck?.setting_value !== 'true') {
+      return c.json({
+        success: false,
+        error: '抽選はまだ実行されていません',
+        executed: false
+      })
+    }
+
+    // 当選者の予約IDリストを取得
+    const winners = await db.prepare(`
+      SELECT reservation_id, full_name, quantity, created_at
+      FROM reservations 
+      WHERE lottery_status = 'won'
+      ORDER BY reservation_id ASC
+    `).all()
+
+    return c.json({
+      success: true,
+      executed: true,
+      winners: winners.results,
+      totalWinners: winners.results.length
+    })
+  } catch (error) {
+    logSecureError('GetWinners', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 予約IDで当選確認（公開API）
+app.post('/api/lottery/check', async (c) => {
+  try {
+    const { reservationId } = await c.req.json()
+    const db = c.env.DB
+
+    if (!reservationId) {
+      return c.json({
+        success: false,
+        error: '予約IDを入力してください'
+      }, 400)
+    }
+
+    // 抽選実行済みかチェック
+    const lotteryCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'"
+    ).first()
+
+    if (lotteryCheck?.setting_value !== 'true') {
+      return c.json({
+        success: false,
+        error: '抽選はまだ実行されていません',
+        executed: false
+      })
+    }
+
+    // 予約を検索
+    const reservation = await db.prepare(`
+      SELECT reservation_id, lottery_status, quantity
+      FROM reservations 
+      WHERE reservation_id = ?
+    `).bind(reservationId).first()
+
+    if (!reservation) {
+      return c.json({
+        success: false,
+        error: '予約IDが見つかりません'
+      }, 404)
+    }
+
+    const isWinner = (reservation as any).lottery_status === 'won'
+
+    return c.json({
+      success: true,
+      executed: true,
+      found: true,
+      isWinner,
+      reservationId,
+      quantity: (reservation as any).quantity,
+      status: (reservation as any).lottery_status
+    })
+  } catch (error) {
+    logSecureError('CheckLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
 })
 
 export default app
