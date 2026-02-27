@@ -1149,24 +1149,24 @@ class AdminApp {
           <div class="flex items-center gap-4 text-sm mb-4 flex-wrap">
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-              <span>空き</span>
+              <span>空き（1～20件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
-              <span>やや混雑</span>
+              <span>やや混雑（21～50件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
-              <span>混雑</span>
+              <span>混雑（51～100件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
-              <span>非常に混雑</span>
+              <span>非常に混雑（101件以上）</span>
             </div>
           </div>
           <p class="text-sm text-gray-600 mb-4">
             <i class="fas fa-info-circle text-blue-500 mr-1"></i>
-            赤く表示されている時間帯は予約が集中しています。ヘルプ要員の配置を検討してください。
+            赤く表示されている時間帯は予約が集中しています（101件以上）。ヘルプ要員の配置を検討してください。
           </p>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
@@ -1209,9 +1209,6 @@ class AdminApp {
                     dateTimeMap[key].quantity += r.quantity
                   })
                   
-                  // 最大値を計算（色の濃さ用）
-                  const maxQuantity = Math.max(...Object.values(dateTimeMap).map(v => v.quantity), 1)
-                  
                   return dateRange.map((date, dIndex) => {
                     const dateObj = new Date(date)
                     const displayDate = dateObj.toLocaleDateString('ja-JP', { 
@@ -1243,25 +1240,24 @@ class AdminApp {
                           const quantity = data ? data.quantity : 0
                           const count = data ? data.count : 0
                           
-                          // 色の濃さを計算（0-100%）
-                          const intensity = maxQuantity > 0 ? (quantity / maxQuantity) * 100 : 0
-                          
+                          // 予約件数に基づく混雑度判定
+                          // 空き: 1-20件、やや混雑: 21-50件、混雑: 51-100件、非常に混雑: 101件以上
                           let bgColor = 'bg-gray-50'
                           let textColor = 'text-gray-400'
                           let alertIcon = ''
                           
-                          if (intensity > 75) {
+                          if (count >= 101) {
                             bgColor = 'bg-red-400'
                             textColor = 'text-white font-bold'
                             alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
-                          } else if (intensity > 50) {
+                          } else if (count >= 51) {
                             bgColor = 'bg-orange-300'
                             textColor = 'text-gray-900 font-semibold'
                             alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
-                          } else if (intensity > 25) {
+                          } else if (count >= 21) {
                             bgColor = 'bg-yellow-200'
                             textColor = 'text-gray-800'
-                          } else if (intensity > 0) {
+                          } else if (count >= 1) {
                             bgColor = 'bg-green-100'
                             textColor = 'text-gray-700'
                           }
