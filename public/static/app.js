@@ -384,18 +384,22 @@ class ReservationApp {
   }
 
   renderStep6() {
-    // 今日の日付と1週間後の日付を取得
-    const today = new Date()
-    const minDate = today.toISOString().split('T')[0]
-    
-    const oneWeekLater = new Date(today)
-    oneWeekLater.setDate(oneWeekLater.getDate() + 7)
-    const maxDate = oneWeekLater.toISOString().split('T')[0]
+    // 固定の受け取り日（3月16日～18日）
+    const pickupDates = [
+      { value: '2026-03-16', label: '3月16日（月）' },
+      { value: '2026-03-17', label: '3月17日（火）' },
+      { value: '2026-03-18', label: '3月18日（水）' }
+    ]
 
+    // 固定の受け取り時間（7つの時間帯）
     const timeSlots = [
-      '10:00～11:00', '11:00～12:00', '12:00～13:00',
-      '13:00～14:00', '14:00～15:00', '15:00～16:00',
-      '16:00～17:00', '17:00～18:00', '18:00～19:00', '19:00～20:00'
+      '12:00～13:00',
+      '13:00～14:00',
+      '15:00～16:00',
+      '16:00～17:00',
+      '17:00～18:00',
+      '18:00～19:00',
+      '19:00～20:00'
     ]
 
     return `
@@ -407,21 +411,22 @@ class ReservationApp {
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             受け取り日
-            <span class="text-xs text-gray-500 ml-2">（本日から1週間以内）</span>
           </label>
-          <input type="date" 
-                 id="pickupDate" 
-                 min="${minDate}"
-                 max="${maxDate}"
-                 value="${this.formData.pickupDate || ''}"
-                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                 style="color-scheme: light;">
-          <p class="text-xs text-gray-500 mt-1">
-            📅 カレンダーから日付を選択してください
-          </p>
+          <select id="pickupDate" 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">選択してください</option>
+            ${pickupDates.map(date => `
+              <option value="${date.value}" ${this.formData.pickupDate === date.value ? 'selected' : ''}>
+                ${date.label}
+              </option>
+            `).join('')}
+          </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">受け取り時間</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            受け取り時間
+            <span class="text-xs text-gray-500 ml-2">（混雑状況の目安）</span>
+          </label>
           <select id="pickupTime" 
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">選択してください</option>

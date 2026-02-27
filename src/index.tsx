@@ -339,15 +339,19 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
     return { valid: false, error: '冊数は1～6の範囲で指定してください' }
   }
 
-  // 受け取り日チェック（1週間以内）
-  const pickupDate = new Date(data.pickupDate)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const oneWeekLater = new Date(today)
-  oneWeekLater.setDate(oneWeekLater.getDate() + 7)
+  // 受け取り日チェック（固定の3日間: 2026-03-16, 03-17, 03-18）
+  const allowedDates = ['2026-03-16', '2026-03-17', '2026-03-18']
+  if (!allowedDates.includes(data.pickupDate)) {
+    return { valid: false, error: '受け取り日は指定された日付から選択してください' }
+  }
 
-  if (pickupDate < today || pickupDate > oneWeekLater) {
-    return { valid: false, error: '受け取り日は本日から1週間以内で指定してください' }
+  // 受け取り時間チェック（固定の7つの時間帯）
+  const allowedTimes = [
+    '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
+    '17:00～18:00', '18:00～19:00', '19:00～20:00'
+  ]
+  if (!allowedTimes.includes(data.pickupTime)) {
+    return { valid: false, error: '受け取り時間は指定された時間帯から選択してください' }
   }
 
   return { valid: true }
