@@ -789,8 +789,6 @@ class ReservationApp {
               <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
             </ul>
           </div>
-            </p>
-          </div>
 
           <div class="flex gap-4">
             <button onclick="window.print()" 
