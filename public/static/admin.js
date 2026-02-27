@@ -1105,13 +1105,13 @@ class AdminApp {
           </div>
         </div>
 
-        <!-- 店舗×時間帯ヒートマップ -->
+        <!-- 日程×時間帯ヒートマップ -->
         <div class="bg-white rounded-lg shadow-lg p-6">
           <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
             <div>
               <h3 class="text-xl font-bold text-gray-800 flex items-center">
                 <i class="fas fa-th text-orange-600 mr-2"></i>
-                店舗×時間帯 混雑ヒートマップ
+                日程×時間帯 混雑ヒートマップ
               </h3>
               <p class="text-sm text-gray-600 mt-2">
                 ${new Date(selectedDate).toLocaleDateString('ja-JP', { 
@@ -1119,13 +1119,13 @@ class AdminApp {
                   month: 'long', 
                   day: 'numeric',
                   weekday: 'short'
-                })} の混雑状況
+                })} から11日間の混雑状況
               </p>
             </div>
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-2">
                 <label class="text-sm font-medium text-gray-700">
-                  <i class="fas fa-calendar-day mr-1"></i>日付選択:
+                  <i class="fas fa-calendar-day mr-1"></i>開始日選択:
                 </label>
                 <input 
                   type="date" 
@@ -1165,66 +1165,116 @@ class AdminApp {
               <thead>
                 <tr>
                   <th class="px-3 py-2 text-left text-sm font-bold text-gray-700 bg-gray-100 border sticky left-0 z-10">
-                    店舗 / 時間帯
+                    日程
                   </th>
                   ${timeSlots.map(time => `
                     <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
                       ${time.replace(':00', '')}
                     </th>
                   `).join('')}
+                  <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
+                    合計
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                ${stores.map((store, sIndex) => {
-                  // 店舗名を短縮表示（「（」以前のみ）
-                  const displayStoreName = store.includes('（') ? store.split('（')[0] : store
-                  return `
-                    <tr class="${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
-                      <td class="px-3 py-3 text-sm font-medium text-gray-800 border sticky left-0 z-10 ${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}" title="${store}">
-                        ${displayStoreName}
-                      </td>
-                      ${timeSlots.map(time => {
-                        const key = `${store}|${time}`
-                        const data = filteredStoreTimeMap[key]
-                        const quantity = data ? data.quantity : 0
-                        const count = data ? data.count : 0
-                        
-                        // 色の濃さを計算（0-100%）
-                        const intensity = maxQuantity > 0 ? (quantity / maxQuantity) * 100 : 0
-                        
-                        let bgColor = 'bg-gray-50'
-                        let textColor = 'text-gray-400'
-                        let alertIcon = ''
-                        
-                        if (intensity > 75) {
-                          bgColor = 'bg-red-400'
-                          textColor = 'text-white font-bold'
-                          alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
-                        } else if (intensity > 50) {
-                          bgColor = 'bg-orange-300'
-                          textColor = 'text-gray-900 font-semibold'
-                          alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
-                        } else if (intensity > 25) {
-                          bgColor = 'bg-yellow-200'
-                          textColor = 'text-gray-800'
-                        } else if (intensity > 0) {
-                          bgColor = 'bg-green-100'
-                          textColor = 'text-gray-700'
-                        }
-                        
-                        return `
-                          <td class="px-2 py-3 text-center text-xs border ${bgColor} ${textColor} transition-all hover:scale-105 cursor-pointer"
-                              title="${store}\n${time}\n予約: ${count}件 / ${quantity}冊">
-                            <div class="flex flex-col items-center justify-center">
-                              ${alertIcon}
-                              ${quantity > 0 ? `<div class="font-bold">${quantity}</div><div class="text-xs opacity-75">${count}件</div>` : '-'}
-                            </div>
-                          </td>
-                        `
-                      }).join('')}
-                    </tr>
-                  `
-                }).join('')}
+                ${(() => {
+                  // 選択日から11日間の日付配列を生成
+                  const startDate = new Date(selectedDate)
+                  const dateRange = []
+                  for (let i = 0; i < 11; i++) {
+                    const date = new Date(startDate)
+                    date.setDate(startDate.getDate() + i)
+                    dateRange.push(date.toISOString().split('T')[0])
+                  }
+                  
+                  // 日付×時間帯のマトリックスを生成
+                  const dateTimeMap = {}
+                  this.reservations.forEach(r => {
+                    if (r.status !== 'reserved' && r.status !== 'picked_up') return
+                    
+                    const key = `${r.pickup_date}|${r.pickup_time_slot}`
+                    if (!dateTimeMap[key]) {
+                      dateTimeMap[key] = { count: 0, quantity: 0 }
+                    }
+                    dateTimeMap[key].count++
+                    dateTimeMap[key].quantity += r.quantity
+                  })
+                  
+                  // 最大値を計算（色の濃さ用）
+                  const maxQuantity = Math.max(...Object.values(dateTimeMap).map(v => v.quantity), 1)
+                  
+                  return dateRange.map((date, dIndex) => {
+                    const dateObj = new Date(date)
+                    const displayDate = dateObj.toLocaleDateString('ja-JP', { 
+                      month: 'numeric', 
+                      day: 'numeric',
+                      weekday: 'short'
+                    })
+                    
+                    // この日の合計を計算
+                    let dayTotal = 0
+                    let dayCount = 0
+                    timeSlots.forEach(time => {
+                      const key = `${date}|${time}`
+                      const data = dateTimeMap[key]
+                      if (data) {
+                        dayTotal += data.quantity
+                        dayCount += data.count
+                      }
+                    })
+                    
+                    return `
+                      <tr class="${dIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                        <td class="px-3 py-3 text-sm font-medium text-gray-800 border sticky left-0 z-10 ${dIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                          ${displayDate}
+                        </td>
+                        ${timeSlots.map(time => {
+                          const key = `${date}|${time}`
+                          const data = dateTimeMap[key]
+                          const quantity = data ? data.quantity : 0
+                          const count = data ? data.count : 0
+                          
+                          // 色の濃さを計算（0-100%）
+                          const intensity = maxQuantity > 0 ? (quantity / maxQuantity) * 100 : 0
+                          
+                          let bgColor = 'bg-gray-50'
+                          let textColor = 'text-gray-400'
+                          let alertIcon = ''
+                          
+                          if (intensity > 75) {
+                            bgColor = 'bg-red-400'
+                            textColor = 'text-white font-bold'
+                            alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
+                          } else if (intensity > 50) {
+                            bgColor = 'bg-orange-300'
+                            textColor = 'text-gray-900 font-semibold'
+                            alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
+                          } else if (intensity > 25) {
+                            bgColor = 'bg-yellow-200'
+                            textColor = 'text-gray-800'
+                          } else if (intensity > 0) {
+                            bgColor = 'bg-green-100'
+                            textColor = 'text-gray-700'
+                          }
+                          
+                          return `
+                            <td class="px-2 py-3 text-center text-xs border ${bgColor} ${textColor} transition-all hover:scale-105 cursor-pointer"
+                                title="${displayDate}\n${time}\n予約: ${count}件 / ${quantity}冊">
+                              <div class="flex flex-col items-center justify-center">
+                                ${alertIcon}
+                                ${quantity > 0 ? `<div class="font-bold">${quantity}</div><div class="text-xs opacity-75">${count}件</div>` : '-'}
+                              </div>
+                            </td>
+                          `
+                        }).join('')}
+                        <td class="px-3 py-3 text-center text-sm font-bold text-gray-800 border bg-blue-50">
+                          ${dayTotal > 0 ? `<div>${dayTotal}冊</div><div class="text-xs font-normal">${dayCount}件</div>` : '-'}
+                        </td>
+                      </tr>
+                    `
+                  }).join('')
+                })()}
               </tbody>
             </table>
           </div>
