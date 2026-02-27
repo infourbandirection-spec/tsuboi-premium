@@ -941,13 +941,21 @@ app.get('/api/admin/statistics', async (c) => {
       ORDER BY pickup_time_slot
     `).all()
 
+    // システム設定から抽選実行状態を取得
+    const lotteryExecutedSetting = await db.prepare(`
+      SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'
+    `).first()
+    
+    const lotteryExecuted = lotteryExecutedSetting?.setting_value === 'true'
+
     return c.json({
       success: true,
       data: {
         total: totalStats,
         byStore: storeStats.results,
         byDate: dateStats.results,
-        byTime: timeStats.results
+        byTime: timeStats.results,
+        lotteryExecuted: lotteryExecuted
       }
     })
 

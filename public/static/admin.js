@@ -1164,8 +1164,17 @@ class AdminApp {
               <span>非常に混雑（101件以上）</span>
             </div>
           </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p class="text-sm text-gray-700">
+              <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+              <strong>表示ルール:</strong>
+              ${this.statistics?.lotteryExecuted 
+                ? '抽選実行済み - 当選者（Phase1）とPhase2予約のみ表示されます'
+                : '抽選実行前 - すべての応募者が表示されます（Phase1: pending状態）'}
+            </p>
+          </div>
           <p class="text-sm text-gray-600 mb-4">
-            <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+            <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
             赤く表示されている時間帯は予約が集中しています（101件以上）。ヘルプ要員の配置を検討してください。
           </p>
           <div class="overflow-x-auto">
@@ -1197,9 +1206,20 @@ class AdminApp {
                   }
                   
                   // 日付×時間帯のマトリックスを生成
+                  // 混雑状況の表示ロジック:
+                  // - 抽選実行前: すべての応募者（lottery_status='pending'のみ）を表示
+                  // - 抽選実行後: 当選者（lottery_status='won'）+ Phase2予約（lottery_status='n/a'）のみ表示
                   const dateTimeMap = {}
                   this.reservations.forEach(r => {
                     if (r.status !== 'reserved' && r.status !== 'picked_up') return
+                    
+                    // 抽選落選者は除外
+                    if (r.lottery_status === 'lost') return
+                    
+                    // Phase 1の予約で抽選実行済みの場合、当選者のみカウント
+                    if (r.reservation_phase === 1 && this.statistics?.lotteryExecuted) {
+                      if (r.lottery_status !== 'won') return
+                    }
                     
                     const key = `${r.pickup_date}|${r.pickup_time_slot}`
                     if (!dateTimeMap[key]) {
