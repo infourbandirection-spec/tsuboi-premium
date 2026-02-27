@@ -967,8 +967,8 @@ class AdminApp {
       `
     }
 
-    // 選択された日付を取得（デフォルトは今日）
-    const selectedDate = this.selectedHeatmapDate || new Date().toISOString().split('T')[0]
+    // 選択された日付を取得（デフォルトは3月16日）
+    const selectedDate = this.selectedHeatmapDate || '2026-03-16'
 
     // 日別データ集計
     const dateMap = {}
@@ -1118,17 +1118,14 @@ class AdminApp {
                 <label class="text-sm font-medium text-gray-700">
                   <i class="fas fa-calendar-day mr-1"></i>日付選択:
                 </label>
-                <select 
+                <input 
+                  type="date" 
                   id="heatmapDateSelector" 
                   class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value="${selectedDate}"
+                  min="2026-03-16"
                   onchange="adminApp.changeHeatmapDate(this.value)"
                 >
-                  ${dates.map(date => {
-                    const isSelected = date === selectedDate ? 'selected' : ''
-                    const dayOfWeek = new Date(date).toLocaleDateString('ja-JP', { weekday: 'short' })
-                    return `<option value="${date}" ${isSelected}>${date} (${dayOfWeek})</option>`
-                  }).join('')}
-                </select>
               </div>
             </div>
           </div>
