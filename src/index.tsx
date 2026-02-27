@@ -511,6 +511,11 @@ app.post('/api/reserve', async (c) => {
     const data: Reservation = await c.req.json()
     const db = c.env.DB
 
+    // タイムスロットの正規化（半角チルダを全角チルダに統一）
+    if (data.pickupTime) {
+      data.pickupTime = data.pickupTime.replace(/~/g, '～')
+    }
+
     // 予約受付停止チェック
     const reservationEnabledCheck = await db.prepare(
       "SELECT setting_value FROM system_settings WHERE setting_key = 'reservation_enabled'"

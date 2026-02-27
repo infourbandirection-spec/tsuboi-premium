@@ -974,14 +974,23 @@ class AdminApp {
     const dateMap = {}
     const storeTimeMap = {}
     const storeTimeDateMap = {} // 日付情報も含む
-    const stores = ['パスート24上通', 'パスート24銀座プレス', 'パスート24辛島公園', 'パスート24熊本中央', '熊本市辛島公園地下駐車場']
-    const timeSlots = [
-      '09:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
-      '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00'
-    ]
+    
+    // 実際のデータから店舗と時間帯を抽出
+    const storesSet = new Set()
+    const timeSlotsSet = new Set()
+    
+    this.reservations.forEach(r => {
+      if (r.status === 'reserved' || r.status === 'picked_up') {
+        storesSet.add(r.store_location)
+        timeSlotsSet.add(r.pickup_time_slot)
+      }
+    })
+    
+    const stores = Array.from(storesSet).sort()
+    const timeSlots = Array.from(timeSlotsSet).sort()
 
     this.reservations.forEach(r => {
-      if (r.status !== 'reserved') return
+      if (r.status !== 'reserved' && r.status !== 'picked_up') return
 
       // 日別集計
       if (!dateMap[r.pickup_date]) {
@@ -1167,10 +1176,12 @@ class AdminApp {
               </thead>
               <tbody>
                 ${stores.map((store, sIndex) => {
+                  // 店舗名を短縮表示（「（」以前のみ）
+                  const displayStoreName = store.includes('（') ? store.split('（')[0] : store
                   return `
                     <tr class="${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
-                      <td class="px-3 py-3 text-sm font-medium text-gray-800 border sticky left-0 z-10 ${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
-                        ${store}
+                      <td class="px-3 py-3 text-sm font-medium text-gray-800 border sticky left-0 z-10 ${sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}" title="${store}">
+                        ${displayStoreName}
                       </td>
                       ${timeSlots.map(time => {
                         const key = `${store}|${time}`
