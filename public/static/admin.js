@@ -1169,7 +1169,7 @@ class AdminApp {
                   </th>
                   ${timeSlots.map(time => `
                     <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
-                      ${time.replace(':00', '')}
+                      ${time.replace(/(\d+):00/g, '$1時')}
                     </th>
                   `).join('')}
                   <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
