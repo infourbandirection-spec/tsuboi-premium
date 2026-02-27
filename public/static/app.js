@@ -8,7 +8,7 @@ class ReservationApp {
       fullName: '',
       phoneNumber: '',
       quantity: 1,
-      store: '',
+      store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
       pickupDate: '',
       pickupTime: ''
     }
@@ -156,10 +156,10 @@ class ReservationApp {
               <div class="text-sm text-gray-700">
                 <p class="font-bold mb-2">重要な注意事項</p>
                 <ul class="list-disc list-inside space-y-1">
-                  <li>受け取り時間は厳守してください</li>
+                  <li>受け取り予定日を過ぎた場合は自動的にキャンセルされます</li>
                   <li>予約IDは必ず控えてください</li>
                   <li>お一人様1回限りの予約です</li>
-                  <li>指定時間を1時間以上過ぎた場合、自動的にキャンセルされます</li>
+                  <li>受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
                 </ul>
               </div>
             </div>
@@ -182,9 +182,8 @@ class ReservationApp {
       { num: 2, label: '氏名' },
       { num: 3, label: '電話番号' },
       { num: 4, label: '冊数' },
-      { num: 5, label: '店舗' },
-      { num: 6, label: '日時' },
-      { num: 7, label: '確認' }
+      { num: 5, label: '日時' },
+      { num: 6, label: '確認' }
     ]
 
     return `
@@ -199,7 +198,7 @@ class ReservationApp {
               </div>
               <span class="text-xs text-gray-600 text-center hidden md:block">${step.label}</span>
             </div>
-            ${step.num < 7 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
+            ${step.num < 6 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
           `).join('')}
         </div>
       </div>
@@ -214,7 +213,6 @@ class ReservationApp {
       case 4: return this.renderStep4()
       case 5: return this.renderStep5()
       case 6: return this.renderStep6()
-      case 7: return this.renderStep7()
       default: return ''
     }
   }
@@ -340,50 +338,6 @@ class ReservationApp {
   }
 
   renderStep5() {
-    return `
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">
-        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
-        受け取り店舗を選択してください
-      </h2>
-      <div class="space-y-4">
-        ${this.stores.map(store => `
-          <div class="border border-gray-300 rounded-lg p-4 hover:border-blue-500 hover:shadow-md transition cursor-pointer store-option
-                      ${this.formData.store === store.store_name ? 'border-blue-500 bg-blue-50' : ''}"
-               onclick="app.selectStore('${store.store_name}')">
-            <div class="flex items-start">
-              <input type="radio" name="store" value="${store.store_name}" 
-                     ${this.formData.store === store.store_name ? 'checked' : ''}
-                     class="mt-1 mr-3">
-              <div class="flex-1">
-                <h3 class="font-bold text-lg text-gray-800">${store.store_name}</h3>
-                <p class="text-sm text-gray-600 mt-1">
-                  <i class="fas fa-map-marker-alt mr-1"></i> ${store.address}
-                </p>
-                <p class="text-sm text-gray-600">
-                  <i class="fas fa-clock mr-1"></i> ${store.business_hours}
-                </p>
-                ${store.phone ? `
-                  <p class="text-sm text-gray-600">
-                    <i class="fas fa-phone mr-1"></i> ${store.phone}
-                  </p>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-      <div class="mt-8 flex justify-between">
-        <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
-          <i class="fas fa-arrow-left mr-2"></i> 戻る
-        </button>
-        <button onclick="app.nextStep()" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
-          次へ <i class="fas fa-arrow-right ml-2"></i>
-        </button>
-      </div>
-    `
-  }
-
-  renderStep6() {
     // 固定の受け取り日（3月16日～18日）
     const pickupDates = [
       { value: '2026-03-16', label: '3月16日（月）' },
@@ -438,12 +392,43 @@ class ReservationApp {
           </select>
         </div>
       </div>
-      <div class="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-        <p class="text-sm text-blue-700">
-          <i class="fas fa-info-circle mr-2"></i>
-          指定時間を1時間以上過ぎた場合、自動的にキャンセルされます
-        </p>
+      
+      <!-- 注意事項 -->
+      <div class="mt-6 space-y-4">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <p class="text-sm text-blue-800 font-medium mb-2">
+            <i class="fas fa-info-circle mr-2"></i>
+            受け取り時間について
+          </p>
+          <p class="text-sm text-blue-700">
+            選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
+          </p>
+        </div>
+        
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <p class="text-sm text-red-800 font-medium mb-2">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            自動キャンセルについて
+          </p>
+          <p class="text-sm text-red-700">
+            受け取り予定日を過ぎた場合は、自動的にキャンセルされます。
+          </p>
+        </div>
+        
+        <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
+          <p class="text-sm text-gray-800 font-medium mb-2">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            受け取り場所
+          </p>
+          <p class="text-sm text-gray-700 font-bold">
+            株式会社パスート24
+          </p>
+          <p class="text-sm text-gray-600 mt-1">
+            〒860-0802 熊本県熊本市中央区中央街4-29
+          </p>
+        </div>
       </div>
+      
       <div class="mt-8 flex justify-between">
         <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
           <i class="fas fa-arrow-left mr-2"></i> 戻る
@@ -455,7 +440,7 @@ class ReservationApp {
     `
   }
 
-  renderStep7() {
+  renderStep6() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-check-circle text-blue-500 mr-2"></i>
@@ -479,7 +464,7 @@ class ReservationApp {
           <p class="text-lg font-bold">${this.escapeHtml(String(this.formData.quantity))} 冊</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 mb-1">受け取り店舗</p>
+          <p class="text-sm text-gray-600 mb-1">受け取り場所</p>
           <p class="text-lg font-bold">${this.escapeHtml(this.formData.store)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
@@ -512,11 +497,6 @@ class ReservationApp {
         e.target.value = value
       }
     })
-  }
-
-  selectStore(storeName) {
-    this.formData.store = storeName
-    this.render()
   }
 
   nextStep() {
@@ -555,12 +535,6 @@ class ReservationApp {
         this.formData.quantity = quantity
         break
       case 5:
-        if (!this.formData.store) {
-          alert('受け取り店舗を選択してください')
-          return
-        }
-        break
-      case 6:
         const pickupDate = document.getElementById('pickupDate')?.value
         const pickupTime = document.getElementById('pickupTime')?.value
         if (!pickupDate || !pickupTime) {
@@ -742,7 +716,7 @@ class ReservationApp {
               <span class="font-bold text-gray-800">${data.reservationDetails.quantity} 冊</span>
             </div>
             <div class="flex justify-between py-2 border-b border-gray-200">
-              <span class="text-gray-600">店舗</span>
+              <span class="text-gray-600">受け取り場所</span>
               <span class="font-bold text-gray-800">${data.reservationDetails.store}</span>
             </div>
             <div class="flex justify-between py-2">
@@ -754,7 +728,7 @@ class ReservationApp {
           <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
             <p class="text-sm text-gray-700">
               <i class="fas fa-clock text-yellow-500 mr-2"></i>
-              <strong>注意事項：</strong>指定時間を1時間以上過ぎた場合、自動的にキャンセルされます
+              <strong>注意事項：</strong>受け取り予定日を過ぎた場合は自動的にキャンセルされます。受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）
             </p>
           </div>
 

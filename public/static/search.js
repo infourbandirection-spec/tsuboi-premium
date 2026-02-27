@@ -252,7 +252,7 @@ class SearchApp {
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
-              <i class="fas fa-store mr-2"></i>受取店舗
+              <i class="fas fa-map-marker-alt mr-2"></i>受取場所
             </p>
             <p class="text-lg font-bold">${this.escapeHtml(reservation.store_location)}</p>
           </div>
@@ -272,7 +272,7 @@ class SearchApp {
           <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
             <p class="text-sm text-gray-700">
               <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
-              受取時に予約IDをご提示ください。指定時間を1時間以上過ぎた場合、自動的にキャンセルされます。
+              受取時に予約IDをご提示ください。受け取り予定日を過ぎた場合は自動的にキャンセルされます。受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）
             </p>
           </div>
         ` : ''}
