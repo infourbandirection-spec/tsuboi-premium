@@ -249,15 +249,15 @@ class ReservationApp {
         お名前を入力してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">氏名（フルネーム）</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">氏名（かな）</label>
         <input type="text" id="fullName" 
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.fullName}"
-               placeholder="例: 山田 太郎"
+               placeholder="例: やまだ たろう"
                maxlength="50">
         <p class="mt-2 text-sm text-gray-500">
           <i class="fas fa-info-circle mr-1"></i>
-          姓名の間にスペースを入れてください
+          ひらがなで姓名の間にスペースを入れてください
         </p>
       </div>
       <div class="mt-8 flex justify-between">
