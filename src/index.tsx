@@ -474,24 +474,14 @@ app.post('/api/reserve', async (c) => {
     // 予約ID生成
     const reservationId = generateReservationId()
 
-    // D1のBATCH APIを使用してアトミックに処理
-    // 1. 在庫チェック、2. 重複チェック、3. 予約挿入を一括実行
-    const results = await db.batch([
-      // 1. 在庫チェック
-      db.prepare(`
-        SELECT SUM(quantity) as total 
-        FROM reservations 
-        WHERE status = 'reserved'
-      `),
-      // 2. 重複チェック
-      db.prepare(`
-        SELECT id FROM reservations 
-        WHERE phone_number = ? AND status = 'reserved'
-      `).bind(data.phoneNumber)
-    ])
+    // 在庫チェック
+    const stockCheck = await db.prepare(`
+      SELECT SUM(quantity) as total 
+      FROM reservations 
+      WHERE status = 'reserved'
+    `).first()
 
-    // 在庫チェック結果
-    const currentReserved = Number(results[0].results[0]?.total || 0)
+    const currentReserved = Number(stockCheck?.total || 0)
     const maxTotal = 1000
     const remainingBooks = Math.max(0, maxTotal - currentReserved)
 
@@ -501,14 +491,6 @@ app.post('/api/reserve', async (c) => {
         error: `申し訳ございません。予約上限に達しました。現在の残り冊数: ${remainingBooks}冊`,
         remainingBooks: remainingBooks,
         requestedQuantity: data.quantity
-      }, 400)
-    }
-
-    // 重複チェック結果
-    if (results[1].results.length > 0) {
-      return c.json({
-        success: false,
-        error: 'この電話番号では既に予約済みです。'
       }, 400)
     }
 

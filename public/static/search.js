@@ -269,11 +269,26 @@ class SearchApp {
 
         <!-- 注意事項 -->
         ${reservation.status === 'reserved' ? `
-          <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-            <p class="text-sm text-gray-700">
-              <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
-              受取時に予約IDをご提示ください。受け取り予定日を過ぎた場合は自動的にキャンセルされます。受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）
+          <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-2">
+            <p class="text-sm text-gray-800 mb-2">
+              <i class="fas fa-clock text-yellow-500 mr-2"></i>
+              <strong>受け取りについて</strong>
             </p>
+            <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside ml-4">
+              <li>受取時に予約IDをご提示ください</li>
+              <li>受け取り予定日を過ぎた場合は自動的にキャンセルされます</li>
+              <li>受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
+            </ul>
+          </div>
+          <div class="mt-2 bg-orange-50 border-l-4 border-orange-500 p-4">
+            <p class="text-sm text-orange-800 mb-2">
+              <i class="fas fa-id-card text-orange-500 mr-2"></i>
+              <strong>本人確認について</strong>
+            </p>
+            <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside ml-4">
+              <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+              <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+            </ul>
           </div>
         ` : ''}
       </div>

@@ -160,6 +160,8 @@ class ReservationApp {
                   <li>予約IDは必ず控えてください</li>
                   <li>お一人様1回限りの予約です</li>
                   <li>受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
+                  <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+                  <li><strong>受け取り時に身分証明証をご持参ください</strong></li>
                 </ul>
               </div>
             </div>
@@ -426,6 +428,17 @@ class ReservationApp {
           <p class="text-sm text-gray-600 mt-1">
             〒860-0802 熊本県熊本市中央区中央街4-29
           </p>
+        </div>
+        
+        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+          <p class="text-sm text-orange-800 font-medium mb-2">
+            <i class="fas fa-id-card mr-2"></i>
+            受け取り時の本人確認
+          </p>
+          <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside">
+            <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+            <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+          </ul>
         </div>
       </div>
       
@@ -725,10 +738,27 @@ class ReservationApp {
             </div>
           </div>
 
-          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-            <p class="text-sm text-gray-700">
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <p class="text-sm text-gray-700 mb-2">
               <i class="fas fa-clock text-yellow-500 mr-2"></i>
-              <strong>注意事項：</strong>受け取り予定日を過ぎた場合は自動的にキャンセルされます。受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）
+              <strong>受け取りについて</strong>
+            </p>
+            <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside ml-4">
+              <li>受け取り予定日を過ぎた場合は自動的にキャンセルされます</li>
+              <li>受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
+            </ul>
+          </div>
+          
+          <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
+            <p class="text-sm text-orange-800 mb-2">
+              <i class="fas fa-id-card text-orange-500 mr-2"></i>
+              <strong>本人確認について</strong>
+            </p>
+            <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside ml-4">
+              <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+              <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+            </ul>
+          </div>
             </p>
           </div>
 
