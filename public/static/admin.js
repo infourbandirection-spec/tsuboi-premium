@@ -315,8 +315,8 @@ class AdminApp {
               <select id="filterStatus" onchange="adminApp.applyFilters()" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
-                <option value="reserved">予約済み</option>
-                <option value="completed">受取完了</option>
+                <option value="reserved">予約済み（未受取）</option>
+                <option value="picked_up">受取完了</option>
                 <option value="canceled">キャンセル</option>
               </select>
             </div>
@@ -389,15 +389,27 @@ class AdminApp {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     ${this.renderStatusBadge(reservation.status)}
+                    ${reservation.picked_up_at ? `<div class="text-xs text-gray-500 mt-1">受取: ${new Date(reservation.picked_up_at).toLocaleString('ja-JP')}</div>` : ''}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <select onchange="adminApp.updateStatus(${reservation.id}, this.value)"
-                            class="px-3 py-1 border border-gray-300 rounded">
-                      <option value="">操作選択</option>
-                      <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>予約済みに変更</option>
-                      <option value="completed" ${reservation.status === 'completed' ? 'disabled' : ''}>受取完了に変更</option>
-                      <option value="canceled" ${reservation.status === 'canceled' ? 'disabled' : ''}>キャンセルに変更</option>
-                    </select>
+                    ${reservation.status === 'reserved' ? `
+                      <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
+                              class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-bold">
+                        <i class="fas fa-check mr-1"></i> 受取完了
+                      </button>
+                    ` : reservation.status === 'picked_up' ? `
+                      <span class="text-green-600 font-bold">
+                        <i class="fas fa-check-circle mr-1"></i> 受取済み
+                      </span>
+                      ${reservation.picked_up_by ? `<div class="text-xs text-gray-500">担当: ${reservation.picked_up_by}</div>` : ''}
+                    ` : `
+                      <select onchange="adminApp.updateStatus(${reservation.id}, this.value)"
+                              class="px-3 py-1 border border-gray-300 rounded">
+                        <option value="">操作選択</option>
+                        <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>予約済みに変更</option>
+                        <option value="canceled" ${reservation.status === 'canceled' ? 'disabled' : ''}>キャンセルに変更</option>
+                      </select>
+                    `}
                   </td>
                 </tr>
               `).join('')}
@@ -448,8 +460,9 @@ class AdminApp {
 
   renderStatusBadge(status) {
     const statusConfig = {
-      reserved: { label: '予約済み', color: 'bg-green-100 text-green-800' },
-      completed: { label: '受取完了', color: 'bg-purple-100 text-purple-800' },
+      reserved: { label: '予約済み', color: 'bg-yellow-100 text-yellow-800' },
+      picked_up: { label: '受取完了', color: 'bg-green-100 text-green-800' },
+      completed: { label: '受取完了', color: 'bg-green-100 text-green-800' },
       canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
     }
     const config = statusConfig[status] || { label: status, color: 'bg-gray-100 text-gray-800' }
@@ -509,6 +522,42 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Update error:', error)
+      alert('通信エラーが発生しました')
+    }
+  }
+
+  async confirmPickup(id, reservationId) {
+    const staffName = prompt(`予約ID: ${reservationId}\n\n受取確認を行います。\n担当者名を入力してください（省略可）:`, '')
+    
+    if (staffName === null) {
+      // キャンセルされた
+      return
+    }
+
+    if (!confirm(`この予約を受取完了にしますか？\n\n予約ID: ${reservationId}`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/reservations/${id}/pickup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ staffName: staffName || 'スタッフ' })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('✅ 受取完了を記録しました')
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + (data.error || '処理に失敗しました'))
+      }
+    } catch (error) {
+      console.error('Pickup confirmation error:', error)
       alert('通信エラーが発生しました')
     }
   }

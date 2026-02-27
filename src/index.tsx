@@ -830,6 +830,60 @@ app.put('/api/admin/reservations/:id/status', async (c) => {
   }
 })
 
+// 受取完了処理（管理画面用）
+app.post('/api/admin/reservations/:id/pickup', async (c) => {
+  const authResponse = basicAuth(c)
+  if (authResponse) return authResponse
+
+  try {
+    const id = c.req.param('id')
+    const { staffName } = await c.req.json()
+    const db = c.env.DB
+
+    // 予約存在チェック
+    const reservation = await db.prepare(`
+      SELECT * FROM reservations WHERE id = ?
+    `).bind(id).first()
+
+    if (!reservation) {
+      return c.json({
+        success: false,
+        error: '予約が見つかりません'
+      }, 404)
+    }
+
+    // 既に受取済みかチェック
+    if ((reservation as any).status === 'picked_up') {
+      return c.json({
+        success: false,
+        error: 'この予約は既に受取完了しています'
+      }, 400)
+    }
+
+    // 受取完了に更新
+    await db.prepare(`
+      UPDATE reservations 
+      SET status = 'picked_up',
+          picked_up_at = datetime('now'),
+          picked_up_by = ?
+      WHERE id = ?
+    `).bind(staffName || 'スタッフ', id).run()
+
+    return c.json({
+      success: true,
+      message: '受取完了を記録しました',
+      pickedUpAt: new Date().toISOString()
+    })
+
+  } catch (error) {
+    logSecureError('Pickup confirmation', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // 統計データ取得（管理画面用）
 app.get('/api/admin/statistics', async (c) => {
   try {
@@ -841,7 +895,7 @@ app.get('/api/admin/statistics', async (c) => {
         COUNT(*) as total_reservations,
         SUM(quantity) as total_books,
         SUM(CASE WHEN status = 'reserved' THEN quantity ELSE 0 END) as reserved_books,
-        SUM(CASE WHEN status = 'completed' THEN quantity ELSE 0 END) as completed_books,
+        SUM(CASE WHEN status = 'picked_up' OR status = 'completed' THEN quantity ELSE 0 END) as completed_books,
         SUM(CASE WHEN status = 'canceled' THEN quantity ELSE 0 END) as canceled_books
       FROM reservations
     `).first()
