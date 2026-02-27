@@ -7,13 +7,11 @@ type Bindings = {
   ADMIN_PASSWORD?: string
   CSRF_KV?: KVNamespace
   RATE_LIMIT_KV?: KVNamespace
-  RESEND_API_KEY?: string
 }
 
 type Reservation = {
   birthDate: string
   fullName: string
-  email: string
   phoneNumber: string
   quantity: number
   store: string
@@ -247,34 +245,6 @@ function validateFullName(name: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
-// メールアドレスバリデーション
-function validateEmail(email: string): { valid: boolean; error?: string } {
-  if (!email || email.trim().length === 0) {
-    return { valid: false, error: 'メールアドレスを入力してください' }
-  }
-  
-  const trimmedEmail = email.trim().toLowerCase()
-  
-  // 長さチェック（5～100文字）
-  if (trimmedEmail.length < 5 || trimmedEmail.length > 100) {
-    return { valid: false, error: 'メールアドレスは5～100文字で入力してください' }
-  }
-  
-  // メールアドレス形式チェック（RFC 5322準拠の簡易版）
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-  if (!emailRegex.test(trimmedEmail)) {
-    return { valid: false, error: '有効なメールアドレスを入力してください（例: example@email.com）' }
-  }
-  
-  // ドメイン部分のチェック
-  const domain = trimmedEmail.split('@')[1]
-  if (!domain || domain.length < 3 || !domain.includes('.')) {
-    return { valid: false, error: '有効なメールアドレスのドメインを入力してください' }
-  }
-  
-  return { valid: true }
-}
-
 // 生年月日バリデーション
 function validateBirthDate(birthDate: string): { valid: boolean; error?: string } {
   if (!birthDate) {
@@ -334,12 +304,11 @@ function validatePhoneNumber(phone: string): { valid: boolean; error?: string } 
 function validateReservation(data: any): { valid: boolean; error?: string } {
   // 入力サニタイゼーション（セキュリティ対策）
   if (data.fullName) data.fullName = sanitizeInput(data.fullName)
-  if (data.email) data.email = sanitizeInput(data.email)
   if (data.phoneNumber) data.phoneNumber = sanitizeInput(data.phoneNumber)
   if (data.store) data.store = sanitizeInput(data.store)
 
   // 必須項目チェック
-  const required = ['birthDate', 'fullName', 'email', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
+  const required = ['birthDate', 'fullName', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
   for (const field of required) {
     if (!data[field]) {
       return { valid: false, error: `${field}は必須です` }
@@ -350,12 +319,6 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
   const nameValidation = validateFullName(data.fullName)
   if (!nameValidation.valid) {
     return nameValidation
-  }
-  
-  // メールアドレスバリデーション（強化）
-  const emailValidation = validateEmail(data.email)
-  if (!emailValidation.valid) {
-    return emailValidation
   }
   
   // 生年月日バリデーション（強化）
@@ -388,132 +351,6 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
   }
 
   return { valid: true }
-}
-
-// ===== メール送信機能（Resend API） =====
-
-async function sendReservationEmail(
-  c: any,
-  reservation: {
-    reservationId: string
-    fullName: string
-    email: string
-    quantity: number
-    store: string
-    pickupDate: string
-    pickupTime: string
-  }
-): Promise<{ success: boolean; error?: string }> {
-  const apiKey = c.env.RESEND_API_KEY
-  
-  if (!apiKey) {
-    console.warn('RESEND_API_KEY is not set. Email will not be sent.')
-    return { success: false, error: 'メール送信機能が設定されていません' }
-  }
-  
-  try {
-    const emailBody = `
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #667eea; border-radius: 5px; }
-        .info-item { margin: 10px 0; }
-        .label { font-weight: bold; color: #667eea; }
-        .value { color: #333; }
-        .important { background: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎫 予約完了のお知らせ</h1>
-            <p>プレミアム商品券予約・抽選システム</p>
-        </div>
-        <div class="content">
-            <p>${reservation.fullName} 様</p>
-            <p>この度は、プレミアム商品券をご予約いただき、誠にありがとうございます。</p>
-            
-            <div class="info-box">
-                <h2 style="color: #667eea; margin-top: 0;">📋 予約内容</h2>
-                <div class="info-item">
-                    <span class="label">予約ID:</span>
-                    <span class="value" style="font-size: 18px; font-weight: bold;">${reservation.reservationId}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">お名前:</span>
-                    <span class="value">${reservation.fullName}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">購入冊数:</span>
-                    <span class="value">${reservation.quantity} 冊</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">受け取り店舗:</span>
-                    <span class="value">${reservation.store}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">受け取り日時:</span>
-                    <span class="value">${reservation.pickupDate} ${reservation.pickupTime}</span>
-                </div>
-            </div>
-            
-            <div class="important">
-                <h3 style="margin-top: 0;">⚠️ 重要なお知らせ</h3>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>予約IDは必ず控えてください</li>
-                    <li>受け取り時には本メールまたは予約IDをご提示ください</li>
-                    <li>指定時間を1時間以上過ぎた場合、自動的にキャンセルされます</li>
-                    <li>お一人様1回限りの予約です</li>
-                </ul>
-            </div>
-            
-            <p style="margin-top: 30px;">ご不明な点がございましたら、お気軽にお問い合わせください。</p>
-            <p>皆様のご来店を心よりお待ちしております。</p>
-        </div>
-        <div class="footer">
-            <p>このメールは自動送信されています。返信は受け付けておりません。</p>
-            <p>&copy; 2026 プレミアム商品券予約・抽選システム</p>
-        </div>
-    </div>
-</body>
-</html>
-    `.trim()
-    
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'プレミアム商品券 <onboarding@resend.dev>',
-        to: [reservation.email],
-        subject: `【予約完了】プレミアム商品券のご予約を承りました（予約ID: ${reservation.reservationId}）`,
-        html: emailBody
-      })
-    })
-    
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Resend API error:', errorText)
-      return { success: false, error: 'メール送信に失敗しました' }
-    }
-    
-    const result = await response.json()
-    console.log('Email sent successfully:', result)
-    return { success: true }
-    
-  } catch (error) {
-    logSecureError('Email sending', error)
-    return { success: false, error: 'メール送信中にエラーが発生しました' }
-  }
 }
 
 // ===== APIエンドポイント =====
@@ -692,14 +529,13 @@ app.post('/api/reserve', async (c) => {
     // 予約挿入
     await db.prepare(`
       INSERT INTO reservations 
-      (reservation_id, birth_date, full_name, email, phone_number, quantity, 
+      (reservation_id, birth_date, full_name, phone_number, quantity, 
        store_location, pickup_date, pickup_time_slot, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
     `).bind(
       reservationId,
       data.birthDate,
       data.fullName,
-      data.email,
       data.phoneNumber,
       data.quantity,
       data.store,
@@ -707,37 +543,18 @@ app.post('/api/reserve', async (c) => {
       data.pickupTime
     ).run()
 
-    // メール送信（非同期、エラーでも予約は成功扱い）
-    const emailResult = await sendReservationEmail(c, {
-      reservationId,
-      fullName: data.fullName,
-      email: data.email,
-      quantity: data.quantity,
-      store: data.store,
-      pickupDate: data.pickupDate,
-      pickupTime: data.pickupTime
-    })
-    
-    if (!emailResult.success) {
-      console.warn('Email sending failed, but reservation was successful:', emailResult.error)
-    }
-
     // 成功レスポンス
     return c.json({
       success: true,
       reservationId,
-      message: emailResult.success 
-        ? '予約が完了しました。確認メールを送信しました。予約IDを控えてください。'
-        : '予約が完了しました。予約IDを控えてください。（メール送信に失敗しました）',
+      message: '予約が完了しました。予約IDを大切に保管してください。',
       reservationDetails: {
         id: reservationId,
         name: data.fullName,
-        email: data.email,
         quantity: data.quantity,
         store: data.store,
         pickupDateTime: `${data.pickupDate} ${data.pickupTime}`
-      },
-      emailSent: emailResult.success
+      }
     })
 
   } catch (error) {
@@ -1043,6 +860,26 @@ app.get('/', (c) => {
     <body class="bg-gray-50">
         <div id="app"></div>
         <script src="/static/app.js"></script>
+    </body>
+    </html>
+  `)
+})
+
+// 予約照会ページ
+app.get('/search', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>予約照会 - プレミアム商品券予約・抽選システム</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <div id="search-app"></div>
+        <script src="/static/search.js"></script>
     </body>
     </html>
   `)

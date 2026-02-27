@@ -6,7 +6,6 @@ class ReservationApp {
     this.formData = {
       birthDate: '',
       fullName: '',
-      email: '',
       phoneNumber: '',
       quantity: 1,
       store: '',
@@ -114,12 +113,19 @@ class ReservationApp {
                 </h1>
                 <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
               </div>
-              <!-- 管理者ボタン -->
-              <button onclick="app.showAdminLogin()" 
-                      class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition flex items-center text-sm">
-                <i class="fas fa-user-shield mr-2"></i>
-                管理者
-              </button>
+              <!-- ボタンエリア -->
+              <div class="flex gap-2">
+                <button onclick="location.href='/search'" 
+                        class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center text-sm">
+                  <i class="fas fa-search mr-2"></i>
+                  予約照会
+                </button>
+                <button onclick="app.showAdminLogin()" 
+                        class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition flex items-center text-sm">
+                  <i class="fas fa-user-shield mr-2"></i>
+                  管理者
+                </button>
+              </div>
             </div>
           </div>
 
@@ -174,12 +180,11 @@ class ReservationApp {
     const steps = [
       { num: 1, label: '生年月日' },
       { num: 2, label: '氏名' },
-      { num: 3, label: 'メール' },
-      { num: 4, label: '電話番号' },
-      { num: 5, label: '冊数' },
-      { num: 6, label: '店舗' },
-      { num: 7, label: '日時' },
-      { num: 8, label: '確認' }
+      { num: 3, label: '電話番号' },
+      { num: 4, label: '冊数' },
+      { num: 5, label: '店舗' },
+      { num: 6, label: '日時' },
+      { num: 7, label: '確認' }
     ]
 
     return `
@@ -194,7 +199,7 @@ class ReservationApp {
               </div>
               <span class="text-xs text-gray-600 text-center hidden md:block">${step.label}</span>
             </div>
-            ${step.num < 8 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
+            ${step.num < 7 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
           `).join('')}
         </div>
       </div>
@@ -210,7 +215,6 @@ class ReservationApp {
       case 5: return this.renderStep5()
       case 6: return this.renderStep6()
       case 7: return this.renderStep7()
-      case 8: return this.renderStep8()
       default: return ''
     }
   }
@@ -272,35 +276,6 @@ class ReservationApp {
   renderStep3() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
-        <i class="fas fa-envelope text-blue-500 mr-2"></i>
-        メールアドレスを入力してください
-      </h2>
-      <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">メールアドレス</label>
-        <input type="email" id="email" 
-               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-               value="${this.formData.email}"
-               placeholder="例: example@email.com"
-               maxlength="100">
-        <p class="mt-2 text-sm text-gray-500">
-          <i class="fas fa-info-circle mr-1"></i>
-          予約完了メールが送信されます
-        </p>
-      </div>
-      <div class="mt-8 flex justify-between">
-        <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
-          <i class="fas fa-arrow-left mr-2"></i> 戻る
-        </button>
-        <button onclick="app.nextStep()" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
-          次へ <i class="fas fa-arrow-right ml-2"></i>
-        </button>
-      </div>
-    `
-  }
-
-  renderStep4() {
-    return `
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-phone text-blue-500 mr-2"></i>
         電話番号を入力してください
       </h2>
@@ -327,7 +302,7 @@ class ReservationApp {
     `
   }
 
-  renderStep5() {
+  renderStep4() {
     const maxQuantity = Math.min(6, this.systemStatus.remaining)
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
@@ -364,7 +339,7 @@ class ReservationApp {
     `
   }
 
-  renderStep6() {
+  renderStep5() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
@@ -408,7 +383,7 @@ class ReservationApp {
     `
   }
 
-  renderStep7() {
+  renderStep6() {
     // 今日の日付と1週間後の日付を取得
     const today = new Date()
     const minDate = today.toISOString().split('T')[0]
@@ -475,7 +450,7 @@ class ReservationApp {
     `
   }
 
-  renderStep8() {
+  renderStep7() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-check-circle text-blue-500 mr-2"></i>
@@ -489,10 +464,6 @@ class ReservationApp {
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">氏名</p>
           <p class="text-lg font-bold">${this.escapeHtml(this.formData.fullName)}</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 mb-1">メールアドレス</p>
-          <p class="text-lg font-bold">${this.escapeHtml(this.formData.email)}</p>
         </div>
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">電話番号</p>
@@ -563,15 +534,6 @@ class ReservationApp {
         this.formData.fullName = fullName.trim()
         break
       case 3:
-        const email = document.getElementById('email')?.value
-        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-        if (!email || !emailRegex.test(email)) {
-          alert('有効なメールアドレスを入力してください')
-          return
-        }
-        this.formData.email = email.trim().toLowerCase()
-        break
-      case 4:
         const phoneNumber = document.getElementById('phoneNumber')?.value
         if (!phoneNumber || !/^0\d{1,4}-?\d{1,4}-?\d{4}$/.test(phoneNumber)) {
           alert('電話番号を正しく入力してください')
@@ -579,7 +541,7 @@ class ReservationApp {
         }
         this.formData.phoneNumber = phoneNumber
         break
-      case 5:
+      case 4:
         const quantity = parseInt(document.getElementById('quantity')?.value)
         if (!quantity || quantity < 1 || quantity > 6) {
           alert('冊数を選択してください')
@@ -587,13 +549,13 @@ class ReservationApp {
         }
         this.formData.quantity = quantity
         break
-      case 6:
+      case 5:
         if (!this.formData.store) {
           alert('受け取り店舗を選択してください')
           return
         }
         break
-      case 7:
+      case 6:
         const pickupDate = document.getElementById('pickupDate')?.value
         const pickupTime = document.getElementById('pickupTime')?.value
         if (!pickupDate || !pickupTime) {
@@ -730,56 +692,79 @@ class ReservationApp {
       <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div class="text-center mb-8">
-            <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+            <i class="fas fa-check-circle text-6xl text-green-500 mb-4 animate-bounce"></i>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">予約が完了しました！</h1>
-            <p class="text-gray-600">以下の予約IDを必ず控えてください</p>
+            <p class="text-gray-600">以下の予約IDを大切に保管してください</p>
           </div>
 
-          <div class="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-6 mb-6 text-center">
-            <p class="text-sm mb-2 opacity-90">予約ID</p>
-            <p class="text-4xl font-bold tracking-wider mb-4" id="reservationId">${data.reservationId}</p>
+          <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-8 mb-6 text-center shadow-lg">
+            <p class="text-sm mb-3 opacity-90 uppercase tracking-wide">Reservation ID</p>
+            <p class="text-5xl font-bold tracking-widest mb-6 break-all" id="reservationId">${data.reservationId}</p>
             <button onclick="app.copyToClipboard('${data.reservationId}')" 
-                    class="bg-white text-blue-500 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">
-              <i class="fas fa-copy mr-2"></i> コピーする
+                    class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 shadow-md transform hover:scale-105 transition">
+              <i class="fas fa-copy mr-2"></i> 予約IDをコピー
             </button>
           </div>
 
+          <div class="bg-red-50 border-2 border-red-400 rounded-lg p-6 mb-6">
+            <div class="flex items-start">
+              <i class="fas fa-camera text-red-500 text-3xl mr-4 mt-1"></i>
+              <div>
+                <h3 class="text-lg font-bold text-red-700 mb-2">
+                  📸 必ずスクリーンショットを保存してください
+                </h3>
+                <p class="text-sm text-gray-700 mb-2">
+                  • 予約照会には<strong>電話番号</strong>と<strong>生年月日</strong>が必要です<br>
+                  • 受け取り時に<strong>予約ID</strong>をご提示ください<br>
+                  • この画面を閉じるとIDを確認できなくなります
+                </p>
+                <p class="text-xs text-gray-600 mt-3">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  スクリーンショット方法: Windows（Win+Shift+S）/ Mac（Cmd+Shift+4）/ スマホ（電源+音量下）
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div class="bg-gray-50 rounded-lg p-6 mb-6 space-y-3">
-            <h2 class="font-bold text-lg mb-4">予約内容</h2>
-            <div class="flex justify-between">
+            <h2 class="font-bold text-lg mb-4 text-gray-800">📋 予約内容</h2>
+            <div class="flex justify-between py-2 border-b border-gray-200">
               <span class="text-gray-600">氏名</span>
-              <span class="font-bold">${data.reservationDetails.name}</span>
+              <span class="font-bold text-gray-800">${data.reservationDetails.name}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-2 border-b border-gray-200">
               <span class="text-gray-600">冊数</span>
-              <span class="font-bold">${data.reservationDetails.quantity} 冊</span>
+              <span class="font-bold text-gray-800">${data.reservationDetails.quantity} 冊</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-2 border-b border-gray-200">
               <span class="text-gray-600">店舗</span>
-              <span class="font-bold">${data.reservationDetails.store}</span>
+              <span class="font-bold text-gray-800">${data.reservationDetails.store}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between py-2">
               <span class="text-gray-600">受け取り日時</span>
-              <span class="font-bold">${data.reservationDetails.pickupDateTime}</span>
+              <span class="font-bold text-gray-800">${data.reservationDetails.pickupDateTime}</span>
             </div>
           </div>
 
           <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
             <p class="text-sm text-gray-700">
-              <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
-              <strong>重要：</strong>このページをスクリーンショットで保存してください。<br>
-              受け取り時に予約IDが必要です。
+              <i class="fas fa-clock text-yellow-500 mr-2"></i>
+              <strong>注意事項：</strong>指定時間を1時間以上過ぎた場合、自動的にキャンセルされます
             </p>
           </div>
 
           <div class="flex gap-4">
             <button onclick="window.print()" 
-                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold">
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold transition">
               <i class="fas fa-print mr-2"></i> 印刷する
             </button>
+            <button onclick="location.href='/search'" 
+                    class="flex-1 px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-bold transition">
+              <i class="fas fa-search mr-2"></i> 予約照会
+            </button>
             <button onclick="location.reload()" 
-                    class="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
-              <i class="fas fa-home mr-2"></i> トップに戻る
+                    class="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition">
+              <i class="fas fa-home mr-2"></i> トップ
             </button>
           </div>
         </div>
