@@ -975,31 +975,27 @@ class AdminApp {
     const storeTimeMap = {}
     const storeTimeDateMap = {} // 日付情報も含む
     
-    // 実際のデータから店舗と時間帯を抽出
+    // 実際のデータから店舗を抽出
     const storesSet = new Set()
-    const timeSlotsSet = new Set()
     
     this.reservations.forEach(r => {
       if (r.status === 'reserved' || r.status === 'picked_up') {
         storesSet.add(r.store_location)
-        timeSlotsSet.add(r.pickup_time_slot)
       }
     })
     
     const stores = Array.from(storesSet).sort()
-    // 時間帯が空の場合はデフォルト値を使用
-    let timeSlots = Array.from(timeSlotsSet).sort()
-    if (timeSlots.length === 0) {
-      timeSlots = [
-        '12:00～13:00',
-        '13:00～14:00',
-        '15:00～16:00',
-        '16:00～17:00',
-        '17:00～18:00',
-        '18:00～19:00',
-        '19:00～20:00'
-      ]
-    }
+    
+    // 時間帯は常に固定の7つを使用
+    const timeSlots = [
+      '12:00～13:00',
+      '13:00～14:00',
+      '15:00～16:00',
+      '16:00～17:00',
+      '17:00～18:00',
+      '18:00～19:00',
+      '19:00～20:00'
+    ]
 
     this.reservations.forEach(r => {
       if (r.status !== 'reserved' && r.status !== 'picked_up') return
