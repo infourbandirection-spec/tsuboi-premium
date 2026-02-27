@@ -323,7 +323,7 @@ function validatePhoneNumber(phone: string): { valid: boolean; error?: string } 
 }
 
 // 総合バリデーション
-function validateReservation(data: any): { valid: boolean; error?: string } {
+function validateReservation(data: any, currentPhase: number = 1): { valid: boolean; error?: string } {
   // 入力サニタイゼーション（セキュリティ対策）
   if (data.fullName) data.fullName = sanitizeInput(data.fullName)
   if (data.kana) data.kana = sanitizeInput(data.kana)
@@ -368,10 +368,21 @@ function validateReservation(data: any): { valid: boolean; error?: string } {
     return { valid: false, error: '冊数は1～6の範囲で指定してください' }
   }
 
-  // 受け取り日チェック（固定の3日間: 2026-03-16, 03-17, 03-18）
-  const allowedDates = ['2026-03-16', '2026-03-17', '2026-03-18']
-  if (!allowedDates.includes(data.pickupDate)) {
-    return { valid: false, error: '受け取り日は指定された日付から選択してください' }
+  // 受け取り日チェック（フェーズによって異なる）
+  if (currentPhase === 1) {
+    // Phase 1: 固定の3日間のみ
+    const allowedDates = ['2026-03-16', '2026-03-17', '2026-03-18']
+    if (!allowedDates.includes(data.pickupDate)) {
+      return { valid: false, error: '受け取り日は指定された日付から選択してください' }
+    }
+  } else if (currentPhase === 2) {
+    // Phase 2: 3月17日以降の自由選択
+    const minDate = new Date('2026-03-17')
+    const pickupDate = new Date(data.pickupDate)
+    
+    if (pickupDate < minDate) {
+      return { valid: false, error: '受け取り日は3月17日以降を選択してください' }
+    }
   }
 
   // 受け取り時間チェック（固定の7つの時間帯）
@@ -428,15 +439,22 @@ app.get('/api/status', async (c) => {
     const reservedCount = result?.total || 0
 
     // システム設定取得
-    const maxBooks = await db.prepare(`
-      SELECT setting_value 
+    const settings = await db.prepare(`
+      SELECT setting_key, setting_value 
       FROM system_settings 
-      WHERE setting_key = 'max_total_books'
-    `).first()
+      WHERE setting_key IN ('max_total_quantity', 'current_phase', 'reservation_enabled')
+    `).all()
 
-    const maxTotal = parseInt(maxBooks?.setting_value || '1000')
+    const settingsMap: Record<string, string> = {}
+    settings.results.forEach((row: any) => {
+      settingsMap[row.setting_key] = row.setting_value
+    })
+
+    const maxTotal = parseInt(settingsMap['max_total_quantity'] || '1000')
+    const currentPhase = parseInt(settingsMap['current_phase'] || '1')
+    const reservationEnabled = settingsMap['reservation_enabled'] === 'true'
     const remaining = Math.max(0, maxTotal - Number(reservedCount))
-    const isAccepting = remaining > 0
+    const isAccepting = remaining > 0 && reservationEnabled
 
     return c.json({
       success: true,
@@ -444,7 +462,9 @@ app.get('/api/status', async (c) => {
         totalReserved: reservedCount,
         maxTotal,
         remaining,
-        isAccepting
+        isAccepting,
+        currentPhase,
+        reservationEnabled
       }
     })
   } catch (error) {
@@ -503,8 +523,14 @@ app.post('/api/reserve', async (c) => {
       }, 403)
     }
 
+    // 現在のフェーズを取得
+    const phaseCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'current_phase'"
+    ).first()
+    const currentPhase = parseInt(phaseCheck?.setting_value || '1')
+
     // バリデーション
-    const validation = validateReservation(data)
+    const validation = validateReservation(data, currentPhase)
     if (!validation.valid) {
       return c.json({
         success: false,
@@ -557,8 +583,8 @@ app.post('/api/reserve', async (c) => {
     await db.prepare(`
       INSERT INTO reservations 
       (reservation_id, birth_date, full_name, kana, phone_number, quantity, 
-       store_location, pickup_date, pickup_time_slot, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved')
+       store_location, pickup_date, pickup_time_slot, status, reservation_phase, lottery_status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?)
     `).bind(
       reservationId,
       data.birthDate,
@@ -568,7 +594,9 @@ app.post('/api/reserve', async (c) => {
       data.quantity,
       data.store,
       data.pickupDate,
-      data.pickupTime
+      data.pickupTime,
+      currentPhase,
+      currentPhase === 2 ? 'n/a' : 'pending' // Phase 2は抽選対象外
     ).run()
 
     // 成功レスポンス

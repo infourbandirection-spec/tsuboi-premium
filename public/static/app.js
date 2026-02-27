@@ -3,6 +3,8 @@
 class ReservationApp {
   constructor() {
     this.currentStep = 1
+    this.currentPhase = 1 // Default: Phase 1 (fixed dates)
+    this.reservationEnabled = true
     this.formData = {
       birthDate: '',
       fullName: '',
@@ -45,6 +47,8 @@ class ReservationApp {
       const data = await response.json()
       if (data.success) {
         this.systemStatus = data.data
+        this.currentPhase = data.data.currentPhase || 1
+        this.reservationEnabled = data.data.reservationEnabled !== false
       }
     } catch (error) {
       console.error('Status load error:', error)
@@ -358,6 +362,12 @@ class ReservationApp {
   }
 
   renderStep5() {
+    // Phase 2 (自由日選択) の場合
+    if (this.currentPhase === 2) {
+      return this.renderStep5Phase2()
+    }
+
+    // Phase 1 (固定日) の場合
     // 固定の受け取り日（3月16日～18日）
     const pickupDates = [
       { value: '2026-03-16', label: '3月16日（月）' },
@@ -395,6 +405,127 @@ class ReservationApp {
               </option>
             `).join('')}
           </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            受け取り時間
+            <span class="text-xs text-gray-500 ml-2">（混雑状況の目安）</span>
+          </label>
+          <select id="pickupTime" 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">選択してください</option>
+            ${timeSlots.map(slot => `
+              <option value="${slot}" ${this.formData.pickupTime === slot ? 'selected' : ''}>
+                ${slot}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+      </div>
+      
+      <!-- 注意事項 -->
+      <div class="mt-6 space-y-4">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <p class="text-sm text-blue-800 font-medium mb-2">
+            <i class="fas fa-info-circle mr-2"></i>
+            受け取り時間について
+          </p>
+          <p class="text-sm text-blue-700">
+            選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
+          </p>
+        </div>
+        
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <p class="text-sm text-red-800 font-medium mb-2">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            自動キャンセルについて
+          </p>
+          <p class="text-sm text-red-700">
+            受け取り予定日を過ぎた場合は、自動的にキャンセルされます。
+          </p>
+        </div>
+        
+        <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
+          <p class="text-sm text-gray-800 font-medium mb-2">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            受け取り場所
+          </p>
+          <p class="text-sm text-gray-700 font-bold">
+            株式会社パスート24
+          </p>
+          <p class="text-sm text-gray-600 mt-1">
+            〒860-0802 熊本県熊本市中央区中央街4-29
+          </p>
+        </div>
+        
+        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+          <p class="text-sm text-orange-800 font-medium mb-2">
+            <i class="fas fa-id-card mr-2"></i>
+            受け取り時の本人確認
+          </p>
+          <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside">
+            <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+            <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="mt-8 flex justify-between">
+        <button onclick="app.prevStep()" class="px-8 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold">
+          <i class="fas fa-arrow-left mr-2"></i> 戻る
+        </button>
+        <button onclick="app.nextStep()" class="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
+          次へ <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    `
+  }
+
+  renderStep5Phase2() {
+    // Phase 2: 3月17日以降の自由日選択
+    const minDate = '2026-03-17' // 17日から
+    const maxDate = '2026-12-31' // 年末まで（または適切な最終日）
+
+    // 固定の受け取り時間（7つの時間帯）
+    const timeSlots = [
+      '12:00～13:00',
+      '13:00～14:00',
+      '15:00～16:00',
+      '16:00～17:00',
+      '17:00～18:00',
+      '18:00～19:00',
+      '19:00～20:00'
+    ]
+
+    return `
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        <i class="fas fa-calendar-check text-blue-500 mr-2"></i>
+        受け取り日時を選択してください
+      </h2>
+      
+      <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
+        <p class="text-sm text-green-800 font-medium mb-1">
+          <i class="fas fa-check-circle mr-2"></i>
+          Phase 2: 自由日選択期間
+        </p>
+        <p class="text-sm text-green-700">
+          3月17日以降のご都合の良い日をカレンダーから自由に選択できます
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            受け取り日（3月17日以降）
+          </label>
+          <input 
+            type="date" 
+            id="pickupDate" 
+            value="${this.formData.pickupDate}"
+            min="${minDate}"
+            max="${maxDate}"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
