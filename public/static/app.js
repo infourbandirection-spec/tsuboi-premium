@@ -109,7 +109,7 @@ class ReservationApp {
               <div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
                   <i class="fas fa-ticket-alt text-blue-500 mr-3"></i>
-                  プレミアム商品券予約システム
+                  プレミアム商品券予約・抽選システム
                 </h1>
                 <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
               </div>
@@ -124,23 +124,12 @@ class ReservationApp {
 
           <!-- システム状態 -->
           <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <p class="text-sm opacity-90">予約受付中</p>
+            <div class="flex items-center justify-center">
+              <div class="text-center">
+                <p class="text-lg opacity-90 mb-2">予約受付中</p>
                 <p class="text-2xl font-bold">
-                  残り ${this.systemStatus.remaining} 冊
+                  <i class="fas fa-check-circle mr-2"></i>受付可能
                 </p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm opacity-90">予約済み</p>
-                <p class="text-xl font-bold">
-                  ${this.systemStatus.totalReserved} / ${this.systemStatus.maxTotal} 冊
-                </p>
-              </div>
-            </div>
-            <div class="mt-4 bg-white bg-opacity-20 rounded-full h-3">
-              <div class="bg-white rounded-full h-3 transition-all duration-500" 
-                   style="width: ${(this.systemStatus.totalReserved / this.systemStatus.maxTotal * 100).toFixed(1)}%">
               </div>
             </div>
           </div>
