@@ -1597,6 +1597,28 @@ class AdminApp {
 
         alert(message)
         
+        // 抽選実行後、自動的に受付を停止
+        try {
+          const stopResponse = await fetch('/api/admin/settings', {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              key: 'reservation_enabled',
+              value: 'false'
+            })
+          })
+          
+          const stopData = await stopResponse.json()
+          if (stopData.success) {
+            console.log('予約受付を自動停止しました')
+          }
+        } catch (error) {
+          console.error('受付停止エラー:', error)
+        }
+        
         await this.loadData()
         this.render()
       } else {
