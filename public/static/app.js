@@ -433,6 +433,11 @@ class ReservationApp {
           <p class="text-sm text-blue-700">
             選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
           </p>
+          <p class="text-sm text-blue-700 mt-2">
+            <strong>営業時間内にお越しください：</strong><br>
+            • <strong>coug</strong>：10:00〜20:00<br>
+            • <strong>ANERCA&L.I.V</strong>：各店舗の営業時間に準じます
+          </p>
         </div>
         
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
@@ -482,9 +487,12 @@ class ReservationApp {
   }
 
   renderStep5Phase2() {
-    // Phase 2: 3月17日以降の自由日選択
-    const minDate = '2026-03-17' // 17日から
-    const maxDate = '2026-12-31' // 年末まで（または適切な最終日）
+    // Phase 2: 予約当日から1週間以内のみ選択可能
+    const today = new Date()
+    const minDate = today.toISOString().split('T')[0] // 今日
+    const maxDateObj = new Date(today)
+    maxDateObj.setDate(maxDateObj.getDate() + 7) // 7日後
+    const maxDate = maxDateObj.toISOString().split('T')[0]
 
     // 固定の受け取り時間（7つの時間帯）
     const timeSlots = [
@@ -509,14 +517,14 @@ class ReservationApp {
           Phase 2: 自由日選択期間
         </p>
         <p class="text-sm text-green-700">
-          3月17日以降のご都合の良い日をカレンダーから自由に選択できます
+          予約当日から1週間以内のご都合の良い日をカレンダーから自由に選択できます
         </p>
       </div>
 
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り日（3月17日以降）
+            受け取り日（予約当日から1週間以内）
           </label>
           <input 
             type="date" 
@@ -553,6 +561,11 @@ class ReservationApp {
           </p>
           <p class="text-sm text-blue-700">
             選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
+          </p>
+          <p class="text-sm text-blue-700 mt-2">
+            <strong>営業時間内にお越しください：</strong><br>
+            • <strong>coug</strong>：10:00〜20:00<br>
+            • <strong>ANERCA&L.I.V</strong>：各店舗の営業時間に準じます
           </p>
         </div>
         
