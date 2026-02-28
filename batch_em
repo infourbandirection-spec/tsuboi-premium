@@ -1,0 +1,10 @@
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-JS9JXN', '1978-08-16', '林葵', '080-3505-0521', 1,
+    'パスート24上通', '2026-03-18', '13:00-14:00',
+    'reserved', 1, 'pending', datetime('now', '-4 hours')
+  );

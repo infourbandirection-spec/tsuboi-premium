@@ -1,0 +1,10 @@
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-OWCM14', '1973-10-01', '山田颯太', '080-7963-6050', 2,
+    'パスート24熊本中央', '2026-03-18', '18:00-19:00',
+    'reserved', 1, 'pending', datetime('now', '-3 hours')
+  );

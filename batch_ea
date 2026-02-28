@@ -1,0 +1,10 @@
+    'PRE-20260227-1ZZG3N', '1973-07-07', '伊藤心春', '080-8764-3233', 3,
+    'パスート24辛島公園', '2026-03-18', '17:00-18:00',
+    'reserved', 1, 'pending', datetime('now', '-9 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-C1S9YD', '1962-05-21', '佐藤三郎', '070-1464-7738', 5,

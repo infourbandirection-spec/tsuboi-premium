@@ -1,0 +1,10 @@
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-7OX19P', '1979-07-12', '松本三郎', '070-8231-6259', 1,
+    'パスート24銀座プレス', '2026-03-16', '17:00-18:00',
+    'reserved', 1, 'pending', datetime('now', '-6 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,

@@ -1,0 +1,10 @@
+    'PRE-20260227-AV41CI', '1963-06-23', '佐々木健太', '070-9288-5392', 3,
+    'パスート24熊本中央', '2026-03-16', '13:00-14:00',
+    'reserved', 1, 'pending', datetime('now', '-4 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-JNUEPK', '1979-07-16', '高橋陽斗', '080-8016-6218', 2,

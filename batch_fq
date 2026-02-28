@@ -1,0 +1,10 @@
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-54W8BM', '1959-06-26', '井上花子', '070-5638-5569', 2,
+    'パスート24熊本中央', '2026-03-18', '19:00-20:00',
+    'reserved', 1, 'pending', datetime('now', '-2 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,

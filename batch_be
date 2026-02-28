@@ -1,0 +1,10 @@
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-69TIGM', '1965-05-02', '山田心春', '080-7045-1599', 4,
+    'パスート24上通', '2026-03-18', '19:00-20:00',
+    'reserved', 1, 'pending', datetime('now', '-6 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at

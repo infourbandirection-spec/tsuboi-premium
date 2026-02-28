@@ -1,0 +1,10 @@
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-2HRH2M', '1956-12-18', '加藤健太', '090-9880-7913', 4,
+    '熊本市辛島公園地下駐車場', '2026-03-16', '18:00-19:00',
+    'reserved', 1, 'pending', datetime('now', '-2 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,

@@ -1,0 +1,10 @@
+    'パスート24熊本中央', '2026-03-17', '16:00-17:00',
+    'reserved', 1, 'pending', datetime('now', '-0 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-9RZ3NB', '1993-07-14', '山口花子', '080-5264-5703', 4,
+    'パスート24銀座プレス', '2026-03-16', '16:00-17:00',

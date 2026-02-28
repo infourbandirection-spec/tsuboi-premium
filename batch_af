@@ -1,0 +1,10 @@
+    'PRE-20260227-CFJ9IF', '1981-02-08', '小林陽菜', '070-6313-1227', 4,
+    'パスート24熊本中央', '2026-03-16', '12:00-13:00',
+    'reserved', 1, 'pending', datetime('now', '-9 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-CJBJNQ', '1973-03-18', '井上陽菜', '090-1240-3073', 5,

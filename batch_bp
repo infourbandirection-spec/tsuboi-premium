@@ -1,0 +1,10 @@
+    'PRE-20260227-0OZV5M', '1964-01-07', '山田愛梨', '090-4629-8212', 5,
+    '熊本市辛島公園地下駐車場', '2026-03-18', '18:00-19:00',
+    'reserved', 1, 'pending', datetime('now', '-8 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-9MUFG2', '1979-09-02', '中村美優', '080-6775-2777', 2,

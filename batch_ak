@@ -1,0 +1,10 @@
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-LAMNRY', '1998-05-04', '中村三郎', '070-5772-1822', 3,
+    'パスート24熊本中央', '2026-03-18', '12:00-13:00',
+    'reserved', 1, 'pending', datetime('now', '-7 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,

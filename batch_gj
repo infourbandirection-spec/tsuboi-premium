@@ -1,0 +1,10 @@
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-0D0BYF', '1986-03-07', '中村次郎', '070-0524-4406', 3,
+    'パスート24銀座プレス', '2026-03-16', '17:00-18:00',
+    'reserved', 1, 'pending', datetime('now', '-8 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at

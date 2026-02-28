@@ -1,0 +1,10 @@
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-ECKE89', '2003-06-16', '高橋三郎', '090-2348-0158', 5,
+    'パスート24熊本中央', '2026-03-17', '16:00-17:00',
+    'reserved', 1, 'pending', datetime('now', '-4 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,

@@ -1,0 +1,10 @@
+    'reserved', 1, 'pending', datetime('now', '-3 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-W14LPE', '1979-04-04', '林悠真', '070-3312-2924', 5,
+    '熊本市辛島公園地下駐車場', '2026-03-16', '13:00-14:00',
+    'reserved', 1, 'pending', datetime('now', '-6 hours')

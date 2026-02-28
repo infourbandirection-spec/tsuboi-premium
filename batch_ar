@@ -1,0 +1,10 @@
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-D9MC3D', '1996-02-07', '田中大翔', '070-3689-6646', 2,
+    'パスート24辛島公園', '2026-03-18', '12:00-13:00',
+    'reserved', 1, 'pending', datetime('now', '-2 hours')
+  );

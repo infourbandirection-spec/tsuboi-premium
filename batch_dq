@@ -1,0 +1,10 @@
+  ) VALUES (
+    'PRE-20260227-IAL2KO', '1992-10-27', '山田結衣', '070-2796-9253', 2,
+    'パスート24辛島公園', '2026-03-16', '19:00-20:00',
+    'reserved', 1, 'pending', datetime('now', '-4 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (

@@ -1,0 +1,10 @@
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-HUAOFI', '1992-11-04', '清水心春', '090-2716-0873', 1,
+    'パスート24銀座プレス', '2026-03-16', '15:00-16:00',
+    'reserved', 1, 'pending', datetime('now', '-0 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,

@@ -1,0 +1,10 @@
+  ) VALUES (
+    'PRE-20260227-M6C5J3', '1976-02-15', '吉田心春', '070-7697-2342', 4,
+    'パスート24銀座プレス', '2026-03-18', '18:00-19:00',
+    'reserved', 1, 'pending', datetime('now', '-4 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (

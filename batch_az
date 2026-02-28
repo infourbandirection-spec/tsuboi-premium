@@ -1,0 +1,10 @@
+    'reserved', 1, 'pending', datetime('now', '-8 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-IAPFDK', '1982-11-13', '伊藤翔太', '070-9645-2974', 1,
+    'パスート24上通', '2026-03-16', '19:00-20:00',
+    'reserved', 1, 'pending', datetime('now', '-9 hours')

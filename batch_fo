@@ -1,0 +1,10 @@
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-SRWTNN', '1955-12-01', '渡辺颯太', '090-9638-2735', 2,
+    'パスート24銀座プレス', '2026-03-17', '12:00-13:00',
+    'reserved', 1, 'pending', datetime('now', '-2 hours')
+  );
+INSERT INTO reservations (

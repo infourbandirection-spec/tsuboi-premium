@@ -1,0 +1,10 @@
+    'PRE-20260227-5KMUNO', '2003-07-14', '山田三郎', '090-5081-6801', 2,
+    'パスート24銀座プレス', '2026-03-16', '15:00-16:00',
+    'reserved', 1, 'pending', datetime('now', '-1 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-9QFUVN', '1951-04-22', '斎藤さくら', '080-8109-0413', 3,

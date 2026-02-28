@@ -1,0 +1,10 @@
+  ) VALUES (
+    'PRE-20260227-V0WJRV', '1969-01-15', '吉田陽菜', '090-5236-4250', 3,
+    '熊本市辛島公園地下駐車場', '2026-03-18', '16:00-17:00',
+    'reserved', 1, 'pending', datetime('now', '-1 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (

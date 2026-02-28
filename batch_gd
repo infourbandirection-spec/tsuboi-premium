@@ -1,0 +1,10 @@
+    'パスート24上通', '2026-03-16', '12:00-13:00',
+    'reserved', 1, 'pending', datetime('now', '-5 hours')
+  );
+INSERT INTO reservations (
+    reservation_id, birth_date, full_name, phone_number, quantity,
+    store_location, pickup_date, pickup_time_slot,
+    status, reservation_phase, lottery_status, created_at
+  ) VALUES (
+    'PRE-20260227-PPL5IB', '2001-11-18', '山田太郎', '090-2407-5479', 2,
+    'パスート24辛島公園', '2026-03-17', '13:00-14:00',
