@@ -11,7 +11,8 @@ class AdminApp {
       status: '',
       store: '',
       date: '',
-      lottery_status: ''
+      lottery_status: '',
+      search: ''
     }
     this.init()
   }
@@ -306,6 +307,17 @@ class AdminApp {
       <div class="bg-white rounded-lg shadow">
         <!-- フィルター -->
         <div class="p-6 border-b">
+          <!-- 検索ボックス -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-search mr-1"></i> 検索（予約ID・氏名・電話番号）
+            </label>
+            <input type="text" id="filterSearch" 
+                   placeholder="予約ID、氏名、または電話番号で検索..." 
+                   oninput="adminApp.applyFilters()"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
@@ -344,6 +356,17 @@ class AdminApp {
             </button>
           </div>
         </div>
+
+        <!-- 検索結果表示 -->
+        ${this.filters.search || this.filters.status || this.filters.lottery_status || this.filters.date ? `
+          <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
+            <p class="text-sm text-blue-700">
+              <i class="fas fa-info-circle mr-1"></i>
+              <strong>${this.getFilteredReservations().length}件</strong>の予約が見つかりました
+              ${this.filters.search ? `（検索: "${this.filters.search}"）` : ''}
+            </p>
+          </div>
+        ` : ''}
 
         <!-- テーブル -->
         <div class="overflow-x-auto">
@@ -486,6 +509,17 @@ class AdminApp {
     return this.reservations.filter(r => {
       if (this.filters.status && r.status !== this.filters.status) return false
       if (this.filters.date && r.pickup_date !== this.filters.date) return false
+      
+      // 検索キーワードでフィルタリング（予約ID、氏名、電話番号）
+      if (this.filters.search) {
+        const searchLower = this.filters.search.toLowerCase()
+        const matchesId = r.reservation_id?.toLowerCase().includes(searchLower)
+        const matchesName = r.full_name?.toLowerCase().includes(searchLower)
+        const matchesPhone = r.phone_number?.replace(/-/g, '').includes(searchLower.replace(/-/g, ''))
+        
+        if (!matchesId && !matchesName && !matchesPhone) return false
+      }
+      
       return true
     })
   }
@@ -499,15 +533,17 @@ class AdminApp {
     this.filters.status = document.getElementById('filterStatus')?.value || ''
     this.filters.lottery_status = document.getElementById('filterLotteryStatus')?.value || ''
     this.filters.date = document.getElementById('filterDate')?.value || ''
+    this.filters.search = document.getElementById('filterSearch')?.value || ''
     await this.loadData()
     this.render()
   }
 
   async resetFilters() {
-    this.filters = { status: '', date: '', lottery_status: '' }
+    this.filters = { status: '', date: '', lottery_status: '', search: '' }
     document.getElementById('filterStatus').value = ''
     document.getElementById('filterLotteryStatus').value = ''
     document.getElementById('filterDate').value = ''
+    document.getElementById('filterSearch').value = ''
     await this.loadData()
     this.render()
   }
