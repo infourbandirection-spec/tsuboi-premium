@@ -603,11 +603,41 @@ class ReservationApp {
   }
 
   renderStep6() {
+    // Phase判定のための注意書きを生成
+    const phaseNotice = this.currentPhase === 1 ? `
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded mb-6">
+        <p class="text-sm text-yellow-800 font-medium mb-2">
+          <i class="fas fa-info-circle mr-2"></i>
+          応募期間中（抽選対象）
+        </p>
+        <ul class="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+          <li><strong>この応募は抽選対象です</strong></li>
+          <li>応募締切: 2026年3月10日 23:59</li>
+          <li>抽選結果: 2026年3月11日に確定</li>
+          <li>当選者のみ受け取りが可能です</li>
+          <li>抽選結果は予約照会ページでご確認ください</li>
+        </ul>
+      </div>
+    ` : `
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+        <p class="text-sm text-blue-800 font-medium mb-2">
+          <i class="fas fa-info-circle mr-2"></i>
+          通常予約（抽選後）
+        </p>
+        <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+          <li><strong>この予約は抽選対象外です</strong></li>
+          <li>予約完了後、すぐに受け取りが可能です</li>
+          <li>残り冊数がなくなり次第、受付終了となります</li>
+        </ul>
+      </div>
+    `;
+    
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
         <i class="fas fa-check-circle text-blue-500 mr-2"></i>
         入力内容をご確認ください
       </h2>
+      ${phaseNotice}
       <div class="space-y-4">
         <div class="bg-gray-50 p-4 rounded-lg">
           <p class="text-sm text-gray-600 mb-1">生年月日</p>
@@ -841,23 +871,52 @@ class ReservationApp {
 
   showSuccessPage(data) {
     const app = document.getElementById('app')
+    
+    // Phase判定
+    const isPhase1 = this.currentPhase === 1;
+    const pageTitle = isPhase1 ? '応募が完了しました！' : '予約が完了しました！';
+    const mainMessage = isPhase1 ? '以下の応募IDを大切に保管してください' : '以下の予約IDを大切に保管してください';
+    const idLabel = isPhase1 ? 'Application ID' : 'Reservation ID';
+    
+    const phaseNotice = isPhase1 ? `
+      <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
+        <div class="flex items-start">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-4 mt-1"></i>
+          <div>
+            <h3 class="text-lg font-bold text-yellow-700 mb-2">
+              🎯 抽選結果のお知らせ
+            </h3>
+            <p class="text-sm text-gray-700 mb-2">
+              • この応募は<strong>抽選対象</strong>です<br>
+              • 応募締切: <strong>2026年3月10日 23:59</strong><br>
+              • 抽選結果: <strong>2026年3月11日</strong>に確定<br>
+              • 当選された方のみ受け取りが可能です<br>
+              • 抽選結果は<strong>予約照会ページ</strong>でご確認ください
+            </p>
+          </div>
+        </div>
+      </div>
+    ` : '';
+    
     app.innerHTML = `
       <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full">
           <div class="text-center mb-8">
             <i class="fas fa-check-circle text-6xl text-green-500 mb-4 animate-bounce"></i>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">予約が完了しました！</h1>
-            <p class="text-gray-600">以下の予約IDを大切に保管してください</p>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">${pageTitle}</h1>
+            <p class="text-gray-600">${mainMessage}</p>
           </div>
 
           <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-8 mb-6 text-center shadow-lg">
-            <p class="text-sm mb-3 opacity-90 uppercase tracking-wide">Reservation ID</p>
+            <p class="text-sm mb-3 opacity-90 uppercase tracking-wide">${idLabel}</p>
             <p class="text-5xl font-bold tracking-widest mb-6 break-all" id="reservationId">${data.reservationId}</p>
             <button onclick="app.copyToClipboard('${data.reservationId}')" 
                     class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 shadow-md transform hover:scale-105 transition">
-              <i class="fas fa-copy mr-2"></i> 予約IDをコピー
+              <i class="fas fa-copy mr-2"></i> ${isPhase1 ? '応募IDをコピー' : '予約IDをコピー'}
             </button>
           </div>
+          
+          ${phaseNotice}
 
           <div class="bg-red-50 border-2 border-red-400 rounded-lg p-6 mb-6">
             <div class="flex items-start">

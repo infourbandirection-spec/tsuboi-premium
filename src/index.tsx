@@ -546,42 +546,44 @@ app.post('/api/reserve', async (c) => {
     // 予約ID生成
     const reservationId = generateReservationId()
 
-    // 在庫チェック
-    const stockCheck = await db.prepare(`
-      SELECT SUM(quantity) as total 
-      FROM reservations 
-      WHERE status = 'reserved'
-    `).first()
+    // 在庫チェック（Phase 2のみ）
+    // Phase 1は抽選・応募期間のため上限なく受け付ける
+    if (currentPhase === 2) {
+      const stockCheck = await db.prepare(`
+        SELECT SUM(quantity) as total 
+        FROM reservations 
+        WHERE status = 'reserved'
+      `).first()
 
-    const currentReserved = Number(stockCheck?.total || 0)
-    const maxTotal = 1000
-    const remainingBooks = Math.max(0, maxTotal - currentReserved)
+      const currentReserved = Number(stockCheck?.total || 0)
+      const maxTotal = 1000
+      const remainingBooks = Math.max(0, maxTotal - currentReserved)
 
-    if (currentReserved + data.quantity > maxTotal) {
-      return c.json({
-        success: false,
-        error: `申し訳ございません。予約上限に達しました。現在の残り冊数: ${remainingBooks}冊`,
-        remainingBooks: remainingBooks,
-        requestedQuantity: data.quantity
-      }, 400)
-    }
+      if (currentReserved + data.quantity > maxTotal) {
+        return c.json({
+          success: false,
+          error: `申し訳ございません。予約上限に達しました。現在の残り冊数: ${remainingBooks}冊`,
+          remainingBooks: remainingBooks,
+          requestedQuantity: data.quantity
+        }, 400)
+      }
 
-    // 予約データ挿入
-    // 再度在庫を確認してから挿入（最終防衛ライン）
-    const finalCheck = await db.prepare(`
-      SELECT SUM(quantity) as total 
-      FROM reservations 
-      WHERE status = 'reserved'
-    `).first()
+      // 再度在庫を確認してから挿入（最終防衛ライン）
+      const finalCheck = await db.prepare(`
+        SELECT SUM(quantity) as total 
+        FROM reservations 
+        WHERE status = 'reserved'
+      `).first()
 
-    const finalReserved = Number(finalCheck?.total || 0)
-    
-    if (finalReserved + data.quantity > maxTotal) {
-      return c.json({
-        success: false,
-        error: '申し訳ございません。他の方の予約が完了し、予約上限に達しました。',
-        remainingBooks: Math.max(0, maxTotal - finalReserved)
-      }, 400)
+      const finalReserved = Number(finalCheck?.total || 0)
+      
+      if (finalReserved + data.quantity > maxTotal) {
+        return c.json({
+          success: false,
+          error: '申し訳ございません。他の方の予約が完了し、予約上限に達しました。',
+          remainingBooks: Math.max(0, maxTotal - finalReserved)
+        }, 400)
+      }
     }
 
     // 予約挿入
