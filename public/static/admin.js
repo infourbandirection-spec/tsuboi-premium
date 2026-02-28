@@ -56,20 +56,81 @@ class AdminApp {
   showLoginRequired() {
     const app = document.getElementById('admin-app')
     app.innerHTML = `
-      <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full text-center">
-          <i class="fas fa-lock text-6xl text-red-500 mb-4"></i>
-          <h1 class="text-3xl font-bold text-gray-800 mb-4">アクセスが拒否されました</h1>
-          <p class="text-gray-600 mb-6">
-            この画面にアクセスするには、管理者ログインが必要です。
-          </p>
-          <button onclick="window.location.href='/'" 
-                  class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg">
-            <i class="fas fa-arrow-left mr-2"></i> トップページへ戻る
-          </button>
+      <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+          <div class="text-center mb-8">
+            <i class="fas fa-shield-alt text-6xl text-blue-600 mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">管理者ログイン</h1>
+            <p class="text-gray-600">
+              管理画面にアクセスするには認証が必要です
+            </p>
+          </div>
+          
+          <form onsubmit="adminApp.handleLogin(event)" class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-lock mr-1"></i> パスワード
+              </label>
+              <input type="password" id="adminPassword" required
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                     placeholder="管理者パスワードを入力">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+              <i class="fas fa-sign-in-alt mr-2"></i> ログイン
+            </button>
+          </form>
+          
+          <div id="loginError" class="mt-4 hidden">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              <span id="loginErrorMessage"></span>
+            </div>
+          </div>
+          
+          <div class="mt-6 text-center">
+            <a href="/" class="text-blue-600 hover:underline text-sm">
+              <i class="fas fa-arrow-left mr-1"></i> トップページへ戻る
+            </a>
+          </div>
         </div>
       </div>
     `
+  }
+
+  async handleLogin(event) {
+    event.preventDefault()
+    
+    const password = document.getElementById('adminPassword').value
+    const errorDiv = document.getElementById('loginError')
+    const errorMessage = document.getElementById('loginErrorMessage')
+    
+    try {
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success && data.token) {
+        // トークンを保存
+        localStorage.setItem('adminToken', data.token)
+        
+        // 管理画面を再初期化
+        await this.loadData()
+        this.render()
+      } else {
+        errorDiv.classList.remove('hidden')
+        errorMessage.textContent = data.error || 'ログインに失敗しました'
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      errorDiv.classList.remove('hidden')
+      errorMessage.textContent = 'システムエラーが発生しました'
+    }
   }
 
   async loadData() {
