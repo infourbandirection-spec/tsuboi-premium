@@ -87,14 +87,19 @@ class AdminApp {
       }
 
       // システム設定取得
-      const settingsResponse = await fetch('/api/admin/settings')
+      const token = localStorage.getItem('adminToken')
+      const settingsResponse = await fetch('/api/admin/settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       const settingsData = await settingsResponse.json()
       if (settingsData.success) {
         this.settings = settingsData.settings
       }
 
       // 抽選結果取得
-      const lotteryResponse = await fetch('/api/admin/lottery/results')
+      const lotteryResponse = await fetch('/api/admin/lottery/results', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       const lotteryData = await lotteryResponse.json()
       if (lotteryData.success) {
         this.lotteryResults = lotteryData.results
