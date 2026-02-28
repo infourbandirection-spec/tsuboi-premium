@@ -1449,9 +1449,13 @@ class AdminApp {
     }
 
     try {
+      const token = localStorage.getItem('adminToken')
       const response = await fetch('/api/admin/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           key: 'reservation_enabled',
           value: newValue.toString()
