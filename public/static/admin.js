@@ -72,8 +72,8 @@ class AdminApp {
 
   async loadData() {
     try {
-      // 予約一覧取得
-      const reservationsResponse = await fetch('/api/admin/reservations')
+      // 予約一覧取得（全件取得するため limit=500 を指定）
+      const reservationsResponse = await fetch('/api/admin/reservations?limit=500')
       const reservationsData = await reservationsResponse.json()
       if (reservationsData.success) {
         this.reservations = reservationsData.data
