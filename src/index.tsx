@@ -768,6 +768,10 @@ app.get('/api/admin/reservations', async (c) => {
     let query = 'SELECT * FROM reservations WHERE 1=1'
     const params: any[] = []
 
+    // 抽選実行後は落選者を除外（lottery_status='lost'を除外）
+    query += ' AND (lottery_status IS NULL OR lottery_status != ?)'
+    params.push('lost')
+
     if (status) {
       query += ' AND status = ?'
       params.push(status)
@@ -788,9 +792,12 @@ app.get('/api/admin/reservations', async (c) => {
 
     const result = await db.prepare(query).bind(...params).all()
 
-    // 総件数取得
+    // 総件数取得（落選者を除外）
     let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1'
     const countParams: any[] = []
+
+    countQuery += ' AND (lottery_status IS NULL OR lottery_status != ?)'
+    countParams.push('lost')
 
     if (status) {
       countQuery += ' AND status = ?'
