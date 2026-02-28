@@ -263,19 +263,6 @@ class AdminApp {
         <div class="grid grid-cols-1 gap-6">
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-gray-800">店舗別予約状況</h2>
-              <span class="text-sm text-gray-600">
-                <i class="fas fa-info-circle mr-1"></i>
-                店舗ごとの予約冊数を表示
-              </span>
-            </div>
-            <div style="height: 300px;">
-              <canvas id="storeChart"></canvas>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between items-center mb-4">
               <h2 class="text-lg font-bold text-gray-800">日付別予約推移</h2>
               <span class="text-sm text-gray-600">
                 <i class="fas fa-info-circle mr-1"></i>
@@ -321,18 +308,6 @@ class AdminApp {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">店舗</label>
-              <select id="filterStore" onchange="adminApp.applyFilters()" 
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <option value="">すべて</option>
-                <option value="パスート24上通">パスート24上通</option>
-                <option value="パスート24銀座プレス">パスート24銀座プレス</option>
-                <option value="パスート24辛島公園">パスート24辛島公園</option>
-                <option value="パスート24熊本中央">パスート24熊本中央</option>
-                <option value="熊本市辛島公園地下駐車場">熊本市辛島公園地下駐車場</option>
-              </select>
-            </div>
-            <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">受取日</label>
               <input type="date" id="filterDate" onchange="adminApp.applyFilters()"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
@@ -359,7 +334,6 @@ class AdminApp {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">氏名</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">冊数</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">店舗</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">受取日時</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
@@ -379,9 +353,6 @@ class AdminApp {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${reservation.quantity} 冊
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${reservation.store_location}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${reservation.pickup_date}<br>
@@ -472,7 +443,6 @@ class AdminApp {
   getFilteredReservations() {
     return this.reservations.filter(r => {
       if (this.filters.status && r.status !== this.filters.status) return false
-      if (this.filters.store && r.store_location !== this.filters.store) return false
       if (this.filters.date && r.pickup_date !== this.filters.date) return false
       return true
     })
@@ -485,13 +455,12 @@ class AdminApp {
 
   applyFilters() {
     this.filters.status = document.getElementById('filterStatus')?.value || ''
-    this.filters.store = document.getElementById('filterStore')?.value || ''
     this.filters.date = document.getElementById('filterDate')?.value || ''
     this.render()
   }
 
   resetFilters() {
-    this.filters = { status: '', store: '', date: '' }
+    this.filters = { status: '', date: '' }
     this.render()
   }
 
@@ -614,10 +583,6 @@ class AdminApp {
                       <p class="text-sm text-gray-600">冊数</p>
                       <p class="font-bold">${r.quantity} 冊</p>
                     </div>
-                    <div>
-                      <p class="text-sm text-gray-600">店舗</p>
-                      <p class="font-bold">${r.store_location}</p>
-                    </div>
                     <div class="col-span-2">
                       <p class="text-sm text-gray-600">受取日時</p>
                       <p class="font-bold">${r.pickup_date} ${r.pickup_time_slot}</p>
@@ -650,14 +615,13 @@ class AdminApp {
       return
     }
 
-    const headers = ['予約ID', '生年月日', '氏名', '電話番号', '冊数', '店舗', '受取日', '受取時間', 'ステータス', '予約日時']
+    const headers = ['予約ID', '生年月日', '氏名', '電話番号', '冊数', '受取日', '受取時間', 'ステータス', '予約日時']
     const rows = data.map(r => [
       r.reservation_id,
       r.birth_date,
       r.full_name,
       r.phone_number,
       r.quantity,
-      r.store_location,
       r.pickup_date,
       r.pickup_time_slot,
       r.status,
@@ -679,99 +643,6 @@ class AdminApp {
     // Chart.jsのデフォルト設定
     Chart.defaults.font.family = "'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif"
     Chart.defaults.font.size = 13
-
-    // 店舗別チャート
-    const storeCtx = document.getElementById('storeChart')
-    if (storeCtx && this.statistics.byStore.length > 0) {
-      new Chart(storeCtx, {
-        type: 'bar',
-        data: {
-          labels: this.statistics.byStore.map(s => s.store_location),
-          datasets: [{
-            label: '予約冊数',
-            data: this.statistics.byStore.map(s => s.total_quantity),
-            backgroundColor: [
-              'rgba(59, 130, 246, 0.7)',
-              'rgba(16, 185, 129, 0.7)',
-              'rgba(245, 158, 11, 0.7)',
-              'rgba(139, 92, 246, 0.7)',
-              'rgba(236, 72, 153, 0.7)'
-            ],
-            borderColor: [
-              'rgba(59, 130, 246, 1)',
-              'rgba(16, 185, 129, 1)',
-              'rgba(245, 158, 11, 1)',
-              'rgba(139, 92, 246, 1)',
-              'rgba(236, 72, 153, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
-              titleFont: {
-                size: 14,
-                weight: 'bold'
-              },
-              bodyFont: {
-                size: 13
-              },
-              callbacks: {
-                label: function(context) {
-                  const store = context.chart.data.labels[context.dataIndex]
-                  const quantity = context.parsed.y
-                  const storeData = this.statistics.byStore.find(s => s.store_location === store)
-                  return [
-                    `予約冊数: ${quantity}冊`,
-                    `予約件数: ${storeData.count}件`
-                  ]
-                }.bind(this)
-              }
-            }
-          },
-          scales: {
-            y: { 
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1,
-                callback: function(value) {
-                  return value + '冊'
-                }
-              },
-              title: {
-                display: true,
-                text: '予約冊数',
-                font: {
-                  size: 14,
-                  weight: 'bold'
-                }
-              }
-            },
-            x: {
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45
-              }
-            }
-          }
-        }
-      })
-    } else if (storeCtx) {
-      storeCtx.parentElement.innerHTML = `
-        <div class="text-center py-12 text-gray-400">
-          <i class="fas fa-chart-bar text-6xl mb-4"></i>
-          <p>予約データがありません</p>
-        </div>
-      `
-    }
 
     // 日付別チャート
     const dateCtx = document.getElementById('dateChart')
@@ -1070,7 +941,6 @@ class AdminApp {
                   <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">日付</th>
                   <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約件数</th>
                   <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約冊数</th>
-                  <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">店舗別内訳</th>
                 </tr>
               </thead>
               <tbody>
@@ -1091,19 +961,6 @@ class AdminApp {
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-800">
                           ${data.quantity}冊
                         </span>
-                      </td>
-                      <td class="px-4 py-3 text-sm">
-                        <div class="flex flex-wrap gap-2">
-                          ${stores.map(store => {
-                            const storeData = data.stores[store]
-                            if (!storeData) return ''
-                            return `
-                              <span class="px-2 py-1 bg-gray-100 rounded text-xs">
-                                ${store.replace('パスート24', '').replace('熊本市', '')}: ${storeData.count}件 ${storeData.quantity}冊
-                              </span>
-                            `
-                          }).join('')}
-                        </div>
                       </td>
                     </tr>
                   `
