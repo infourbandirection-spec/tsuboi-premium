@@ -985,7 +985,10 @@ class AdminApp {
 
   // 混雑状況ヒートマップビュー
   renderHeatmap() {
-    if (!this.reservations || this.reservations.length === 0) {
+    // ヒートマップ用のデータを取得（全予約データを使用）
+    const reservationsForHeatmap = this.allReservations || this.reservations || []
+    
+    if (reservationsForHeatmap.length === 0) {
       return `
         <div class="bg-white rounded-lg shadow p-8 text-center">
           <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
@@ -1005,8 +1008,10 @@ class AdminApp {
     // 実際のデータから店舗を抽出
     const storesSet = new Set()
     
-    this.reservations.forEach(r => {
+    reservationsForHeatmap.forEach(r => {
       if (r.status === 'reserved' || r.status === 'picked_up') {
+        // 落選者は除外
+        if (r.lottery_status === 'lost') return
         storesSet.add(r.store_location)
       }
     })
@@ -1024,8 +1029,11 @@ class AdminApp {
       '19:00～20:00'
     ]
 
-    this.reservations.forEach(r => {
+    reservationsForHeatmap.forEach(r => {
       if (r.status !== 'reserved' && r.status !== 'picked_up') return
+      
+      // 落選者は除外
+      if (r.lottery_status === 'lost') return
 
       // 日別集計
       if (!dateMap[r.pickup_date]) {
