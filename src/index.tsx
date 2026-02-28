@@ -454,7 +454,10 @@ app.get('/api/status', async (c) => {
     const currentPhase = parseInt(settingsMap['current_phase'] || '1')
     const reservationEnabled = settingsMap['reservation_enabled'] === 'true'
     const remaining = Math.max(0, maxTotal - Number(reservedCount))
-    const isAccepting = remaining > 0 && reservationEnabled
+    
+    // Phase 1（応募期間）は在庫に関係なく受け付ける
+    // Phase 2（予約期間）は在庫がある場合のみ受け付ける
+    const isAccepting = currentPhase === 1 ? reservationEnabled : (remaining > 0 && reservationEnabled)
 
     return c.json({
       success: true,
