@@ -763,14 +763,10 @@ app.post('/api/admin/verify', async (c) => {
 app.get('/api/admin/reservations', async (c) => {
   try {
     const db = c.env.DB
-    const { status, store, date, limit = '100', offset = '0' } = c.req.query()
+    const { status, store, date, lottery_status, limit = '100', offset = '0' } = c.req.query()
 
     let query = 'SELECT * FROM reservations WHERE 1=1'
     const params: any[] = []
-
-    // 抽選実行後は落選者を除外（lottery_status='lost'を除外）
-    query += ' AND (lottery_status IS NULL OR lottery_status != ?)'
-    params.push('lost')
 
     if (status) {
       query += ' AND status = ?'
@@ -787,17 +783,28 @@ app.get('/api/admin/reservations', async (c) => {
       params.push(date)
     }
 
+    // 抽選ステータスでフィルタ
+    if (lottery_status) {
+      if (lottery_status === 'won') {
+        query += ' AND lottery_status = ?'
+        params.push('won')
+      } else if (lottery_status === 'lost') {
+        query += ' AND lottery_status = ?'
+        params.push('lost')
+      } else if (lottery_status === 'pending') {
+        query += ' AND (lottery_status = ? OR lottery_status IS NULL)'
+        params.push('pending')
+      }
+    }
+
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
     params.push(parseInt(limit), parseInt(offset))
 
     const result = await db.prepare(query).bind(...params).all()
 
-    // 総件数取得（落選者を除外）
+    // 総件数取得
     let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1'
     const countParams: any[] = []
-
-    countQuery += ' AND (lottery_status IS NULL OR lottery_status != ?)'
-    countParams.push('lost')
 
     if (status) {
       countQuery += ' AND status = ?'
@@ -812,6 +819,20 @@ app.get('/api/admin/reservations', async (c) => {
     if (date) {
       countQuery += ' AND pickup_date = ?'
       countParams.push(date)
+    }
+
+    // 抽選ステータスでフィルタ
+    if (lottery_status) {
+      if (lottery_status === 'won') {
+        countQuery += ' AND lottery_status = ?'
+        countParams.push('won')
+      } else if (lottery_status === 'lost') {
+        countQuery += ' AND lottery_status = ?'
+        countParams.push('lost')
+      } else if (lottery_status === 'pending') {
+        countQuery += ' AND (lottery_status = ? OR lottery_status IS NULL)'
+        countParams.push('pending')
+      }
     }
 
     const countResult = await db.prepare(countQuery).bind(...countParams).first()

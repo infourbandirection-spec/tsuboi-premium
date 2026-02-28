@@ -10,7 +10,8 @@ class AdminApp {
     this.filters = {
       status: '',
       store: '',
-      date: ''
+      date: '',
+      lottery_status: ''
     }
     this.init()
   }
@@ -72,8 +73,12 @@ class AdminApp {
 
   async loadData() {
     try {
-      // 予約一覧取得（全件取得するため limit=500 を指定）
-      const reservationsResponse = await fetch('/api/admin/reservations?limit=500')
+      // 予約一覧取得（全件取得 + 抽選ステータスフィルター適用）
+      let url = '/api/admin/reservations?limit=500'
+      if (this.filters.lottery_status) {
+        url += `&lottery_status=${this.filters.lottery_status}`
+      }
+      const reservationsResponse = await fetch(url)
       const reservationsData = await reservationsResponse.json()
       if (reservationsData.success) {
         this.reservations = reservationsData.data
@@ -301,7 +306,7 @@ class AdminApp {
       <div class="bg-white rounded-lg shadow">
         <!-- フィルター -->
         <div class="p-6 border-b">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
               <select id="filterStatus" onchange="adminApp.applyFilters()" 
@@ -310,6 +315,16 @@ class AdminApp {
                 <option value="reserved">予約済み（未受取）</option>
                 <option value="picked_up">受取完了</option>
                 <option value="canceled">キャンセル</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">抽選結果</label>
+              <select id="filterLotteryStatus" onchange="adminApp.applyFilters()" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="">すべて</option>
+                <option value="won">当選</option>
+                <option value="lost">落選</option>
+                <option value="pending">抽選前</option>
               </select>
             </div>
             <div>
@@ -340,6 +355,7 @@ class AdminApp {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">冊数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">受取日時</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抽選結果</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
               </tr>
@@ -364,11 +380,18 @@ class AdminApp {
                     ${reservation.pickup_time_slot}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
+                    ${this.renderLotteryStatusBadge(reservation.lottery_status, reservation.reservation_phase)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
                     ${this.renderStatusBadge(reservation.status)}
                     ${reservation.picked_up_at ? `<div class="text-xs text-gray-500 mt-1">受取: ${new Date(reservation.picked_up_at).toLocaleString('ja-JP')}</div>` : ''}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    ${reservation.status === 'reserved' ? `
+                    ${reservation.lottery_status === 'lost' ? `
+                      <span class="text-gray-500 text-sm">
+                        <i class="fas fa-ban mr-1"></i> 操作不可
+                      </span>
+                    ` : reservation.status === 'reserved' ? `
                       <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
                               class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
                         <i class="fas fa-check mr-1"></i> 受取完了にする
@@ -445,6 +468,20 @@ class AdminApp {
     return `<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color}">${config.label}</span>`
   }
 
+  renderLotteryStatusBadge(lotteryStatus, phase) {
+    if (phase === 2 || !lotteryStatus) {
+      return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Phase 2</span>'
+    }
+    
+    const lotteryConfig = {
+      won: { label: '✓ 当選', color: 'bg-green-100 text-green-800 border border-green-300' },
+      lost: { label: '× 落選', color: 'bg-red-100 text-red-800 border border-red-300' },
+      pending: { label: '抽選前', color: 'bg-yellow-100 text-yellow-800 border border-yellow-300' }
+    }
+    const config = lotteryConfig[lotteryStatus] || { label: '抽選前', color: 'bg-yellow-100 text-yellow-800' }
+    return `<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color}">${config.label}</span>`
+  }
+
   getFilteredReservations() {
     return this.reservations.filter(r => {
       if (this.filters.status && r.status !== this.filters.status) return false
@@ -458,14 +495,20 @@ class AdminApp {
     this.render()
   }
 
-  applyFilters() {
+  async applyFilters() {
     this.filters.status = document.getElementById('filterStatus')?.value || ''
+    this.filters.lottery_status = document.getElementById('filterLotteryStatus')?.value || ''
     this.filters.date = document.getElementById('filterDate')?.value || ''
+    await this.loadData()
     this.render()
   }
 
-  resetFilters() {
-    this.filters = { status: '', date: '' }
+  async resetFilters() {
+    this.filters = { status: '', date: '', lottery_status: '' }
+    document.getElementById('filterStatus').value = ''
+    document.getElementById('filterLotteryStatus').value = ''
+    document.getElementById('filterDate').value = ''
+    await this.loadData()
     this.render()
   }
 
