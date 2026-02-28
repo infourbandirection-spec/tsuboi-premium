@@ -1151,19 +1151,19 @@ class AdminApp {
           <div class="flex items-center gap-4 text-sm mb-4 flex-wrap">
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-              <span>空き（1～20件）</span>
+              <span>空き（1～10件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
-              <span>やや混雑（21～50件）</span>
+              <span>やや混雑（11～20件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
-              <span>混雑（51～100件）</span>
+              <span>混雑（21～50件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
-              <span>非常に混雑（101件以上）</span>
+              <span>非常に混雑（50件以上）</span>
             </div>
           </div>
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -1177,7 +1177,7 @@ class AdminApp {
           </div>
           <p class="text-sm text-gray-600 mb-4">
             <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
-            赤く表示されている時間帯は予約が集中しています（101件以上）。ヘルプ要員の配置を検討してください。
+            赤く表示されている時間帯は予約が集中しています（50件以上）。ヘルプ要員の配置を検討してください。
           </p>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
@@ -1263,20 +1263,20 @@ class AdminApp {
                           const count = data ? data.count : 0
                           
                           // 予約件数に基づく混雑度判定
-                          // 空き: 1-20件、やや混雑: 21-50件、混雑: 51-100件、非常に混雑: 101件以上
+                          // 空き: 1-10件、やや混雑: 11-20件、混雑: 21-50件、非常に混雑: 50件以上
                           let bgColor = 'bg-gray-50'
                           let textColor = 'text-gray-400'
                           let alertIcon = ''
                           
-                          if (count >= 101) {
+                          if (count >= 50) {
                             bgColor = 'bg-red-400'
                             textColor = 'text-white font-bold'
                             alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
-                          } else if (count >= 51) {
+                          } else if (count >= 21) {
                             bgColor = 'bg-orange-300'
                             textColor = 'text-gray-900 font-semibold'
                             alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
-                          } else if (count >= 21) {
+                          } else if (count >= 11) {
                             bgColor = 'bg-yellow-200'
                             textColor = 'text-gray-800'
                           } else if (count >= 1) {
