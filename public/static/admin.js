@@ -370,12 +370,12 @@ class AdminApp {
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
                     ${reservation.status === 'reserved' ? `
                       <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
-                              class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-bold">
-                        <i class="fas fa-check mr-1"></i> 受取完了
+                              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
+                        <i class="fas fa-check mr-1"></i> 受取完了にする
                       </button>
                     ` : reservation.status === 'picked_up' ? `
-                      <span class="text-green-600 font-bold">
-                        <i class="fas fa-check-circle mr-1"></i> 受取済み
+                      <span class="inline-block px-4 py-2 bg-green-500 text-white rounded font-bold">
+                        <i class="fas fa-check-circle mr-1"></i> 受取完了
                       </span>
                       ${reservation.picked_up_by ? `<div class="text-xs text-gray-500">担当: ${reservation.picked_up_by}</div>` : ''}
                     ` : `
@@ -436,9 +436,9 @@ class AdminApp {
 
   renderStatusBadge(status) {
     const statusConfig = {
-      reserved: { label: '予約済み', color: 'bg-yellow-100 text-yellow-800' },
-      picked_up: { label: '受取完了', color: 'bg-green-100 text-green-800' },
-      completed: { label: '受取完了', color: 'bg-green-100 text-green-800' },
+      reserved: { label: '予約済み（未受取）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
+      picked_up: { label: '✓ 受取完了', color: 'bg-green-100 text-green-800 border border-green-300' },
+      completed: { label: '✓ 受取完了', color: 'bg-green-100 text-green-800 border border-green-300' },
       canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
     }
     const config = statusConfig[status] || { label: status, color: 'bg-gray-100 text-gray-800' }
