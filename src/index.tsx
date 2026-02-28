@@ -32,18 +32,36 @@ function basicAuth(c: any) {
 
   const [scheme, credentials] = authHeader.split(' ')
   
-  if (scheme !== 'Basic') {
+  // Basic認証とBearer認証の両方をサポート
+  if (scheme === 'Basic') {
+    const decoded = atob(credentials)
+    const [username, password] = decoded.split(':')
+    
+    // 簡易認証（本番環境では環境変数から取得）
+    const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+    
+    if (username !== 'admin' || password !== adminPassword) {
+      return c.json({ success: false, error: '認証に失敗しました' }, 401)
+    }
+  } else if (scheme === 'Bearer') {
+    // Bearerトークン認証
+    try {
+      const decoded = atob(credentials)
+      const [username, password, timestamp] = decoded.split(':')
+      const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+      
+      // トークンの有効期限チェック（24時間）
+      const tokenAge = Date.now() - parseInt(timestamp)
+      const isExpired = tokenAge > 24 * 60 * 60 * 1000
+      
+      if (username !== 'admin' || password !== adminPassword || isExpired) {
+        return c.json({ success: false, error: '認証トークンが無効です' }, 401)
+      }
+    } catch {
+      return c.json({ success: false, error: '認証トークンが無効です' }, 401)
+    }
+  } else {
     return c.json({ success: false, error: '認証方式が無効です' }, 401)
-  }
-
-  const decoded = atob(credentials)
-  const [username, password] = decoded.split(':')
-  
-  // 簡易認証（本番環境では環境変数から取得）
-  const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
-  
-  if (username !== 'admin' || password !== adminPassword) {
-    return c.json({ success: false, error: '認証に失敗しました' }, 401)
   }
   
   return null // 認証成功
