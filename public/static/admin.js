@@ -1400,9 +1400,13 @@ class AdminApp {
     }
 
     try {
+      const token = localStorage.getItem('adminToken')
       const response = await fetch('/api/admin/lottery/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       const data = await response.json()
