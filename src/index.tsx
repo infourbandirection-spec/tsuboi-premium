@@ -1051,6 +1051,124 @@ app.get('/', (c) => {
   `)
 })
 
+// 予約照会ページ（新版）
+app.get('/lookup', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>予約照会 - プレミアム引換券予約システム</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto">
+                <!-- ヘッダー -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-search mr-2 text-blue-600"></i>
+                        予約照会
+                    </h1>
+                    <p class="text-gray-600">
+                        予約IDまたは生年月日と電話番号で予約内容を確認できます
+                    </p>
+                </div>
+
+                <!-- タブ切り替え -->
+                <div class="bg-white rounded-lg shadow-md mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px">
+                            <button id="tab-id" 
+                                    class="tab-button active flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm"
+                                    onclick="switchTab('id')">
+                                <i class="fas fa-id-card mr-2"></i>
+                                予約IDで照会
+                            </button>
+                            <button id="tab-birthdate" 
+                                    class="tab-button flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm"
+                                    onclick="switchTab('birthdate')">
+                                <i class="fas fa-calendar mr-2"></i>
+                                生年月日・電話番号で照会
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- 予約IDで照会 -->
+                    <div id="content-id" class="tab-content p-6">
+                        <form id="form-id" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-id-card mr-1"></i> 予約ID
+                                </label>
+                                <input type="text" id="input-reservation-id" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                       placeholder="例: PRE-20260227-ABCD12">
+                                <p class="mt-2 text-sm text-gray-500">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    予約完了時に表示された予約IDを入力してください
+                                </p>
+                            </div>
+
+                            <button type="submit" 
+                                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                                <i class="fas fa-search mr-2"></i> 照会する
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 生年月日・電話番号で照会 -->
+                    <div id="content-birthdate" class="tab-content p-6 hidden">
+                        <form id="form-birthdate" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-birthday-cake mr-1"></i> 生年月日
+                                </label>
+                                <input type="date" id="input-birth-date" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-phone mr-1"></i> 電話番号
+                                </label>
+                                <input type="tel" id="input-phone-number" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                       placeholder="例: 090-1234-5678">
+                                <p class="mt-2 text-sm text-gray-500">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    ハイフンありでもなしでも検索できます
+                                </p>
+                            </div>
+
+                            <button type="submit" 
+                                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                                <i class="fas fa-search mr-2"></i> 照会する
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 結果表示エリア -->
+                <div id="result-area" class="hidden"></div>
+
+                <!-- トップページへ戻る -->
+                <div class="text-center mt-8">
+                    <a href="/" class="text-blue-600 hover:underline">
+                        <i class="fas fa-arrow-left mr-1"></i> トップページへ戻る
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script src="/static/lookup.js"></script>
+    </body>
+    </html>
+  `)
+})
+
 // 予約照会ページ
 app.get('/search', (c) => {
   return c.html(`
@@ -1573,6 +1691,110 @@ app.post('/api/lottery/check', async (c) => {
     })
   } catch (error) {
     logSecureError('CheckLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 予約照会API（予約IDで検索）
+app.post('/api/reservation/lookup/id', async (c) => {
+  try {
+    const db = c.env.DB
+    const { reservationId } = await c.req.json()
+
+    if (!reservationId) {
+      return c.json({
+        success: false,
+        error: '予約IDを入力してください'
+      }, 400)
+    }
+
+    const reservation = await db.prepare(`
+      SELECT * FROM reservations WHERE reservation_id = ?
+    `).bind(reservationId).first()
+
+    if (!reservation) {
+      return c.json({
+        success: false,
+        error: '予約が見つかりませんでした'
+      }, 404)
+    }
+
+    return c.json({
+      success: true,
+      reservation: {
+        id: reservation.reservation_id,
+        fullName: reservation.full_name,
+        phoneNumber: reservation.phone_number,
+        quantity: reservation.quantity,
+        storeLocation: reservation.store_location,
+        pickupDate: reservation.pickup_date,
+        pickupTimeSlot: reservation.pickup_time_slot,
+        status: reservation.status,
+        reservationPhase: reservation.reservation_phase,
+        lotteryStatus: reservation.lottery_status,
+        createdAt: reservation.created_at
+      }
+    })
+  } catch (error) {
+    logSecureError('ReservationLookupById', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 予約照会API（生年月日+電話番号で検索）
+app.post('/api/reservation/lookup/birthdate', async (c) => {
+  try {
+    const db = c.env.DB
+    const { birthDate, phoneNumber } = await c.req.json()
+
+    if (!birthDate || !phoneNumber) {
+      return c.json({
+        success: false,
+        error: '生年月日と電話番号を入力してください'
+      }, 400)
+    }
+
+    // 電話番号のハイフンを除去して検索
+    const normalizedPhone = phoneNumber.replace(/-/g, '')
+
+    const reservations = await db.prepare(`
+      SELECT * FROM reservations 
+      WHERE birth_date = ? 
+      AND REPLACE(phone_number, '-', '') = ?
+      ORDER BY created_at DESC
+    `).bind(birthDate, normalizedPhone).all()
+
+    if (!reservations.results || reservations.results.length === 0) {
+      return c.json({
+        success: false,
+        error: '予約が見つかりませんでした'
+      }, 404)
+    }
+
+    return c.json({
+      success: true,
+      reservations: reservations.results.map((r: any) => ({
+        id: r.reservation_id,
+        fullName: r.full_name,
+        phoneNumber: r.phone_number,
+        quantity: r.quantity,
+        storeLocation: r.store_location,
+        pickupDate: r.pickup_date,
+        pickupTimeSlot: r.pickup_time_slot,
+        status: r.status,
+        reservationPhase: r.reservation_phase,
+        lotteryStatus: r.lottery_status,
+        createdAt: r.created_at
+      }))
+    })
+  } catch (error) {
+    logSecureError('ReservationLookupByBirthdate', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
