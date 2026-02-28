@@ -763,10 +763,16 @@ app.post('/api/admin/verify', async (c) => {
 app.get('/api/admin/reservations', async (c) => {
   try {
     const db = c.env.DB
-    const { status, store, date, lottery_status, limit = '100', offset = '0' } = c.req.query()
+    const { status, store, date, lottery_status, include_lost, limit = '100', offset = '0' } = c.req.query()
 
     let query = 'SELECT * FROM reservations WHERE 1=1'
     const params: any[] = []
+
+    // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
+    if (include_lost !== 'true' && !lottery_status) {
+      query += ' AND (lottery_status IS NULL OR lottery_status != ?)'
+      params.push('lost')
+    }
 
     if (status) {
       query += ' AND status = ?'
@@ -805,6 +811,12 @@ app.get('/api/admin/reservations', async (c) => {
     // 総件数取得
     let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1'
     const countParams: any[] = []
+
+    // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
+    if (include_lost !== 'true' && !lottery_status) {
+      countQuery += ' AND (lottery_status IS NULL OR lottery_status != ?)'
+      countParams.push('lost')
+    }
 
     if (status) {
       countQuery += ' AND status = ?'

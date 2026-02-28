@@ -145,6 +145,13 @@ class AdminApp {
       if (reservationsData.success) {
         this.reservations = reservationsData.data
       }
+      
+      // ヒートマップ用に全予約データを取得（落選者除外なし）
+      const allReservationsResponse = await fetch('/api/admin/reservations?limit=500&include_lost=true')
+      const allReservationsData = await allReservationsResponse.json()
+      if (allReservationsData.success) {
+        this.allReservations = allReservationsData.data
+      }
 
       // 統計データ取得
       const statsResponse = await fetch('/api/admin/statistics')
@@ -434,6 +441,7 @@ class AdminApp {
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">予約ID</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">氏名</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
@@ -445,8 +453,11 @@ class AdminApp {
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              ${this.getFilteredReservations().map(reservation => `
+              ${this.getFilteredReservations().map((reservation, index) => `
                 <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-semibold text-gray-600">
+                    ${index + 1}
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                     ${reservation.reservation_id}
                   </td>
@@ -1212,7 +1223,8 @@ class AdminApp {
                   // - 抽選実行前: すべての応募者（lottery_status='pending'のみ）を表示
                   // - 抽選実行後: 当選者（lottery_status='won'）+ Phase2予約（lottery_status='n/a'）のみ表示
                   const dateTimeMap = {}
-                  this.reservations.forEach(r => {
+                  const reservationsForHeatmap = this.allReservations || this.reservations
+                  reservationsForHeatmap.forEach(r => {
                     if (r.status !== 'reserved' && r.status !== 'picked_up') return
                     
                     // 抽選落選者は除外
