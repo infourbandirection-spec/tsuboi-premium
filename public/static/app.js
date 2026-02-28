@@ -120,7 +120,7 @@ class ReservationApp {
               </div>
               <!-- ボタンエリア -->
               <div class="flex gap-2">
-                <button onclick="location.href='/search'" 
+                <button onclick="location.href='/lookup'" 
                         class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center text-sm">
                   <i class="fas fa-search mr-2"></i>
                   予約照会
@@ -985,7 +985,7 @@ class ReservationApp {
                     class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold transition">
               <i class="fas fa-print mr-2"></i> 印刷する
             </button>
-            <button onclick="location.href='/search'" 
+            <button onclick="location.href='/lookup'" 
                     class="flex-1 px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-bold transition">
               <i class="fas fa-search mr-2"></i> 予約照会
             </button>
