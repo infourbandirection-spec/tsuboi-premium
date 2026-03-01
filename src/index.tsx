@@ -1821,6 +1821,37 @@ app.post('/api/admin/lottery/execute', async (c) => {
         WHERE setting_key = 'lottery_executed_at'
       `).run()
 
+      // 当選メールを送信（メールアドレスが登録されている場合のみ）
+      console.log('Sending winner notification emails (all won scenario)...')
+      let emailsSent = 0
+      for (const reservation of reservations.results) {
+        const res = reservation as any
+        if (res.email) {
+          const emailHTML = getLotteryWinnerEmailHTML({
+            fullName: res.full_name,
+            reservationId: res.reservation_id,
+            quantity: res.quantity,
+            storeLocation: res.store_location,
+            pickupDate: res.pickup_date,
+            pickupTime: res.pickup_time_slot
+          })
+
+          const emailResult = await sendEmail(
+            res.email,
+            'プレミアム商品券 抽選結果のお知らせ（当選）',
+            emailHTML,
+            c.env
+          )
+
+          if (emailResult.success) {
+            emailsSent++
+          } else {
+            console.warn(`Failed to send winner email to ${res.email}:`, emailResult.error)
+          }
+        }
+      }
+      console.log(`Winner notification emails sent: ${emailsSent}/${totalApplications}`)
+
       return c.json({
         success: true,
         message: '抽選が完了しました（全員当選）',
@@ -1896,6 +1927,65 @@ app.post('/api/admin/lottery/execute', async (c) => {
       SET setting_value = datetime('now'), updated_at = datetime('now')
       WHERE setting_key = 'lottery_executed_at'
     `).run()
+
+    // 抽選結果メールを送信（当選者・落選者両方）
+    console.log('Sending lottery result notification emails...')
+    let winnerEmailsSent = 0
+    let loserEmailsSent = 0
+
+    // 当選者にメール送信
+    for (const winner of winners) {
+      if (winner.email) {
+        const emailHTML = getLotteryWinnerEmailHTML({
+          fullName: winner.full_name,
+          reservationId: winner.reservation_id,
+          quantity: winner.quantity,
+          storeLocation: winner.store_location,
+          pickupDate: winner.pickup_date,
+          pickupTime: winner.pickup_time_slot
+        })
+
+        const emailResult = await sendEmail(
+          winner.email,
+          'プレミアム商品券 抽選結果のお知らせ（当選）',
+          emailHTML,
+          c.env
+        )
+
+        if (emailResult.success) {
+          winnerEmailsSent++
+        } else {
+          console.warn(`Failed to send winner email to ${winner.email}:`, emailResult.error)
+        }
+      }
+    }
+
+    // 落選者にメール送信
+    for (const loser of losers) {
+      if (loser.email) {
+        const emailHTML = getLotteryLoserEmailHTML({
+          fullName: loser.full_name,
+          reservationId: loser.reservation_id,
+          quantity: loser.quantity
+        })
+
+        const emailResult = await sendEmail(
+          loser.email,
+          'プレミアム商品券 抽選結果のお知らせ',
+          emailHTML,
+          c.env
+        )
+
+        if (emailResult.success) {
+          loserEmailsSent++
+        } else {
+          console.warn(`Failed to send loser email to ${loser.email}:`, emailResult.error)
+        }
+      }
+    }
+
+    console.log(`Winner emails sent: ${winnerEmailsSent}/${winners.length}`)
+    console.log(`Loser emails sent: ${loserEmailsSent}/${losers.length}`)
 
     return c.json({
       success: true,
