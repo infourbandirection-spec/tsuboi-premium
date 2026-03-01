@@ -317,17 +317,17 @@ function getLotteryLoserEmailHTML(data: {
     </div>
     
     <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="color: #1e40af; margin-top: 0; font-size: 16px;">📢 Phase 2（先着順）のご案内</h3>
+      <h3 style="color: #1e40af; margin-top: 0; font-size: 16px;">💡 先着順予約のご案内</h3>
       <p style="color: #1e3a8a; margin: 10px 0;">
-        現在、Phase 2の先着順予約を受付中です。<br>
-        引き続きご応募いただけますので、ぜひご検討ください。
+        商品券が残った場合に限り、先着順での予約を受け付けております。<br>
+        在庫がある場合、ご予約いただけます。
       </p>
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
       <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/" 
          style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-        Phase 2 予約ページへ
+        予約ページはこちら
       </a>
     </p>
     

@@ -243,7 +243,7 @@ function getLoserEmail() {
             <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #2196f3;">
                 <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #333;">
                     <strong>💡 先着順予約のご案内</strong><br>
-                    Phase 2では先着順での予約を受け付けております。<br>
+                    商品券が残った場合に限り、先着順での予約を受け付けております。<br>
                     在庫がある場合、ご予約いただけます。<br><br>
                     <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai" style="color: #667eea; text-decoration: none; font-weight: bold;">
                         🔗 予約ページはこちら
