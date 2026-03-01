@@ -10,6 +10,7 @@ class ReservationApp {
       fullName: '',
       kana: '',
       phoneNumber: '',
+      email: '',
       quantity: 1,
       store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
       pickupDate: '',
@@ -350,6 +351,17 @@ class ReservationApp {
         <p class="mt-2 text-sm text-gray-500">
           <i class="fas fa-info-circle mr-1"></i>
           ハイフンは自動で挿入されます
+        </p>
+        
+        <!-- メールアドレス入力 -->
+        <label class="block text-sm font-medium text-gray-700 mb-2 mt-6">メールアドレス（任意）</label>
+        <input type="email" id="email" 
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+               value="${this.formData.email || ''}"
+               placeholder="例: example@email.com">
+        <p class="mt-2 text-sm text-gray-500">
+          <i class="fas fa-info-circle mr-1"></i>
+          入力いただくと、予約完了メールと抽選結果をメールでお知らせします
         </p>
       </div>
       <div class="mt-8 flex justify-between">
@@ -776,11 +788,18 @@ class ReservationApp {
         break
       case 3:
         const phoneNumber = document.getElementById('phoneNumber')?.value
+        const email = document.getElementById('email')?.value
         if (!phoneNumber || !/^0\d{1,4}-?\d{1,4}-?\d{4}$/.test(phoneNumber)) {
           alert('電話番号を正しく入力してください')
           return
         }
+        // メールアドレスのバリデーション（任意なのでスキップ可能）
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          alert('メールアドレスの形式が正しくありません')
+          return
+        }
         this.formData.phoneNumber = phoneNumber
+        this.formData.email = email
         break
       case 4:
         const quantity = parseInt(document.getElementById('quantity')?.value)

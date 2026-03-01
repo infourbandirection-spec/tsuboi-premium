@@ -12,5 +12,11 @@
       "database_name": "webapp-production",
       "database_id": ""
     }
-  ]
+  ],
+  // Resend API configuration
+  // ローカル開発用: .dev.vars ファイルに設定
+  // 本番環境用: wrangler secret put コマンドで設定
+  "vars": {
+    "RESEND_FROM_EMAIL": "onboarding@resend.dev"
+  }
 }

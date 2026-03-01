@@ -7,6 +7,8 @@ type Bindings = {
   ADMIN_PASSWORD?: string
   CSRF_KV?: KVNamespace
   RATE_LIMIT_KV?: KVNamespace
+  RESEND_API_KEY?: string
+  RESEND_FROM_EMAIL?: string
 }
 
 type Reservation = {
@@ -14,6 +16,7 @@ type Reservation = {
   fullName: string
   kana: string
   phoneNumber: string
+  email?: string // オプショナル
   quantity: number
   store: string
   pickupDate: string
@@ -21,6 +24,324 @@ type Reservation = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
+
+// ============================================
+// メール送信関連の関数
+// ============================================
+
+/**
+ * Resend APIを使用してメールを送信
+ */
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  env: Bindings
+): Promise<{ success: boolean; error?: string; messageId?: string }> {
+  try {
+    // APIキーの確認
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === 're_YOUR_API_KEY_HERE') {
+      console.warn('Resend API key not configured. Email not sent.')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const fromEmail = env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [to],
+        subject: subject,
+        html: html
+      })
+    })
+
+    const data = await response.json() as any
+
+    if (!response.ok) {
+      console.error('Resend API error:', data)
+      return { 
+        success: false, 
+        error: data.message || 'Failed to send email' 
+      }
+    }
+
+    console.log('Email sent successfully:', data.id)
+    return { 
+      success: true, 
+      messageId: data.id 
+    }
+  } catch (error) {
+    console.error('Email sending error:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
+  }
+}
+
+/**
+ * 予約完了メールのHTMLテンプレート
+ */
+function getReservationConfirmationEmailHTML(data: {
+  fullName: string
+  reservationId: string
+  quantity: number
+  storeLocation: string
+  pickupDate: string
+  pickupTime: string
+  reservationPhase: number
+  lotteryStatus: string
+}): string {
+  const phaseText = data.reservationPhase === 1 ? 'Phase 1（抽選）' : 'Phase 2（先着順）'
+  const lotteryNote = data.reservationPhase === 1 
+    ? '<p style="color: #ef4444; font-weight: bold;">※抽選結果は後日メールでお知らせいたします。</p>'
+    : '<p style="color: #10b981; font-weight: bold;">※先着順での予約が確定しました。</p>'
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>予約完了のお知らせ</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #10b981, #3b82f6); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 24px;">🎫 プレミアム商品券 予約完了</h1>
+  </div>
+  
+  <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p><strong>${data.fullName}</strong> 様</p>
+    
+    <p>プレミアム商品券の予約が完了しました。</p>
+    
+    ${lotteryNote}
+    
+    <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">予約内容</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; font-weight: bold; color: #3b82f6;">${data.reservationId}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">予約区分:</td>
+          <td style="padding: 8px 0; font-weight: bold;">${phaseText}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">冊数:</td>
+          <td style="padding: 8px 0; font-weight: bold;">${data.quantity}冊</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取店舗:</td>
+          <td style="padding: 8px 0;">${data.storeLocation}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取日:</td>
+          <td style="padding: 8px 0;">${data.pickupDate}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取時間:</td>
+          <td style="padding: 8px 0;">${data.pickupTime}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 重要な注意事項</h3>
+      <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
+        <li>予約IDは必ず控えてください</li>
+        <li>受取時には身分証明証をご持参ください</li>
+        <li>ご本人様のみ受け取り可能です（代理人不可）</li>
+        <li>受取予定日を過ぎると自動的にキャンセルされます</li>
+      </ul>
+    </div>
+    
+    <p style="text-align: center; margin-top: 30px;">
+      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/lookup" 
+         style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        予約内容を確認する
+      </a>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    
+    <p style="font-size: 12px; color: #6b7280; text-align: center;">
+      このメールは自動送信されています。<br>
+      ご不明な点がございましたら、お問い合わせください。
+    </p>
+  </div>
+</body>
+</html>
+  `.trim()
+}
+
+/**
+ * 抽選結果（当選）メールのHTMLテンプレート
+ */
+function getLotteryWinnerEmailHTML(data: {
+  fullName: string
+  reservationId: string
+  quantity: number
+  storeLocation: string
+  pickupDate: string
+  pickupTime: string
+}): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽選結果のお知らせ（当選）</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #10b981, #059669); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 24px;">🎉 抽選結果のお知らせ</h1>
+  </div>
+  
+  <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p><strong>${data.fullName}</strong> 様</p>
+    
+    <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+      <h2 style="color: #065f46; font-size: 28px; margin: 0;">✅ おめでとうございます！</h2>
+      <p style="color: #047857; font-size: 18px; font-weight: bold; margin: 10px 0;">当選されました</p>
+    </div>
+    
+    <p>プレミアム商品券の抽選に当選いたしました。<br>
+    以下の日時にご来店いただき、商品券をお受け取りください。</p>
+    
+    <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">受取情報</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; font-weight: bold; color: #10b981;">${data.reservationId}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">冊数:</td>
+          <td style="padding: 8px 0; font-weight: bold;">${data.quantity}冊</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取店舗:</td>
+          <td style="padding: 8px 0;">${data.storeLocation}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取日:</td>
+          <td style="padding: 8px 0; font-weight: bold; color: #dc2626;">${data.pickupDate}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">受取時間:</td>
+          <td style="padding: 8px 0; font-weight: bold; color: #dc2626;">${data.pickupTime}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 受取時の注意事項</h3>
+      <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
+        <li><strong>身分証明証を必ずご持参ください</strong></li>
+        <li><strong>ご本人様のみ受け取り可能です</strong>（代理人不可）</li>
+        <li>受取予定日を過ぎると自動的にキャンセルされます</li>
+        <li>予約IDをお控えください</li>
+      </ul>
+    </div>
+    
+    <p style="text-align: center; margin-top: 30px;">
+      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/lookup" 
+         style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        予約内容を確認する
+      </a>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    
+    <p style="font-size: 12px; color: #6b7280; text-align: center;">
+      このメールは自動送信されています。<br>
+      ご不明な点がございましたら、お問い合わせください。
+    </p>
+  </div>
+</body>
+</html>
+  `.trim()
+}
+
+/**
+ * 抽選結果（落選）メールのHTMLテンプレート
+ */
+function getLotteryLoserEmailHTML(data: {
+  fullName: string
+  reservationId: string
+  quantity: number
+}): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽選結果のお知らせ</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #6b7280, #4b5563); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+    <h1 style="margin: 0; font-size: 24px;">抽選結果のお知らせ</h1>
+  </div>
+  
+  <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p><strong>${data.fullName}</strong> 様</p>
+    
+    <div style="background: #f3f4f6; border-left: 4px solid #6b7280; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <p style="color: #374151; font-size: 16px; margin: 0;">
+        誠に申し訳ございませんが、今回の抽選では残念ながら落選となりました。
+      </p>
+    </div>
+    
+    <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6b7280;">
+      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">応募情報</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; font-weight: bold;">${data.reservationId}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #6b7280;">応募冊数:</td>
+          <td style="padding: 8px 0; font-weight: bold;">${data.quantity}冊</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h3 style="color: #1e40af; margin-top: 0; font-size: 16px;">📢 Phase 2（先着順）のご案内</h3>
+      <p style="color: #1e3a8a; margin: 10px 0;">
+        現在、Phase 2の先着順予約を受付中です。<br>
+        引き続きご応募いただけますので、ぜひご検討ください。
+      </p>
+    </div>
+    
+    <p style="text-align: center; margin-top: 30px;">
+      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/" 
+         style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        Phase 2 予約ページへ
+      </a>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    
+    <p style="font-size: 12px; color: #6b7280; text-align: center;">
+      このメールは自動送信されています。<br>
+      ご不明な点がございましたら、お問い合わせください。
+    </p>
+  </div>
+</body>
+</html>
+  `.trim()
+}
 
 // 簡易認証ミドルウェア
 function basicAuth(c: any) {
@@ -626,6 +947,32 @@ app.post('/api/reserve', async (c) => {
       currentPhase,
       currentPhase === 2 ? 'n/a' : 'pending' // Phase 2は抽選対象外
     ).run()
+
+    // メール送信（メールアドレスが提供されている場合のみ）
+    if (data.email) {
+      const emailHTML = getReservationConfirmationEmailHTML({
+        fullName: data.fullName,
+        reservationId: reservationId,
+        quantity: data.quantity,
+        storeLocation: data.store,
+        pickupDate: data.pickupDate,
+        pickupTime: data.pickupTime,
+        reservationPhase: currentPhase,
+        lotteryStatus: currentPhase === 2 ? 'n/a' : 'pending'
+      })
+
+      const emailResult = await sendEmail(
+        data.email,
+        'プレミアム商品券 予約完了のお知らせ',
+        emailHTML,
+        c.env
+      )
+
+      if (!emailResult.success) {
+        console.warn('Failed to send reservation confirmation email:', emailResult.error)
+        // メール送信失敗してもエラーレスポンスは返さない（予約自体は成功）
+      }
+    }
 
     // 成功レスポンス
     return c.json({
