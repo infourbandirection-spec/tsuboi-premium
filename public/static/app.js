@@ -271,7 +271,7 @@ class ReservationApp {
         生年月日を入力してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">生年月日 <span class="text-red-500">★</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">生年月日 <span class="text-red-500 text-xs align-super">★</span></label>
         <input type="date" id="birthDate" 
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.birthDate}"
@@ -298,7 +298,7 @@ class ReservationApp {
       <div class="max-w-md space-y-6">
         <!-- 氏名（漢字） -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">氏名 <span class="text-red-500">★</span></label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">氏名 <span class="text-red-500 text-xs align-super">★</span></label>
           <input type="text" id="fullName" 
                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  value="${this.formData.fullName}"
@@ -308,7 +308,7 @@ class ReservationApp {
         
         <!-- かな（ひらがな） -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">かな <span class="text-red-500">★</span></label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">かな <span class="text-red-500 text-xs align-super">★</span></label>
           <input type="text" id="kana" 
                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  value="${this.formData.kana}"
@@ -334,7 +334,7 @@ class ReservationApp {
         連絡先を入力してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">電話番号 <span class="text-red-500">★</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">電話番号 <span class="text-red-500 text-xs align-super">★</span></label>
         <input type="tel" id="phoneNumber" 
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.phoneNumber}"
@@ -347,7 +347,7 @@ class ReservationApp {
         
         <!-- メールアドレス入力 -->
         <label class="block text-sm font-medium text-gray-700 mb-2 mt-6">
-          メールアドレス <span class="text-red-500">★</span>
+          メールアドレス <span class="text-red-500 text-xs align-super">★</span>
         </label>
         <input type="email" id="email" required
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -377,7 +377,7 @@ class ReservationApp {
         購入希望冊数を選択してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">冊数（1～6冊） <span class="text-red-500">★</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">冊数（1～6冊） <span class="text-red-500 text-xs align-super">★</span></label>
         <select id="quantity" 
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
           ${Array.from({ length: maxQuantity }, (_, i) => i + 1).map(num => `
@@ -439,7 +439,7 @@ class ReservationApp {
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り日 <span class="text-red-500">★</span>
+            受け取り日 <span class="text-red-500 text-xs align-super">★</span>
           </label>
           <select id="pickupDate" 
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -453,7 +453,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り時間 <span class="text-red-500">★</span>
+            受け取り時間 <span class="text-red-500 text-xs align-super">★</span>
             <span class="text-xs text-gray-500 ml-2">（混雑状況の目安）</span>
           </label>
           <select id="pickupTime" 
@@ -569,7 +569,7 @@ class ReservationApp {
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り日（予約当日から1週間以内） <span class="text-red-500">★</span>
+            受け取り日（予約当日から1週間以内） <span class="text-red-500 text-xs align-super">★</span>
           </label>
           <input 
             type="date" 
@@ -582,7 +582,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り時間 <span class="text-red-500">★</span>
+            受け取り時間 <span class="text-red-500 text-xs align-super">★</span>
             <span class="text-xs text-gray-500 ml-2">（混雑状況の目安）</span>
           </label>
           <select id="pickupTime" 
