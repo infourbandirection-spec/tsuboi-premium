@@ -227,7 +227,7 @@ class ReservationApp {
     const steps = [
       { num: 1, label: '生年月日' },
       { num: 2, label: '氏名' },
-      { num: 3, label: '電話番号' },
+      { num: 3, label: '連絡先' },
       { num: 4, label: '冊数' },
       { num: 5, label: '日時' },
       { num: 6, label: '確認' }
@@ -338,11 +338,11 @@ class ReservationApp {
   renderStep3() {
     return `
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
-        <i class="fas fa-phone text-blue-500 mr-2"></i>
-        電話番号を入力してください
+        <i class="fas fa-envelope text-blue-500 mr-2"></i>
+        連絡先を入力してください
       </h2>
       <div class="max-w-md">
-        <label class="block text-sm font-medium text-gray-700 mb-2">電話番号</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">電話番号 <span class="text-red-500">*</span></label>
         <input type="tel" id="phoneNumber" 
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.phoneNumber}"
@@ -360,7 +360,7 @@ class ReservationApp {
                value="${this.formData.email || ''}"
                placeholder="例: example@email.com">
         <p class="mt-2 text-sm text-gray-500">
-          <i class="fas fa-info-circle mr-1"></i>
+          <i class="fas fa-envelope mr-1"></i>
           入力いただくと、予約完了メールと抽選結果をメールでお知らせします
         </p>
       </div>
