@@ -476,12 +476,11 @@ class ReservationApp {
             受け取り時間について
           </p>
           <p class="text-sm text-blue-700">
-            選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
+            選択された時間帯は混雑状況の目安です。時間を多少前後しても受け取り可能です。
           </p>
           <p class="text-sm text-blue-700 mt-2">
             <strong>営業時間内にお越しください：</strong><br>
-            • <strong>coug</strong>：10:00〜20:00<br>
-            • <strong>ANERCA&L.I.V</strong>：各店舗の営業時間に準じます
+            • <strong>パスート24本部</strong>：12:00〜20:00
           </p>
         </div>
         
@@ -605,12 +604,11 @@ class ReservationApp {
             受け取り時間について
           </p>
           <p class="text-sm text-blue-700">
-            選択された時間帯は混雑状況の目安です。できる限り取りに来られる時間を選択してください。時間を多少前後しても受け取り可能です。
+            選択された時間帯は混雑状況の目安です。時間を多少前後しても受け取り可能です。
           </p>
           <p class="text-sm text-blue-700 mt-2">
             <strong>営業時間内にお越しください：</strong><br>
-            • <strong>coug</strong>：10:00〜20:00<br>
-            • <strong>ANERCA&L.I.V</strong>：各店舗の営業時間に準じます
+            • <strong>パスート24本部</strong>：12:00〜20:00
           </p>
         </div>
         
