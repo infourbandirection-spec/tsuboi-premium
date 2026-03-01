@@ -98,7 +98,7 @@ function getReservationConfirmationEmailHTML(data: {
   reservationPhase: number
   lotteryStatus: string
 }): string {
-  const phaseText = data.reservationPhase === 1 ? 'Phase 1（抽選）' : 'Phase 2（先着順）'
+  const phaseText = data.reservationPhase === 1 ? '抽選' : '先着順'
   const lotteryNote = data.reservationPhase === 1 
     ? '<p style="color: #ef4444; font-weight: bold;">※抽選結果は後日メールでお知らせいたします。</p>'
     : '<p style="color: #10b981; font-weight: bold;">※先着順での予約が確定しました。</p>'

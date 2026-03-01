@@ -31,7 +31,7 @@ const templates = [
 // Phase 1 予約完了メール
 function getReservationConfirmationEmail(phase) {
   const isPhase1 = phase === 'Phase1';
-  const phaseText = isPhase1 ? 'Phase 1（抽選）' : 'Phase 2（先着順）';
+  const phaseText = isPhase1 ? '抽選' : '先着順';
   const lotteryNote = isPhase1
     ? '<p style="margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border-left: 4px solid #f44336; border-radius: 8px;"><strong style="color: #f44336;">※抽選結果は後日メールでお知らせいたします。</strong></p>'
     : '<p style="margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-left: 4px solid #4caf50; border-radius: 8px;"><strong style="color: #4caf50;">※先着順での予約が確定しました。</strong></p>';
@@ -242,7 +242,7 @@ function getLoserEmail() {
             
             <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #2196f3;">
                 <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #333;">
-                    <strong>💡 Phase 2（先着順）のご案内</strong><br>
+                    <strong>💡 先着順予約のご案内</strong><br>
                     Phase 2では先着順での予約を受け付けております。<br>
                     在庫がある場合、ご予約いただけます。<br><br>
                     <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai" style="color: #667eea; text-decoration: none; font-weight: bold;">
