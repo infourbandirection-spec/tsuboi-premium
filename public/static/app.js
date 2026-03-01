@@ -987,9 +987,10 @@ class ReservationApp {
 
           <div class="bg-red-50 border-2 border-red-400 rounded-lg p-6 mb-6">
             <div class="flex items-start">
+              <i class="fas fa-camera text-red-500 text-3xl mr-4 mt-1"></i>
               <div>
-                <h3 class="text-lg font-bold text-red-700 mb-2 flex items-center">
-                  <span class="text-xl mr-2">📸</span> 必ずスクリーンショットを保存してください
+                <h3 class="text-lg font-bold text-red-700 mb-2">
+                  必ずスクリーンショットを保存してください
                 </h3>
                 <p class="text-sm text-gray-700 mb-2">
                   • 予約照会には<strong>電話番号</strong>と<strong>生年月日</strong>が必要です<br>
@@ -1005,8 +1006,9 @@ class ReservationApp {
           </div>
 
           <div class="bg-gray-50 rounded-lg p-6 mb-6 space-y-3">
-            <h2 class="font-bold text-lg mb-4 text-gray-800 flex items-center">
-              <span class="text-xl mr-2">📋</span> 予約内容
+            <h2 class="font-bold text-lg mb-4 text-gray-800">
+              <i class="fas fa-clipboard-list text-blue-500 mr-2"></i>
+              予約内容
             </h2>
             <div class="flex justify-between py-2 border-b border-gray-200">
               <span class="text-gray-600">氏名</span>
@@ -1027,8 +1029,8 @@ class ReservationApp {
           </div>
 
           <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-            <p class="text-sm text-gray-700 mb-2 flex items-center">
-              <span class="text-xl mr-2">💡</span>
+            <p class="text-sm text-gray-700 mb-2">
+              <i class="fas fa-clock text-yellow-500 mr-2"></i>
               <strong>受け取りについて</strong>
             </p>
             <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside ml-4">
