@@ -1,5 +1,6 @@
 // Node.js 18+ にはfetchが組み込まれているため、importは不要
 const RESEND_API_KEY = 're_2oYH4UPg_GTPFCMFneHTws4WCzfLPGH9N';
+const FROM_EMAIL = 'info@urbandirection.jp';
 // 開発モードでは自分のアカウントアドレスのみ送信可能
 const TEST_EMAIL = 'info.urbandirection@gmail.com';
 
@@ -7,22 +8,22 @@ const TEST_EMAIL = 'info.urbandirection@gmail.com';
 const templates = [
   {
     name: '【Phase 1】予約完了メール',
-    subject: 'プレミアム商品券 予約完了のお知らせ',
+    subject: 'パスート24 プレミアム商品券 予約完了のお知らせ',
     html: getReservationConfirmationEmail('Phase1')
   },
   {
     name: '【Phase 2】予約完了メール',
-    subject: 'プレミアム商品券 予約完了のお知らせ',
+    subject: 'パスート24 プレミアム商品券 予約完了のお知らせ',
     html: getReservationConfirmationEmail('Phase2')
   },
   {
     name: '【当選】抽選結果メール',
-    subject: 'プレミアム商品券 抽選結果のお知らせ（当選）',
+    subject: 'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
     html: getWinnerEmail()
   },
   {
     name: '【落選】抽選結果メール',
-    subject: 'プレミアム商品券 抽選結果のお知らせ',
+    subject: 'パスート24 プレミアム商品券 抽選結果のお知らせ',
     html: getLoserEmail()
   }
 ];
@@ -285,7 +286,7 @@ async function sendEmail(template) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'onboarding@resend.dev',
+        from: FROM_EMAIL,
         to: [TEST_EMAIL],
         subject: template.subject,
         html: template.html

@@ -21,7 +21,7 @@ async function sendTestEmail() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: `パスート24事務局 <${FROM_EMAIL}>`,
+        from: FROM_EMAIL,
         to: [TO_EMAIL],
         subject: '【テスト】ドメイン認証完了確認',
         html: `

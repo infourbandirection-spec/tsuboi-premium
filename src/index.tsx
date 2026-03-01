@@ -963,7 +963,7 @@ app.post('/api/reserve', async (c) => {
 
       const emailResult = await sendEmail(
         data.email,
-        'プレミアム商品券 予約完了のお知らせ',
+        'パスート24 プレミアム商品券 予約完了のお知らせ',
         emailHTML,
         c.env
       )
@@ -1838,7 +1838,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
           const emailResult = await sendEmail(
             res.email,
-            'プレミアム商品券 抽選結果のお知らせ（当選）',
+            'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
             emailHTML,
             c.env
           )
@@ -1947,7 +1947,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         const emailResult = await sendEmail(
           winner.email,
-          'プレミアム商品券 抽選結果のお知らせ（当選）',
+          'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
           emailHTML,
           c.env
         )
@@ -1971,7 +1971,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         const emailResult = await sendEmail(
           loser.email,
-          'プレミアム商品券 抽選結果のお知らせ',
+          'パスート24 プレミアム商品券 抽選結果のお知らせ',
           emailHTML,
           c.env
         )
