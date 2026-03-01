@@ -972,7 +972,7 @@ class ReservationApp {
 
           <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-8 mb-6 text-center shadow-lg">
             <p class="text-sm mb-3 opacity-90 uppercase tracking-wide">${idLabel}</p>
-            <p class="text-5xl font-bold tracking-widest mb-6 break-all" id="reservationId">${data.reservationId}</p>
+            <p class="text-2xl md:text-4xl font-bold tracking-wide mb-6 whitespace-nowrap overflow-x-auto" id="reservationId">${data.reservationId}</p>
             <button onclick="app.copyToClipboard('${data.reservationId}')" 
                     class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 shadow-md transform hover:scale-105 transition">
               <i class="fas fa-copy mr-2"></i> ${isPhase1 ? '応募IDをコピー' : '予約IDをコピー'}
