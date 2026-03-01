@@ -41,11 +41,16 @@ async function sendEmail(
   try {
     // APIキーの確認
     if (!env.RESEND_API_KEY || env.RESEND_API_KEY === 're_YOUR_API_KEY_HERE') {
-      console.warn('Resend API key not configured. Email not sent.')
+      console.error('Resend API key not configured. Email not sent.')
       return { success: false, error: 'Email service not configured' }
     }
 
     const fromEmail = env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+    
+    console.log('Sending email via Resend API...')
+    console.log('From:', fromEmail)
+    console.log('To:', to)
+    console.log('Subject:', subject)
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -959,6 +964,8 @@ app.post('/api/reserve', async (c) => {
         lotteryStatus: currentPhase === 2 ? 'n/a' : 'pending'
       })
 
+      // メール送信処理
+      console.log('Attempting to send email to:', data.email)
       const emailResult = await sendEmail(
         data.email,
         'パスート24 プレミアム商品券 予約完了のお知らせ',
@@ -966,7 +973,9 @@ app.post('/api/reserve', async (c) => {
         c.env
       )
 
-      if (!emailResult.success) {
+      if (emailResult.success) {
+        console.log('Reservation confirmation email sent successfully:', emailResult.messageId)
+      } else {
         console.warn('Failed to send reservation confirmation email:', emailResult.error)
         // メール送信失敗してもエラーレスポンスは返さない（予約自体は成功）
       }
