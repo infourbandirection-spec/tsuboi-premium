@@ -946,7 +946,7 @@ class ReservationApp {
     const phaseNotice = isPhase1 ? `
       <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
         <div class="flex items-start">
-          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-4 mt-1"></i>
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-4 mt-1"></i>
           <div>
             <h3 class="text-lg font-bold text-yellow-700 mb-2">
               抽選結果のお知らせ
@@ -985,7 +985,7 @@ class ReservationApp {
 
           <div class="bg-red-50 border-2 border-red-400 rounded-lg p-6 mb-6">
             <div class="flex items-start">
-              <i class="fas fa-camera text-red-500 text-3xl mr-4 mt-1"></i>
+              <i class="fas fa-camera text-red-500 text-2xl mr-4 mt-1"></i>
               <div>
                 <h3 class="text-lg font-bold text-red-700 mb-2">
                   必ずスクリーンショットを保存してください
