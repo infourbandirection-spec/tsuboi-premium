@@ -316,20 +316,13 @@ function getLotteryLoserEmailHTML(data: {
       </table>
     </div>
     
-    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="color: #1e40af; margin-top: 0; font-size: 16px;">💡 先着順予約のご案内</h3>
-      <p style="color: #1e3a8a; margin: 10px 0;">
-        商品券が残った場合に限り、先着順での予約を受け付けております。<br>
-        在庫がある場合、ご予約いただけます。
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">📢 キャンセル待ちについて</h3>
+      <p style="color: #78350f; margin: 10px 0;">
+        当選者のキャンセルが発生した場合、落選者の中から順次ご連絡させていただく場合がございます。<br>
+        その際は、メールまたはお電話にてご案内いたします。
       </p>
     </div>
-    
-    <p style="text-align: center; margin-top: 30px;">
-      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/" 
-         style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-        予約ページはこちら
-      </a>
-    </p>
     
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
     
