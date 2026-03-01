@@ -62,21 +62,32 @@ class AdminApp {
             <i class="fas fa-shield-alt text-6xl text-blue-600 mb-4"></i>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">管理者ログイン</h1>
             <p class="text-gray-600">
-              管理画面にアクセスするには認証が必要です
+              IDとパスワードを入力してください
             </p>
           </div>
           
           <form onsubmit="adminApp.handleLogin(event)" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-user mr-1"></i> ユーザーID
+              </label>
+              <input type="text" id="adminUsername" required
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                     placeholder="ユーザーIDを入力"
+                     autocomplete="username">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-lock mr-1"></i> パスワード
               </label>
               <input type="password" id="adminPassword" required
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                     placeholder="管理者パスワードを入力">
+                     placeholder="パスワードを入力"
+                     autocomplete="current-password">
             </div>
             
-            <button type="submit" 
+            <button type="submit" id="loginBtn"
                     class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
               <i class="fas fa-sign-in-alt mr-2"></i> ログイン
             </button>
@@ -102,22 +113,29 @@ class AdminApp {
   async handleLogin(event) {
     event.preventDefault()
     
+    const username = document.getElementById('adminUsername').value
     const password = document.getElementById('adminPassword').value
     const errorDiv = document.getElementById('loginError')
     const errorMessage = document.getElementById('loginErrorMessage')
+    const loginBtn = document.getElementById('loginBtn')
+    
+    // ボタンを無効化
+    loginBtn.disabled = true
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 認証中...'
     
     try {
-      const response = await fetch('/api/admin/auth', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ username, password })
       })
       
       const data = await response.json()
       
       if (data.success && data.token) {
-        // トークンを保存
+        // トークンとユーザー名を保存
         localStorage.setItem('adminToken', data.token)
+        localStorage.setItem('adminUsername', data.username)
         
         // 管理画面を再初期化
         await this.loadData()
@@ -125,11 +143,15 @@ class AdminApp {
       } else {
         errorDiv.classList.remove('hidden')
         errorMessage.textContent = data.error || 'ログインに失敗しました'
+        loginBtn.disabled = false
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> ログイン'
       }
     } catch (error) {
       console.error('Login error:', error)
       errorDiv.classList.remove('hidden')
       errorMessage.textContent = 'システムエラーが発生しました'
+      loginBtn.disabled = false
+      loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> ログイン'
     }
   }
 
