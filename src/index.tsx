@@ -968,7 +968,7 @@ app.post('/api/reserve', async (c) => {
       console.log('Attempting to send email to:', data.email)
       const emailResult = await sendEmail(
         data.email,
-        'パスート24 プレミアム商品券 予約完了のお知らせ',
+        'パスート24 プレミアム商品券 予約完了',
         emailHTML,
         c.env
       )
