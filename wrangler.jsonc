@@ -17,8 +17,7 @@
   // ローカル開発用: .dev.vars ファイルに設定
   // 本番環境用: wrangler secret put コマンドで設定
   "vars": {
-    "RESEND_FROM_EMAIL": "onboarding@resend.dev"
+    "RESEND_FROM_EMAIL": "info@urbandirection.jp"
   }
-  // 注意: onboarding@resend.dev は Resend の認証済みアドレス
-  // 本番環境でドメイン認証完了後、info@urbandirection.jp に変更してください
+  // ドメイン認証が完了したため、info@urbandirection.jp から送信可能です
 }
