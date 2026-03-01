@@ -1035,15 +1035,70 @@ app.post('/api/search', async (c) => {
   }
 })
 
-// 管理者認証チェック
+// 管理者ログイン
+app.post('/api/admin/login', async (c) => {
+  try {
+    const { username, password } = await c.req.json()
+    const db = c.env.DB
+    
+    // ユーザー認証
+    const user = await db.prepare(`
+      SELECT username FROM admin_users 
+      WHERE username = ? AND password_hash = ?
+    `).bind(username, password).first()
+    
+    if (!user) {
+      return c.json({
+        success: false,
+        error: 'ユーザー名またはパスワードが正しくありません'
+      }, 401)
+    }
+    
+    // セッショントークン生成
+    const token = crypto.randomUUID()
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24時間
+    
+    await db.prepare(`
+      INSERT INTO admin_sessions (token, username, expires_at)
+      VALUES (?, ?, ?)
+    `).bind(token, username, expiresAt.toISOString()).run()
+    
+    return c.json({
+      success: true,
+      token,
+      username,
+      message: 'ログインに成功しました'
+    })
+  } catch (error) {
+    logSecureError('Admin login', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 管理者認証チェック（旧API - 互換性のため残す）
 app.post('/api/admin/auth', async (c) => {
   try {
     const { password } = await c.req.json()
-    const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+    const db = c.env.DB
     
-    if (password === adminPassword) {
-      // 簡易トークン生成（本番環境ではJWT等を使用）
-      const token = btoa(`admin:${password}:${Date.now()}`)
+    // パスワードでユーザーを検索（後方互換性）
+    const user = await db.prepare(`
+      SELECT username FROM admin_users 
+      WHERE password_hash = ?
+    `).bind(password).first()
+    
+    if (user) {
+      const token = crypto.randomUUID()
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      
+      await db.prepare(`
+        INSERT INTO admin_sessions (token, username, expires_at)
+        VALUES (?, ?, ?)
+      `).bind(token, user.username, expiresAt.toISOString()).run()
+      
       return c.json({
         success: true,
         token,
@@ -2225,6 +2280,58 @@ app.post('/api/reservation/lookup/birthdate', async (c) => {
     })
   } catch (error) {
     logSecureError('ReservationLookupByBirthdate', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 管理者パスワード変更
+app.post('/api/admin/change-password', async (c) => {
+  try {
+    const { token, username, currentPassword, newPassword } = await c.req.json()
+    const db = c.env.DB
+    
+    // トークン認証
+    const session = await db.prepare(`
+      SELECT username FROM admin_sessions 
+      WHERE token = ? AND expires_at > datetime('now')
+    `).bind(token).first()
+    
+    if (!session) {
+      return c.json({
+        success: false,
+        error: 'セッションが無効です。再度ログインしてください'
+      }, 401)
+    }
+    
+    // 現在のパスワード確認
+    const user = await db.prepare(`
+      SELECT username FROM admin_users 
+      WHERE username = ? AND password_hash = ?
+    `).bind(username, currentPassword).first()
+    
+    if (!user) {
+      return c.json({
+        success: false,
+        error: '現在のパスワードが正しくありません'
+      }, 401)
+    }
+    
+    // パスワード更新
+    await db.prepare(`
+      UPDATE admin_users 
+      SET password_hash = ?, updated_at = datetime('now')
+      WHERE username = ?
+    `).bind(newPassword, username).run()
+    
+    return c.json({
+      success: true,
+      message: 'パスワードを変更しました'
+    })
+  } catch (error) {
+    logSecureError('Change password', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'

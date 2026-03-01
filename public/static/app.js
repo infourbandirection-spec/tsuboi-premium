@@ -126,11 +126,6 @@ class ReservationApp {
                   <i class="fas fa-search mr-2"></i>
                   予約照会
                 </button>
-                <button onclick="app.showAdminLogin()" 
-                        class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition flex items-center text-sm">
-                  <i class="fas fa-user-shield mr-2"></i>
-                  管理者
-                </button>
               </div>
             </div>
           </div>
@@ -1086,7 +1081,7 @@ class ReservationApp {
           <div class="text-center mb-8">
             <i class="fas fa-user-shield text-6xl text-blue-600 mb-4"></i>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">管理者ログイン</h1>
-            <p class="text-gray-600">パスワードを入力してください</p>
+            <p class="text-gray-600">IDとパスワードを入力してください</p>
           </div>
 
           <div id="loginError" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 p-4 rounded">
@@ -1099,11 +1094,23 @@ class ReservationApp {
           <form onsubmit="app.handleAdminLogin(event)" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-user mr-2"></i>ユーザーID
+              </label>
+              <input type="text" id="adminUsername" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="ユーザーIDを入力"
+                     autocomplete="username"
+                     required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-lock mr-2"></i>パスワード
               </label>
               <input type="password" id="adminPassword" 
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                      placeholder="パスワードを入力"
+                     autocomplete="current-password"
                      required>
             </div>
 
@@ -1117,13 +1124,6 @@ class ReservationApp {
               <i class="fas fa-arrow-left mr-2"></i> トップに戻る
             </button>
           </form>
-
-          <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <p class="text-sm text-blue-700">
-              <i class="fas fa-info-circle mr-2"></i>
-              <strong>開発環境のデフォルトパスワード:</strong> admin123
-            </p>
-          </div>
         </div>
       </div>
     `
@@ -1133,6 +1133,7 @@ class ReservationApp {
     event.preventDefault()
     
     const loginBtn = document.getElementById('loginBtn')
+    const usernameInput = document.getElementById('adminUsername')
     const passwordInput = document.getElementById('adminPassword')
     const errorDiv = document.getElementById('loginError')
     const errorText = document.getElementById('loginErrorText')
@@ -1142,12 +1143,13 @@ class ReservationApp {
     errorDiv.classList.add('hidden')
 
     try {
-      const response = await fetch('/api/admin/auth', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          username: usernameInput.value,
           password: passwordInput.value
         })
       })
@@ -1155,8 +1157,9 @@ class ReservationApp {
       const data = await response.json()
 
       if (data.success) {
-        // トークンをlocalStorageに保存
+        // トークンとユーザー名をlocalStorageに保存
         localStorage.setItem('adminToken', data.token)
+        localStorage.setItem('adminUsername', data.username)
         
         // 管理画面にリダイレクト
         window.location.href = '/admin'

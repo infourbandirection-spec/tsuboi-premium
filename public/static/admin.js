@@ -204,6 +204,7 @@ class AdminApp {
   }
 
   renderHeader() {
+    const username = localStorage.getItem('adminUsername') || 'admin'
     return `
       <header class="bg-blue-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -212,10 +213,19 @@ class AdminApp {
               <i class="fas fa-cog mr-3"></i>
               プレミアム商品券 管理画面
             </h1>
-            <button onclick="adminApp.logout()" 
-                    class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-bold transition">
-              <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
-            </button>
+            <div class="flex items-center gap-4">
+              <span class="text-sm opacity-90">
+                <i class="fas fa-user mr-1"></i>${username}
+              </span>
+              <button onclick="adminApp.showPasswordChangeModal()" 
+                      class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition text-sm">
+                <i class="fas fa-key mr-2"></i> パスワード変更
+              </button>
+              <button onclick="adminApp.logout()" 
+                      class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-bold transition">
+                <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -1630,9 +1640,177 @@ class AdminApp {
     }
   }
 
+  showPasswordChangeModal() {
+    const modal = document.createElement('div')
+    modal.id = 'passwordChangeModal'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-key text-yellow-500 mr-2"></i>
+            パスワード変更
+          </h2>
+          <button onclick="adminApp.closePasswordChangeModal()" 
+                  class="text-gray-400 hover:text-gray-600 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div id="passwordChangeError" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 p-4 rounded">
+          <p class="text-sm text-red-700">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span id="passwordChangeErrorText"></span>
+          </p>
+        </div>
+        
+        <div id="passwordChangeSuccess" class="hidden mb-4 bg-green-100 border-l-4 border-green-500 p-4 rounded">
+          <p class="text-sm text-green-700">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="passwordChangeSuccessText"></span>
+          </p>
+        </div>
+        
+        <form onsubmit="adminApp.handlePasswordChange(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-lock mr-1"></i> 現在のパスワード
+            </label>
+            <input type="password" id="currentPassword" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   placeholder="現在のパスワードを入力">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-key mr-1"></i> 新しいパスワード
+            </label>
+            <input type="password" id="newPassword" required minlength="8"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   placeholder="新しいパスワード（8文字以上）">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-check mr-1"></i> 新しいパスワード（確認）
+            </label>
+            <input type="password" id="confirmPassword" required minlength="8"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   placeholder="新しいパスワードを再入力">
+          </div>
+          
+          <div class="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-gray-700">
+            <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+            パスワードは8文字以上で設定してください
+          </div>
+          
+          <div class="flex gap-3 pt-4">
+            <button type="submit" id="changePasswordBtn"
+                    class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+              <i class="fas fa-save mr-2"></i> 変更する
+            </button>
+            <button type="button" onclick="adminApp.closePasswordChangeModal()"
+                    class="flex-1 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold transition">
+              <i class="fas fa-times mr-2"></i> キャンセル
+            </button>
+          </div>
+        </form>
+      </div>
+    `
+    document.body.appendChild(modal)
+  }
+  
+  closePasswordChangeModal() {
+    const modal = document.getElementById('passwordChangeModal')
+    if (modal) {
+      modal.remove()
+    }
+  }
+  
+  async handlePasswordChange(event) {
+    event.preventDefault()
+    
+    const currentPassword = document.getElementById('currentPassword').value
+    const newPassword = document.getElementById('newPassword').value
+    const confirmPassword = document.getElementById('confirmPassword').value
+    const errorDiv = document.getElementById('passwordChangeError')
+    const errorText = document.getElementById('passwordChangeErrorText')
+    const successDiv = document.getElementById('passwordChangeSuccess')
+    const successText = document.getElementById('passwordChangeSuccessText')
+    const btn = document.getElementById('changePasswordBtn')
+    
+    // エラーメッセージをクリア
+    errorDiv.classList.add('hidden')
+    successDiv.classList.add('hidden')
+    
+    // バリデーション
+    if (newPassword.length < 8) {
+      errorText.textContent = 'パスワードは8文字以上で設定してください'
+      errorDiv.classList.remove('hidden')
+      return
+    }
+    
+    if (newPassword !== confirmPassword) {
+      errorText.textContent = '新しいパスワードが一致しません'
+      errorDiv.classList.remove('hidden')
+      return
+    }
+    
+    if (currentPassword === newPassword) {
+      errorText.textContent = '新しいパスワードは現在のパスワードと異なるものを設定してください'
+      errorDiv.classList.remove('hidden')
+      return
+    }
+    
+    btn.disabled = true
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 変更中...'
+    
+    try {
+      const token = localStorage.getItem('adminToken')
+      const username = localStorage.getItem('adminUsername')
+      
+      const response = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token,
+          username,
+          currentPassword,
+          newPassword
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        successText.textContent = 'パスワードを変更しました'
+        successDiv.classList.remove('hidden')
+        
+        // 2秒後にモーダルを閉じる
+        setTimeout(() => {
+          this.closePasswordChangeModal()
+        }, 2000)
+      } else {
+        errorText.textContent = data.error || 'パスワード変更に失敗しました'
+        errorDiv.classList.remove('hidden')
+        btn.disabled = false
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i> 変更する'
+      }
+    } catch (error) {
+      console.error('Password change error:', error)
+      errorText.textContent = 'システムエラーが発生しました'
+      errorDiv.classList.remove('hidden')
+      btn.disabled = false
+      btn.innerHTML = '<i class="fas fa-save mr-2"></i> 変更する'
+    }
+  }
+
   logout() {
     if (confirm('ログアウトしますか？')) {
       localStorage.removeItem('adminToken')
+      localStorage.removeItem('adminUsername')
       window.location.href = '/'
     }
   }
