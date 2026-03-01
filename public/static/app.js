@@ -113,9 +113,14 @@ class ReservationApp {
           <div class="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
               <div class="flex-1">
-                <h1 class="text-lg md:text-3xl font-bold text-gray-800 mb-1 md:mb-2 flex items-center">
-                  <i class="fas fa-ticket-alt text-blue-500 mr-2 text-base md:text-2xl"></i>
-                  <span class="leading-tight">パスート24 プレミアム商品券抽選・応募システム</span>
+                <h1 class="text-lg md:text-3xl font-bold text-gray-800 mb-1 md:mb-2">
+                  <div class="flex items-center mb-1">
+                    <i class="fas fa-ticket-alt text-blue-500 mr-2 text-base md:text-2xl"></i>
+                    <span class="leading-tight">パスート24プレミアム商品券</span>
+                  </div>
+                  <div class="leading-tight pl-6 md:pl-8">
+                    抽選・応募システム
+                  </div>
                 </h1>
                 <p class="text-sm md:text-base text-gray-600">ご希望の商品券をご予約いただけます</p>
               </div>
