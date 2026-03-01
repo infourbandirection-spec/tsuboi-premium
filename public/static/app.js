@@ -949,9 +949,10 @@ class ReservationApp {
     const phaseNotice = isPhase1 ? `
       <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
         <div class="flex items-start">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mr-4 mt-1"></i>
           <div>
-            <h3 class="text-lg font-bold text-yellow-700 mb-2 flex items-center">
-              <span class="text-3xl mr-2">🎯</span> 抽選結果のお知らせ
+            <h3 class="text-lg font-bold text-yellow-700 mb-2">
+              抽選結果のお知らせ
             </h3>
             <p class="text-sm text-gray-700 mb-2">
               • この応募は<strong>抽選対象</strong>です<br>
