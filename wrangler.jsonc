@@ -9,8 +9,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "webapp-production",
-      "database_id": ""
+      "database_name": "passport24-voucher-production",
+      "database_id": "92ba7506-598f-4bb2-baf8-40d07a379224"
     }
   ],
   // Resend API configuration
