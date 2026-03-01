@@ -1320,7 +1320,11 @@ class AdminApp {
                       if (r.lottery_status !== 'won') return
                     }
                     
-                    const key = `${r.pickup_date}|${r.pickup_time_slot}`
+                    // 時間帯を正規化（～を-に変換）
+                    const normalizedTime = (r.pickup_time_slot || '').replace(/～/g, '-')
+                    if (!normalizedTime) return // 時間帯がない場合はスキップ
+                    
+                    const key = `${r.pickup_date}|${normalizedTime}`
                     if (!dateTimeMap[key]) {
                       dateTimeMap[key] = { count: 0, quantity: 0 }
                     }
