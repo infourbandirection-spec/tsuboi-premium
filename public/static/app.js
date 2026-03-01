@@ -138,7 +138,7 @@ class ReservationApp {
           <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg shadow-lg p-6 mb-6">
             <div class="flex items-center justify-center">
               <div class="text-center">
-                <p class="text-lg opacity-90 mb-2">予約受付中</p>
+                <p class="text-lg opacity-90 mb-2">応募受付中</p>
                 <p class="text-2xl font-bold">
                   <i class="fas fa-check-circle mr-2"></i>受付可能
                 </p>
