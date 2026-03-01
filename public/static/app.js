@@ -115,7 +115,7 @@ class ReservationApp {
               <div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
                   <i class="fas fa-ticket-alt text-blue-500 mr-3"></i>
-                  プレミアム商品券抽選・応募システム
+                  パスート24 プレミアム商品券抽選・応募システム
                 </h1>
                 <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
               </div>
