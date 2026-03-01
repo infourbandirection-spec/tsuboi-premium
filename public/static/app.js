@@ -299,10 +299,6 @@ class ReservationApp {
                  value="${this.formData.fullName}"
                  placeholder="例: 山田 太郎"
                  maxlength="50">
-          <p class="mt-2 text-sm text-gray-500">
-            <i class="fas fa-info-circle mr-1"></i>
-            姓名の間にスペースを入れてください
-          </p>
         </div>
         
         <!-- かな（ひらがな） -->
@@ -313,10 +309,6 @@ class ReservationApp {
                  value="${this.formData.kana}"
                  placeholder="例: やまだ たろう"
                  maxlength="50">
-          <p class="mt-2 text-sm text-gray-500">
-            <i class="fas fa-info-circle mr-1"></i>
-            ひらがなで姓名の間にスペースを入れてください
-          </p>
         </div>
       </div>
       <div class="mt-8 flex justify-between">
