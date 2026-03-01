@@ -110,20 +110,20 @@ class ReservationApp {
       <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
         <div class="max-w-4xl mx-auto">
           <!-- ヘッダー -->
-          <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div class="flex justify-between items-start">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
-                  <i class="fas fa-ticket-alt text-blue-500 mr-3"></i>
-                  パスート24 プレミアム商品券抽選・応募システム
+          <div class="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+              <div class="flex-1">
+                <h1 class="text-lg md:text-3xl font-bold text-gray-800 mb-1 md:mb-2 flex items-center">
+                  <i class="fas fa-ticket-alt text-blue-500 mr-2 text-base md:text-2xl"></i>
+                  <span class="leading-tight">パスート24 プレミアム商品券抽選・応募システム</span>
                 </h1>
-                <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
+                <p class="text-sm md:text-base text-gray-600">ご希望の商品券をご予約いただけます</p>
               </div>
               <!-- ボタンエリア -->
-              <div class="flex gap-2">
+              <div class="flex gap-2 justify-end">
                 <button onclick="location.href='/lookup'" 
-                        class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center text-sm">
-                  <i class="fas fa-search mr-2"></i>
+                        class="px-3 py-2 md:px-4 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center text-xs md:text-sm whitespace-nowrap">
+                  <i class="fas fa-search mr-1 md:mr-2"></i>
                   予約照会
                 </button>
               </div>
@@ -131,11 +131,11 @@ class ReservationApp {
           </div>
 
           <!-- システム状態 -->
-          <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg shadow-lg p-6 mb-6">
+          <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
             <div class="flex items-center justify-center">
               <div class="text-center">
-                <p class="text-lg opacity-90 mb-2">応募受付中</p>
-                <p class="text-2xl font-bold">
+                <p class="text-sm md:text-lg opacity-90 mb-1 md:mb-2">応募受付中</p>
+                <p class="text-lg md:text-2xl font-bold">
                   <i class="fas fa-check-circle mr-2"></i>受付可能
                 </p>
               </div>
