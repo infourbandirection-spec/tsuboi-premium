@@ -205,6 +205,43 @@ class AdminApp {
     }
   }
 
+  async refreshData() {
+    // ローディング表示
+    const refreshBtn = event.target.closest('button')
+    const originalHTML = refreshBtn.innerHTML
+    refreshBtn.disabled = true
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 更新中...'
+    
+    try {
+      await this.loadData()
+      this.render()
+      
+      // 成功メッセージ
+      refreshBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 更新完了'
+      refreshBtn.classList.remove('bg-green-500', 'hover:bg-green-600')
+      refreshBtn.classList.add('bg-blue-500')
+      
+      setTimeout(() => {
+        refreshBtn.innerHTML = originalHTML
+        refreshBtn.disabled = false
+        refreshBtn.classList.remove('bg-blue-500')
+        refreshBtn.classList.add('bg-green-500', 'hover:bg-green-600')
+      }, 2000)
+    } catch (error) {
+      console.error('Refresh error:', error)
+      refreshBtn.innerHTML = '<i class="fas fa-times mr-2"></i> エラー'
+      refreshBtn.classList.remove('bg-green-500', 'hover:bg-green-600')
+      refreshBtn.classList.add('bg-red-500')
+      
+      setTimeout(() => {
+        refreshBtn.innerHTML = originalHTML
+        refreshBtn.disabled = false
+        refreshBtn.classList.remove('bg-red-500')
+        refreshBtn.classList.add('bg-green-500', 'hover:bg-green-600')
+      }, 2000)
+    }
+  }
+
   render() {
     const app = document.getElementById('admin-app')
     app.innerHTML = `
@@ -239,6 +276,10 @@ class AdminApp {
               <span class="text-sm opacity-90">
                 <i class="fas fa-user mr-1"></i>${username}
               </span>
+              <button onclick="adminApp.refreshData()" 
+                      class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg font-bold transition text-sm">
+                <i class="fas fa-sync-alt mr-2"></i> 更新
+              </button>
               <button onclick="adminApp.showPasswordChangeModal()" 
                       class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition text-sm">
                 <i class="fas fa-key mr-2"></i> パスワード変更
@@ -1080,8 +1121,12 @@ class AdminApp {
       dateMap[r.pickup_date].stores[r.store_location].count++
       dateMap[r.pickup_date].stores[r.store_location].quantity += r.quantity
 
+      // 時間帯を正規化（～を-に変換）
+      const normalizedTime = (r.pickup_time_slot || r.pickup_time || '').replace(/～/g, '-')
+      if (!normalizedTime) return // 時間帯がない場合はスキップ
+
       // 店舗×時間帯マトリックス（全日付）
-      const key = `${r.store_location}|${r.pickup_time_slot}`
+      const key = `${r.store_location}|${normalizedTime}`
       if (!storeTimeMap[key]) {
         storeTimeMap[key] = { count: 0, quantity: 0 }
       }
@@ -1089,7 +1134,7 @@ class AdminApp {
       storeTimeMap[key].quantity += r.quantity
 
       // 店舗×時間帯×日付マトリックス
-      const dateKey = `${r.store_location}|${r.pickup_time_slot}|${r.pickup_date}`
+      const dateKey = `${r.store_location}|${normalizedTime}|${r.pickup_date}`
       if (!storeTimeDateMap[dateKey]) {
         storeTimeDateMap[dateKey] = { count: 0, quantity: 0 }
       }
