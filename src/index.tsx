@@ -16,7 +16,7 @@ type Reservation = {
   fullName: string
   kana: string
   phoneNumber: string
-  email?: string // オプショナル
+  email: string // 必須
   quantity: number
   store: string
   pickupDate: string
@@ -663,7 +663,7 @@ function validateReservation(data: any, currentPhase: number = 1): { valid: bool
   if (data.store) data.store = sanitizeInput(data.store)
 
   // 必須項目チェック
-  const required = ['birthDate', 'fullName', 'kana', 'phoneNumber', 'quantity', 'store', 'pickupDate', 'pickupTime']
+  const required = ['birthDate', 'fullName', 'kana', 'phoneNumber', 'email', 'quantity', 'store', 'pickupDate', 'pickupTime']
   for (const field of required) {
     if (!data[field]) {
       return { valid: false, error: `${field}は必須です` }
@@ -692,6 +692,11 @@ function validateReservation(data: any, currentPhase: number = 1): { valid: bool
   const phoneValidation = validatePhoneNumber(data.phoneNumber)
   if (!phoneValidation.valid) {
     return phoneValidation
+  }
+
+  // メールアドレスバリデーション（必須）
+  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    return { valid: false, error: 'メールアドレスの形式が正しくありません' }
   }
 
   // 冊数チェック

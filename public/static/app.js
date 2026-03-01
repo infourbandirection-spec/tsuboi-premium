@@ -349,8 +349,10 @@ class ReservationApp {
         </p>
         
         <!-- メールアドレス入力 -->
-        <label class="block text-sm font-medium text-gray-700 mb-2 mt-6">メールアドレス（任意）</label>
-        <input type="email" id="email" 
+        <label class="block text-sm font-medium text-gray-700 mb-2 mt-6">
+          メールアドレス <span class="text-red-500">*</span>
+        </label>
+        <input type="email" id="email" required
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.email || ''}"
                placeholder="例: example@email.com">
@@ -788,9 +790,9 @@ class ReservationApp {
           alert('電話番号を正しく入力してください')
           return
         }
-        // メールアドレスのバリデーション（任意なのでスキップ可能）
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          alert('メールアドレスの形式が正しくありません')
+        // メールアドレスのバリデーション（必須）
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          alert('メールアドレスを正しく入力してください')
           return
         }
         this.formData.phoneNumber = phoneNumber
