@@ -336,6 +336,7 @@ class ReservationApp {
       <div class="max-w-md">
         <label class="block text-sm font-medium text-gray-700 mb-2">電話番号 <span class="text-red-500 text-xs align-super">★</span></label>
         <input type="tel" id="phoneNumber" 
+               inputmode="tel"
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.phoneNumber}"
                placeholder="例: 090-1234-5678"
@@ -350,6 +351,7 @@ class ReservationApp {
           メールアドレス <span class="text-red-500 text-xs align-super">★</span>
         </label>
         <input type="email" id="email" required
+               inputmode="email"
                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                value="${this.formData.email || ''}"
                placeholder="例: example@email.com">
@@ -734,15 +736,38 @@ class ReservationApp {
   }
 
   attachEventListeners() {
-    // 電話番号の自動ハイフン挿入
+    // 電話番号とメールアドレスの入力制御
     document.addEventListener('input', (e) => {
+      // 電話番号：半角数字のみに変換し、自動ハイフン挿入
       if (e.target.id === 'phoneNumber') {
-        let value = e.target.value.replace(/[^0-9]/g, '')
+        // 全角数字を半角に変換し、数字以外を削除
+        let value = e.target.value
+          .replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+          .replace(/[^0-9]/g, '')
+        
         if (value.length > 3 && value.length <= 7) {
           value = value.slice(0, 3) + '-' + value.slice(3)
         } else if (value.length > 7) {
           value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11)
         }
+        e.target.value = value
+      }
+      
+      // メールアドレス：強制的に半角英数字に変換
+      if (e.target.id === 'email') {
+        // 全角英数字を半角に変換
+        let value = e.target.value
+          // 全角英字を半角に
+          .replace(/[Ａ-Ｚａ-ｚ]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+          // 全角数字を半角に
+          .replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+          // 全角記号を半角に
+          .replace(/＠/g, '@')
+          .replace(/．/g, '.')
+          .replace(/＿/g, '_')
+          .replace(/－/g, '-')
+          .replace(/＋/g, '+')
+        
         e.target.value = value
       }
     })
