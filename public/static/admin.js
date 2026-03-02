@@ -18,14 +18,21 @@ class AdminApp {
   }
 
   async init() {
+    console.log('[Admin] Initialization started')
+    
     // 認証チェック
     const isAuthenticated = await this.checkAuthentication()
+    console.log('[Admin] Authentication check result:', isAuthenticated)
+    
     if (!isAuthenticated) {
+      console.log('[Admin] Not authenticated, showing login form')
       this.showLoginRequired()
       return
     }
 
+    console.log('[Admin] Authenticated, loading data')
     await this.loadData()
+    console.log('[Admin] Data loaded, rendering view')
     this.render()
   }
 
@@ -54,7 +61,13 @@ class AdminApp {
   }
 
   showLoginRequired() {
+    console.log('[Admin] Showing login form')
     const app = document.getElementById('admin-app')
+    if (!app) {
+      console.error('[Admin] ERROR: admin-app element not found!')
+      return
+    }
+    console.log('[Admin] admin-app element found, injecting HTML')
     app.innerHTML = `
       <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
