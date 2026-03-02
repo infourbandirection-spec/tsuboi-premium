@@ -2499,4 +2499,152 @@ app.post('/api/admin/change-password', async (c) => {
   }
 })
 
+// ===== テストメール送信API =====
+
+// 予約完了メールのテスト送信
+app.post('/api/test/email/reservation', async (c) => {
+  try {
+    const data = await c.req.json()
+    
+    if (!data.email) {
+      return c.json({
+        success: false,
+        error: 'メールアドレスが必要です'
+      }, 400)
+    }
+    
+    const emailHTML = getReservationConfirmationEmailHTML({
+      fullName: data.fullName || 'テスト 太郎',
+      reservationId: data.reservationId || 'TEST-20260302-ABCD12',
+      quantity: data.quantity || 3,
+      storeLocation: data.store || '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+      pickupDate: data.pickupDate || '2026-03-17',
+      pickupTime: data.pickupTime || '15:00～16:00',
+      reservationPhase: data.reservationPhase || 1,
+      lotteryStatus: data.lotteryStatus || 'pending'
+    })
+    
+    const emailResult = await sendEmail(
+      data.email,
+      'パスート24 プレミアム商品券 予約完了',
+      emailHTML,
+      c.env
+    )
+    
+    if (emailResult.success) {
+      return c.json({
+        success: true,
+        message: 'テストメールを送信しました',
+        messageId: emailResult.messageId
+      })
+    } else {
+      return c.json({
+        success: false,
+        error: emailResult.error
+      }, 500)
+    }
+  } catch (error) {
+    logSecureError('Test email - reservation', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選当選メールのテスト送信
+app.post('/api/test/email/winner', async (c) => {
+  try {
+    const data = await c.req.json()
+    
+    if (!data.email) {
+      return c.json({
+        success: false,
+        error: 'メールアドレスが必要です'
+      }, 400)
+    }
+    
+    const emailHTML = getLotteryWinnerEmailHTML({
+      fullName: data.fullName || 'テスト 花子',
+      reservationId: data.reservationId || 'TEST-20260302-WINNER',
+      quantity: data.quantity || 2,
+      storeLocation: data.store || '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+      pickupDate: data.pickupDate || '2026-03-18',
+      pickupTime: data.pickupTime || '16:00～17:00'
+    })
+    
+    const emailResult = await sendEmail(
+      data.email,
+      'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
+      emailHTML,
+      c.env
+    )
+    
+    if (emailResult.success) {
+      return c.json({
+        success: true,
+        message: 'テストメールを送信しました',
+        messageId: emailResult.messageId
+      })
+    } else {
+      return c.json({
+        success: false,
+        error: emailResult.error
+      }, 500)
+    }
+  } catch (error) {
+    logSecureError('Test email - winner', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選落選メールのテスト送信
+app.post('/api/test/email/loser', async (c) => {
+  try {
+    const data = await c.req.json()
+    
+    if (!data.email) {
+      return c.json({
+        success: false,
+        error: 'メールアドレスが必要です'
+      }, 400)
+    }
+    
+    const emailHTML = getLotteryLoserEmailHTML({
+      fullName: data.fullName || 'テスト 次郎',
+      reservationId: data.reservationId || 'TEST-20260302-LOSER',
+      quantity: data.quantity || 1
+    })
+    
+    const emailResult = await sendEmail(
+      data.email,
+      'パスート24 プレミアム商品券 抽選結果のお知らせ',
+      emailHTML,
+      c.env
+    )
+    
+    if (emailResult.success) {
+      return c.json({
+        success: true,
+        message: 'テストメールを送信しました',
+        messageId: emailResult.messageId
+      })
+    } else {
+      return c.json({
+        success: false,
+        error: emailResult.error
+      }, 500)
+    }
+  } catch (error) {
+    logSecureError('Test email - loser', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 export default app
