@@ -1101,6 +1101,88 @@ app.post('/api/search', async (c) => {
   }
 })
 
+// 予約照会API（予約IDで検索）
+app.post('/api/reservation/lookup/id', async (c) => {
+  try {
+    const { reservationId } = await c.req.json()
+    const db = c.env.DB
+
+    if (!reservationId) {
+      return c.json({
+        success: false,
+        error: '予約IDを入力してください'
+      }, 400)
+    }
+
+    const reservation = await db.prepare(`
+      SELECT * FROM reservations WHERE reservation_id = ?
+    `).bind(reservationId).first()
+
+    if (!reservation) {
+      return c.json({
+        success: false,
+        error: '予約が見つかりませんでした'
+      }, 404)
+    }
+
+    return c.json({
+      success: true,
+      reservation
+    })
+
+  } catch (error) {
+    logSecureError('Lookup by ID', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 予約照会API（生年月日・電話番号で検索）
+app.post('/api/reservation/lookup/birthdate', async (c) => {
+  try {
+    const { birthDate, phoneNumber } = await c.req.json()
+    const db = c.env.DB
+
+    if (!birthDate || !phoneNumber) {
+      return c.json({
+        success: false,
+        error: '生年月日と電話番号を入力してください'
+      }, 400)
+    }
+
+    // ハイフンあり・なし両方で検索
+    const phoneClean = phoneNumber.replace(/[^0-9]/g, '')
+    
+    const reservations = await db.prepare(`
+      SELECT * FROM reservations 
+      WHERE birth_date = ? 
+      AND (phone_number = ? OR REPLACE(phone_number, '-', '') = ?)
+      ORDER BY created_at DESC
+    `).bind(birthDate, phoneNumber, phoneClean).all()
+
+    if (!reservations.results || reservations.results.length === 0) {
+      return c.json({
+        success: false,
+        error: '予約が見つかりませんでした'
+      }, 404)
+    }
+
+    return c.json({
+      success: true,
+      reservations: reservations.results
+    })
+
+  } catch (error) {
+    logSecureError('Lookup by birthdate', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // 管理者ログイン
 app.post('/api/admin/login', async (c) => {
   try {
