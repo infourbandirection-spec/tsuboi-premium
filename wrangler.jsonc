@@ -12,12 +12,9 @@
       "database_name": "passport24-voucher-production",
       "database_id": "92ba7506-598f-4bb2-baf8-40d07a379224"
     }
-  ],
+  ]
   // Resend API configuration
-  // ローカル開発用: .dev.vars ファイルに設定
-  // 本番環境用: wrangler secret put コマンドで設定
-  "vars": {
-    "RESEND_FROM_EMAIL": "onboarding@resend.dev"
-  }
-  // Resend認証済みデフォルトアドレスを使用（テスト用）
+  // ローカル開発用: .dev.vars ファイルに RESEND_FROM_EMAIL を設定
+  // 本番環境用: wrangler pages secret put RESEND_FROM_EMAIL で設定済み
+  // 現在の送信元: info.urbandirection@gmail.com
 }
