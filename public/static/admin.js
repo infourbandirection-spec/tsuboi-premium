@@ -170,45 +170,46 @@ class AdminApp {
 
   async loadData() {
     try {
+      const token = localStorage.getItem('adminToken')
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+      
       // 予約一覧取得（全件取得 + 抽選ステータスフィルター適用）
       let url = '/api/admin/reservations?limit=500'
       if (this.filters.lottery_status) {
         url += `&lottery_status=${this.filters.lottery_status}`
       }
-      const reservationsResponse = await fetch(url)
+      const reservationsResponse = await fetch(url, { headers })
       const reservationsData = await reservationsResponse.json()
       if (reservationsData.success) {
         this.reservations = reservationsData.data
       }
       
       // ヒートマップ用に全予約データを取得（落選者除外なし）
-      const allReservationsResponse = await fetch('/api/admin/reservations?limit=500&include_lost=true')
+      const allReservationsResponse = await fetch('/api/admin/reservations?limit=500&include_lost=true', { headers })
       const allReservationsData = await allReservationsResponse.json()
       if (allReservationsData.success) {
         this.allReservations = allReservationsData.data
       }
 
       // 統計データ取得
-      const statsResponse = await fetch('/api/admin/statistics')
+      const statsResponse = await fetch('/api/admin/statistics', { headers })
       const statsData = await statsResponse.json()
       if (statsData.success) {
         this.statistics = statsData.data
       }
 
       // システム設定取得
-      const token = localStorage.getItem('adminToken')
-      const settingsResponse = await fetch('/api/admin/settings', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const settingsResponse = await fetch('/api/admin/settings', { headers })
       const settingsData = await settingsResponse.json()
       if (settingsData.success) {
         this.settings = settingsData.settings
       }
 
       // 抽選結果取得
-      const lotteryResponse = await fetch('/api/admin/lottery/results', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const lotteryResponse = await fetch('/api/admin/lottery/results', { headers })
       const lotteryData = await lotteryResponse.json()
       if (lotteryData.success) {
         this.lotteryResults = lotteryData.results
