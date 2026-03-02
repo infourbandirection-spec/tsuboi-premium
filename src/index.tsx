@@ -342,6 +342,58 @@ function getLotteryLoserEmailHTML(data: {
 }
 
 // 簡易認証ミドルウェア
+// セッショントークン認証（UUID形式）
+async function verifySessionToken(c: any) {
+  const authHeader = c.req.header('Authorization')
+  
+  if (!authHeader) {
+    return c.json({ success: false, error: '認証が必要です' }, 401)
+  }
+
+  const [scheme, token] = authHeader.split(' ')
+  
+  if (scheme !== 'Bearer' || !token) {
+    return c.json({ success: false, error: '認証方式が無効です' }, 401)
+  }
+
+  try {
+    const db = c.env.DB
+    
+    // UUIDトークンをadmin_sessionsから検証
+    const session = await db.prepare(`
+      SELECT username, expires_at FROM admin_sessions 
+      WHERE token = ? AND expires_at > datetime('now')
+    `).bind(token).first()
+    
+    if (session) {
+      // セッションが有効
+      return null // 認証成功
+    }
+    
+    // 旧形式のトークン（Base64エンコード）も試す
+    try {
+      const decoded = atob(token)
+      const [username, password, timestamp] = decoded.split(':')
+      const adminPassword = c.env.ADMIN_PASSWORD || 'admin123'
+      
+      // トークンの有効期限チェック（24時間）
+      const tokenAge = Date.now() - parseInt(timestamp)
+      const isExpired = tokenAge > 24 * 60 * 60 * 1000
+      
+      if (username === 'admin' && password === adminPassword && !isExpired) {
+        return null // 旧形式トークンで認証成功
+      }
+    } catch {
+      // Base64デコード失敗、UUID形式のみをチェック済み
+    }
+    
+    return c.json({ success: false, error: '認証トークンが無効または期限切れです' }, 401)
+  } catch (error) {
+    console.error('Token verification error:', error)
+    return c.json({ success: false, error: '認証エラーが発生しました' }, 500)
+  }
+}
+
 function basicAuth(c: any) {
   const authHeader = c.req.header('Authorization')
   
@@ -1170,6 +1222,9 @@ app.post('/api/admin/verify', async (c) => {
 
 // 予約一覧取得（管理画面用）
 app.get('/api/admin/reservations', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
   try {
     const db = c.env.DB
     const { status, store, date, lottery_status, include_lost, limit = '100', offset = '0' } = c.req.query()
@@ -1275,6 +1330,9 @@ app.get('/api/admin/reservations', async (c) => {
 
 // ステータス更新（管理画面用）
 app.put('/api/admin/reservations/:id/status', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
   try {
     const id = c.req.param('id')
     const { status } = await c.req.json()
@@ -1309,7 +1367,7 @@ app.put('/api/admin/reservations/:id/status', async (c) => {
 
 // 受取完了処理（管理画面用）
 app.post('/api/admin/reservations/:id/pickup', async (c) => {
-  const authResponse = basicAuth(c)
+  const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
 
   try {
@@ -1363,6 +1421,9 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
 
 // 統計データ取得（管理画面用）
 app.get('/api/admin/statistics', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
   try {
     const db = c.env.DB
 
@@ -1756,7 +1817,7 @@ app.get('/privacy', (c) => {
 
 // システム設定取得
 app.get('/api/admin/settings', async (c) => {
-  const authResponse = basicAuth(c)
+  const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
 
   try {
@@ -1783,7 +1844,7 @@ app.get('/api/admin/settings', async (c) => {
 
 // システム設定更新
 app.put('/api/admin/settings', async (c) => {
-  const authResponse = basicAuth(c)
+  const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
 
   try {
@@ -1813,7 +1874,7 @@ app.put('/api/admin/settings', async (c) => {
 
 // 抽選実行
 app.post('/api/admin/lottery/execute', async (c) => {
-  const authResponse = basicAuth(c)
+  const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
 
   try {
@@ -2074,7 +2135,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
 // 抽選結果取得（管理者用）
 app.get('/api/admin/lottery/results', async (c) => {
-  const authResponse = basicAuth(c)
+  const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
 
   try {
@@ -2303,6 +2364,9 @@ app.post('/api/reservation/lookup/birthdate', async (c) => {
 
 // 管理者パスワード変更
 app.post('/api/admin/change-password', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
   try {
     const { token, username, currentPassword, newPassword } = await c.req.json()
     const db = c.env.DB
