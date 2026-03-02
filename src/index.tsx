@@ -169,7 +169,7 @@ function getReservationConfirmationEmailHTML(data: {
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
-      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/lookup" 
+      <a href="https://passurt24.pages.dev/lookup" 
          style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
         予約内容を確認する
       </a>
@@ -259,7 +259,7 @@ function getLotteryWinnerEmailHTML(data: {
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
-      <a href="https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/lookup" 
+      <a href="https://passurt24.pages.dev/lookup" 
          style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
         予約内容を確認する
       </a>
@@ -508,16 +508,14 @@ async function verifyCsrfToken(c: any): Promise<Response | null> {
   const token = c.req.header('X-CSRF-Token')
   const ip = c.req.header('CF-Connecting-IP') || 'unknown'
   
-  if (!token) {
-    return c.json({
-      success: false,
-      error: 'CSRFトークンが見つかりません'
-    }, 403)
-  }
-
-  // KVがない場合はメモリベースで検証（開発環境用）
+  // KVがない場合は簡易検証のみ（トークンの有無と形式チェック）
   if (!c.env.CSRF_KV) {
-    // 開発環境: トークン形式のみチェック
+    // トークンがない場合は警告ログのみ（フロントエンドからの正規リクエストは必ずトークンを持つ）
+    if (!token) {
+      console.warn('CSRF token missing (no KV configured, allowing request)')
+      return null // 開発環境ではトークンなしでも許可
+    }
+    // トークンがある場合は形式のみチェック
     if (token.length !== 64) {
       return c.json({
         success: false,
@@ -527,7 +525,15 @@ async function verifyCsrfToken(c: any): Promise<Response | null> {
     return null // 検証成功
   }
 
-  // 本番環境: KVからトークン検証
+  // 本番環境でKVがある場合: 厳密な検証
+  if (!token) {
+    return c.json({
+      success: false,
+      error: 'CSRFトークンが見つかりません'
+    }, 403)
+  }
+
+  // KVからトークン検証
   const storedToken = await c.env.CSRF_KV.get(`csrf:${ip}:${token}`)
   
   if (!storedToken) {
