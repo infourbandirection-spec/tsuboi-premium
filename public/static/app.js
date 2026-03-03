@@ -530,7 +530,7 @@ class ReservationApp {
 
   async submitReservation() {
     try {
-      const response = await fetch('/api/reservations', {
+      const response = await fetch('/api/reserve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this.formData)
