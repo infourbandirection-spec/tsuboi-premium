@@ -225,27 +225,23 @@ class ReservationApp {
 
   renderProgressBar() {
     const steps = [
-      { num: 1, label: '生年月日' },
-      { num: 2, label: '氏名' },
-      { num: 3, label: '連絡先' },
-      { num: 4, label: '冊数' },
-      { num: 5, label: '日時' },
+      { num: 1, label: '入力' },
       { num: 6, label: '確認' }
     ]
 
     return `
       <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div class="flex justify-between items-center">
-          ${steps.map(step => `
-            <div class="flex flex-col items-center flex-1">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2
+        <div class="flex justify-between items-center max-w-md mx-auto">
+          ${steps.map((step, index) => `
+            <div class="flex flex-col items-center ${index === 0 ? 'flex-1' : 'flex-1'}">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold mb-2 text-lg
                           ${this.currentStep === step.num ? 'bg-blue-500 text-white' : 
                             this.currentStep > step.num ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}">
-                ${this.currentStep > step.num ? '<i class="fas fa-check"></i>' : step.num}
+                ${this.currentStep > step.num ? '<i class="fas fa-check"></i>' : index + 1}
               </div>
-              <span class="text-xs text-gray-600 text-center hidden md:block">${step.label}</span>
+              <span class="text-sm text-gray-600 text-center font-medium">${step.label}</span>
             </div>
-            ${step.num < 6 ? '<div class="flex-1 h-1 bg-gray-200 mx-2 mt-5"></div>' : ''}
+            ${index < steps.length - 1 ? '<div class="flex-1 h-1 bg-gray-200 mx-4 mt-6"></div>' : ''}
           `).join('')}
         </div>
       </div>
@@ -253,15 +249,251 @@ class ReservationApp {
   }
 
   renderCurrentStep() {
-    switch (this.currentStep) {
-      case 1: return this.renderStep1()
-      case 2: return this.renderStep2()
-      case 3: return this.renderStep3()
-      case 4: return this.renderStep4()
-      case 5: return this.renderStep5()
-      case 6: return this.renderStep6()
-      default: return ''
+    // ステップ6（確認画面）のみ別表示
+    if (this.currentStep === 6) {
+      return this.renderStep6()
     }
+    
+    // ステップ1-5を1ページにまとめて表示
+    return this.renderAllSteps()
+  }
+
+  renderAllSteps() {
+    const maxQuantity = Math.min(6, this.systemStatus.remaining)
+    
+    // Phase 1 (固定日) の受け取り日時
+    const pickupDates = [
+      { value: '2026-03-16', label: '3月16日（月）' },
+      { value: '2026-03-17', label: '3月17日（火）' },
+      { value: '2026-03-18', label: '3月18日（水）' }
+    ]
+
+    const timeSlots = [
+      '12:00～13:00',
+      '13:00～14:00',
+      '15:00～16:00',
+      '16:00～17:00',
+      '17:00～18:00',
+      '18:00～19:00',
+      '19:00～20:00'
+    ]
+
+    return `
+      <div class="space-y-8">
+        <!-- ステップ1: 生年月日 -->
+        <div class="pb-8 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">1</span>
+            <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
+            生年月日
+          </h2>
+          <div class="max-w-md ml-11">
+            <label class="block text-sm font-medium text-gray-700 mb-2">生年月日 <span class="text-red-500 text-xs align-super">★</span></label>
+            <input type="date" id="birthDate" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   value="${this.formData.birthDate}"
+                   max="${new Date().toISOString().split('T')[0]}">
+            <p class="mt-2 text-sm text-gray-500">
+              <i class="fas fa-info-circle mr-1"></i>
+              未来の日付は選択できません
+            </p>
+          </div>
+        </div>
+
+        <!-- ステップ2: 氏名 -->
+        <div class="pb-8 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">2</span>
+            <i class="fas fa-user text-blue-500 mr-2"></i>
+            氏名
+          </h2>
+          <div class="max-w-md ml-11 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">氏名 <span class="text-red-500 text-xs align-super">★</span></label>
+              <input type="text" id="fullName" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     value="${this.formData.fullName}"
+                     placeholder="例: 山田 太郎"
+                     maxlength="50">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">かな <span class="text-red-500 text-xs align-super">★</span></label>
+              <input type="text" id="kana" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     value="${this.formData.kana}"
+                     placeholder="例: やまだ たろう"
+                     maxlength="50">
+            </div>
+          </div>
+        </div>
+
+        <!-- ステップ3: 連絡先 -->
+        <div class="pb-8 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">3</span>
+            <i class="fas fa-envelope text-blue-500 mr-2"></i>
+            連絡先
+          </h2>
+          <div class="max-w-md ml-11 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">電話番号 <span class="text-red-500 text-xs align-super">★</span></label>
+              <input type="tel" id="phoneNumber" 
+                     inputmode="tel"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     value="${this.formData.phoneNumber}"
+                     placeholder="例: 090-1234-5678"
+                     maxlength="13">
+              <p class="mt-2 text-sm text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i>
+                ハイフンは自動で挿入されます
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                メールアドレス <span class="text-red-500 text-xs align-super">★</span>
+              </label>
+              <input type="email" id="email" required
+                     inputmode="email"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     value="${this.formData.email || ''}"
+                     placeholder="例: example@email.com">
+              <p class="mt-2 text-sm text-gray-500">
+                <i class="fas fa-envelope mr-1"></i>
+                入力いただくと、予約完了メールと抽選結果をメールでお知らせします
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ステップ4: 冊数 -->
+        <div class="pb-8 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">4</span>
+            <i class="fas fa-shopping-cart text-blue-500 mr-2"></i>
+            冊数
+          </h2>
+          <div class="max-w-md ml-11">
+            <label class="block text-sm font-medium text-gray-700 mb-2">冊数（1～6冊） <span class="text-red-500 text-xs align-super">★</span></label>
+            <select id="quantity" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              ${Array.from({ length: maxQuantity }, (_, i) => i + 1).map(num => `
+                <option value="${num}" ${this.formData.quantity === num ? 'selected' : ''}>
+                  ${num}冊
+                </option>
+              `).join('')}
+            </select>
+            ${this.systemStatus.remaining < 6 ? `
+              <div class="mt-4 bg-orange-100 border-l-4 border-orange-500 p-4 rounded">
+                <p class="text-sm text-orange-700">
+                  <i class="fas fa-exclamation-triangle mr-2"></i>
+                  残り冊数が少なくなっています（残り ${this.systemStatus.remaining} 冊）
+                </p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- ステップ5: 受け取り日時 -->
+        <div class="pb-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">5</span>
+            <i class="fas fa-calendar-check text-blue-500 mr-2"></i>
+            受け取り日時
+          </h2>
+          <div class="ml-11">
+            <div class="grid md:grid-cols-2 gap-6 max-w-2xl">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  受け取り日 <span class="text-red-500 text-xs align-super">★</span>
+                </label>
+                <select id="pickupDate" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">選択してください</option>
+                  ${pickupDates.map(date => `
+                    <option value="${date.value}" ${this.formData.pickupDate === date.value ? 'selected' : ''}>
+                      ${date.label}
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  受け取り時間 <span class="text-red-500 text-xs align-super">★</span>
+                  <span class="text-xs text-gray-500 ml-2">（混雑状況の目安）</span>
+                </label>
+                <select id="pickupTime" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">選択してください</option>
+                  ${timeSlots.map(slot => `
+                    <option value="${slot}" ${this.formData.pickupTime === slot ? 'selected' : ''}>
+                      ${slot}
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+            </div>
+            
+            <!-- 注意事項 -->
+            <div class="mt-6 space-y-4">
+              <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p class="text-sm text-blue-800 font-medium mb-2">
+                  <i class="fas fa-info-circle mr-2"></i>
+                  受け取り時間について
+                </p>
+                <p class="text-sm text-blue-700">
+                  選択された時間帯は混雑状況の目安です。時間を多少前後しても受け取り可能です。
+                </p>
+                <p class="text-sm text-blue-700 mt-2">
+                  <strong>営業時間内にお越しください：</strong><br>
+                  • <strong>パスート24本部</strong>：12:00〜20:00
+                </p>
+              </div>
+              
+              <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                <p class="text-sm text-red-800 font-medium mb-2">
+                  <i class="fas fa-exclamation-triangle mr-2"></i>
+                  自動キャンセルについて
+                </p>
+                <p class="text-sm text-red-700">
+                  受け取り予定日を過ぎた場合は、自動的にキャンセルされます。
+                </p>
+              </div>
+              
+              <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
+                <p class="text-sm text-gray-800 font-medium mb-2">
+                  <i class="fas fa-map-marker-alt mr-2"></i>
+                  受け取り場所
+                </p>
+                <p class="text-sm text-gray-700 font-bold">
+                  株式会社パスート24
+                </p>
+                <p class="text-sm text-gray-600 mt-1">
+                  〒860-0802 熊本県熊本市中央区中央街4-29
+                </p>
+              </div>
+              
+              <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+                <p class="text-sm text-orange-800 font-medium mb-2">
+                  <i class="fas fa-id-card mr-2"></i>
+                  受け取り時の本人確認
+                </p>
+                <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside">
+                  <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
+                  <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 確認ボタン -->
+        <div class="mt-8 flex justify-end">
+          <button onclick="app.goToConfirmation()" class="px-8 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg text-lg">
+            入力内容を確認する <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+    `
   }
 
   renderStep1() {
@@ -773,6 +1005,89 @@ class ReservationApp {
     })
   }
 
+  goToConfirmation() {
+    // すべての入力値を取得
+    const birthDate = document.getElementById('birthDate')?.value
+    const fullName = document.getElementById('fullName')?.value
+    const kana = document.getElementById('kana')?.value
+    const phoneNumber = document.getElementById('phoneNumber')?.value
+    const email = document.getElementById('email')?.value
+    const quantity = parseInt(document.getElementById('quantity')?.value)
+    const pickupDate = document.getElementById('pickupDate')?.value
+    const pickupTime = document.getElementById('pickupTime')?.value
+
+    // バリデーション
+    if (!birthDate) {
+      alert('生年月日を入力してください')
+      document.getElementById('birthDate')?.focus()
+      return
+    }
+
+    if (!fullName || fullName.trim().length < 2) {
+      alert('氏名を正しく入力してください')
+      document.getElementById('fullName')?.focus()
+      return
+    }
+
+    if (!kana || kana.trim().length < 2) {
+      alert('かなを正しく入力してください')
+      document.getElementById('kana')?.focus()
+      return
+    }
+
+    // ひらがなのみのチェック
+    if (!/^[ぁ-んー\s]+$/.test(kana)) {
+      alert('かなはひらがなで入力してください')
+      document.getElementById('kana')?.focus()
+      return
+    }
+
+    if (!phoneNumber || !/^0\d{1,4}-?\d{1,4}-?\d{4}$/.test(phoneNumber)) {
+      alert('電話番号を正しく入力してください')
+      document.getElementById('phoneNumber')?.focus()
+      return
+    }
+
+    // メールアドレスのバリデーション（必須）
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('メールアドレスを正しく入力してください')
+      document.getElementById('email')?.focus()
+      return
+    }
+
+    if (!quantity || quantity < 1 || quantity > 6) {
+      alert('冊数を選択してください')
+      document.getElementById('quantity')?.focus()
+      return
+    }
+
+    if (!pickupDate) {
+      alert('受け取り日を選択してください')
+      document.getElementById('pickupDate')?.focus()
+      return
+    }
+
+    if (!pickupTime) {
+      alert('受け取り時間を選択してください')
+      document.getElementById('pickupTime')?.focus()
+      return
+    }
+
+    // すべての値をformDataに保存
+    this.formData.birthDate = birthDate
+    this.formData.fullName = fullName.trim()
+    this.formData.kana = kana.trim()
+    this.formData.phoneNumber = phoneNumber
+    this.formData.email = email
+    this.formData.quantity = quantity
+    this.formData.pickupDate = pickupDate
+    this.formData.pickupTime = pickupTime
+
+    // 確認画面（ステップ6）へ
+    this.currentStep = 6
+    this.render()
+  }
+
   nextStep() {
     // 入力値の取得と検証
     switch (this.currentStep) {
@@ -844,7 +1159,12 @@ class ReservationApp {
   }
 
   prevStep() {
-    this.currentStep--
+    // ステップ6（確認画面）からはステップ1（入力画面）に戻る
+    if (this.currentStep === 6) {
+      this.currentStep = 1
+    } else {
+      this.currentStep--
+    }
     this.render()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
