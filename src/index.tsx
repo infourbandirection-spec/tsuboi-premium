@@ -483,10 +483,10 @@ app.use('*', async (c, next) => {
   // Content Security Policy
   c.res.headers.set('Content-Security-Policy', 
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://www.genspark.ai; " +
     "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
-    "font-src 'self' https://cdn.jsdelivr.net; " +
-    "img-src 'self' data:; " +
+    "font-src 'self' https://cdn.jsdelivr.net data:; " +
+    "img-src 'self' data: https:; " +
     "connect-src 'self'"
   )
 })

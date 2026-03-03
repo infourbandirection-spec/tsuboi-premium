@@ -539,8 +539,8 @@ class ReservationApp {
       const data = await response.json()
 
       if (data.success) {
-        // 成功画面へ遷移
-        window.location.href = `/success?id=${data.data.reservationId}`
+        // 成功画面へ遷移（APIレスポンスは直接reservationIdを返す）
+        window.location.href = `/success?id=${data.reservationId}`
       } else {
         alert(`エラー: ${data.error || '応募に失敗しました'}`)
       }
