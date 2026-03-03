@@ -140,64 +140,14 @@ class ReservationApp {
             </div>
           </div>
 
-          <!-- プログレスバー -->
-          <div class="bg-white shadow-lg p-6 mb-6">
-            <div class="flex justify-between items-center max-w-md mx-auto">
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-blue-500 text-white">
-                  1
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">生年月日</span>
-              </div>
-              <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-gray-200 text-gray-500">
-                  2
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">氏名</span>
-              </div>
-              <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-gray-200 text-gray-500">
-                  3
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">連絡先</span>
-              </div>
-              <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-gray-200 text-gray-500">
-                  4
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">冊数</span>
-              </div>
-              <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-gray-200 text-gray-500">
-                  5
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">日時</span>
-              </div>
-              <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-              <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 flex items-center justify-center font-bold mb-2 text-lg bg-gray-200 text-gray-500">
-                  6
-                </div>
-                <span class="text-sm text-gray-600 text-center font-medium">確認</span>
-              </div>
-            </div>
-          </div>
-
           <!-- 単一ページフォーム -->
           <div class="bg-white shadow-lg p-8">
             <form id="reservationForm" onsubmit="event.preventDefault(); app.submitToConfirmation()">
               
               <!-- 生年月日 -->
-              <div class="mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
-                  生年月日を入力してください
-                </h2>
+              <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
                   生年月日 <span class="text-red-500">*</span>
                 </label>
                 <input type="date" 
@@ -212,91 +162,71 @@ class ReservationApp {
                 </p>
               </div>
 
-              <hr class="my-8 border-gray-200">
-
               <!-- 氏名・ふりがな -->
-              <div class="mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   <i class="fas fa-user text-blue-500 mr-2"></i>
-                  氏名・ふりがなを入力してください
-                </h2>
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      氏名（フルネーム） <span class="text-red-500">*</span>
-                    </label>
+                  氏名（フルネーム） <span class="text-red-500">*</span>
+                </label>
                     <input type="text" 
                            id="fullName"
                            value="${this.escapeHtml(this.formData.fullName)}"
                            placeholder="例: 山田 太郎"
                            class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                            required>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      ふりがな <span class="text-red-500">*</span>
-                    </label>
+              </div>
+
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  ふりがな <span class="text-red-500">*</span>
+                </label>
                     <input type="text" 
                            id="kana"
                            value="${this.escapeHtml(this.formData.kana)}"
                            placeholder="例: やまだ たろう"
                            class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                            required>
-                  </div>
-                </div>
               </div>
 
-              <hr class="my-8 border-gray-200">
-
               <!-- 連絡先 -->
-              <div class="mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   <i class="fas fa-phone text-blue-500 mr-2"></i>
-                  連絡先を入力してください
-                </h2>
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      電話番号 <span class="text-red-500">*</span>
-                    </label>
+                  電話番号 <span class="text-red-500">*</span>
+                </label>
                     <input type="tel" 
                            id="phoneNumber"
                            value="${this.escapeHtml(this.formData.phoneNumber)}"
                            placeholder="例: 090-1234-5678 または 09012345678"
                            class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                            required>
-                    <p class="text-xs text-gray-500 mt-2">
-                      <i class="fas fa-info-circle mr-1"></i>
-                      ハイフンあり・なしどちらでも可
-                    </p>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      メールアドレス <span class="text-red-500">*</span>
-                    </label>
+                <p class="text-xs text-gray-500 mt-2">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  ハイフンあり・なしどちらでも可
+                </p>
+              </div>
+
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                  メールアドレス <span class="text-red-500">*</span>
+                </label>
                     <input type="email" 
                            id="email"
                            value="${this.escapeHtml(this.formData.email)}"
                            placeholder="例: example@example.com"
                            class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                            required>
-                    <p class="text-xs text-gray-500 mt-2">
-                      <i class="fas fa-info-circle mr-1"></i>
-                      確認メールが送信されます
-                    </p>
-                  </div>
-                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  確認メールが送信されます
+                </p>
               </div>
 
-              <hr class="my-8 border-gray-200">
-
               <!-- 冊数 -->
-              <div class="mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <i class="fas fa-list-ol text-blue-500 mr-2"></i>
-                  冊数を選択してください
-                </h2>
+              <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-list-ol text-blue-500 mr-2"></i>
                   冊数 <span class="text-red-500">*</span>
                 </label>
                 <select id="quantity"
@@ -316,14 +246,12 @@ class ReservationApp {
                 ` : ''}
               </div>
 
-              <hr class="my-8 border-gray-200">
-
               <!-- 受取日時 -->
-              <div class="mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
                   <i class="fas fa-clock text-blue-500 mr-2"></i>
-                  受け取り日時を選択してください
-                </h2>
+                  受け取り日時
+                </h3>
                 ${this.renderPickupDateTimeSection()}
               </div>
 
