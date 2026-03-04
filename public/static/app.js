@@ -383,6 +383,7 @@ class ReservationApp {
               `<option value="${time}" ${this.formData.pickupTime === time ? 'selected' : ''}>${time}</option>`
             ).join('')}
           </select>
+          <p class="mt-1 text-xs text-gray-500">※購入いただく目安時間です。多少前後されても問題ございません</p>
         </div>
       </div>
     `
@@ -433,6 +434,7 @@ class ReservationApp {
               `<option value="${time}" ${this.formData.pickupTime === time ? 'selected' : ''}>${time}</option>`
             ).join('')}
           </select>
+          <p class="mt-1 text-xs text-gray-500">※購入いただく目安時間です。多少前後されても問題ございません</p>
         </div>
       </div>
     `
