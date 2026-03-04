@@ -413,7 +413,8 @@ class AdminApp {
     }
 
     const stats = this.statistics.total
-    const remaining = 1000 - (stats.reserved_books || 0)
+    const maxTotal = this.statistics.maxTotal || 1000
+    const remaining = maxTotal - (stats.reserved_books || 0)
 
     return `
       <div class="space-y-6">
@@ -474,19 +475,19 @@ class AdminApp {
             <div>
               <div class="flex justify-between text-sm mb-2">
                 <span>応募済み</span>
-                <span class="font-bold">${((stats.reserved_books || 0) / 1000 * 100).toFixed(1)}%</span>
+                <span class="font-bold">${((stats.reserved_books || 0) / maxTotal * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
-                <div class="bg-green-500 rounded-full h-4" style="width: ${((stats.reserved_books || 0) / 1000 * 100).toFixed(1)}%"></div>
+                <div class="bg-green-500 rounded-full h-4" style="width: ${((stats.reserved_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
               </div>
             </div>
             <div>
               <div class="flex justify-between text-sm mb-2">
                 <span>購入完了</span>
-                <span class="font-bold">${((stats.completed_books || 0) / 1000 * 100).toFixed(1)}%</span>
+                <span class="font-bold">${((stats.completed_books || 0) / maxTotal * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
-                <div class="bg-purple-500 rounded-full h-4" style="width: ${((stats.completed_books || 0) / 1000 * 100).toFixed(1)}%"></div>
+                <div class="bg-purple-500 rounded-full h-4" style="width: ${((stats.completed_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
               </div>
             </div>
           </div>

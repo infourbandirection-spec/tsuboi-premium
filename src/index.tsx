@@ -908,7 +908,7 @@ app.get('/api/status', async (c) => {
     const settings = await db.prepare(`
       SELECT setting_key, setting_value 
       FROM system_settings 
-      WHERE setting_key IN ('max_total_quantity', 'current_phase', 'reservation_enabled')
+      WHERE setting_key IN ('max_total_books', 'current_phase', 'reservation_enabled')
     `).all()
 
     const settingsMap: Record<string, string> = {}
@@ -916,7 +916,7 @@ app.get('/api/status', async (c) => {
       settingsMap[row.setting_key] = row.setting_value
     })
 
-    const maxTotal = parseInt(settingsMap['max_total_quantity'] || '1000')
+    const maxTotal = parseInt(settingsMap['max_total_books'] || '1000')
     const currentPhase = parseInt(settingsMap['current_phase'] || '1')
     const reservationEnabled = settingsMap['reservation_enabled'] === 'true'
     const remaining = Math.max(0, maxTotal - Number(reservedCount))
@@ -1660,6 +1660,13 @@ app.get('/api/admin/statistics', async (c) => {
     
     const lotteryExecuted = lotteryExecutedSetting?.setting_value === 'true'
 
+    // 上限冊数を取得
+    const maxTotalSetting = await db.prepare(`
+      SELECT setting_value FROM system_settings WHERE setting_key = 'max_total_books'
+    `).first()
+    
+    const maxTotal = parseInt(maxTotalSetting?.setting_value || '1000')
+
     return c.json({
       success: true,
       data: {
@@ -1667,7 +1674,8 @@ app.get('/api/admin/statistics', async (c) => {
         byStore: storeStats.results,
         byDate: dateStats.results,
         byTime: timeStats.results,
-        lotteryExecuted: lotteryExecuted
+        lotteryExecuted: lotteryExecuted,
+        maxTotal: maxTotal
       }
     })
 
