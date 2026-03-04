@@ -88,14 +88,14 @@ document.getElementById('form-birthdate').addEventListener('submit', async (e) =
   }
 })
 
-// 予約情報表示（単一）
+// 応募情報表示（単一）
 function showReservation(reservation) {
   const resultArea = document.getElementById('result-area')
   
   // ステータスバッジ
   let statusBadge = ''
   if (reservation.status === 'reserved') {
-    statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-sm font-semibold"><i class="fas fa-clock mr-1"></i> 予約済み（未購入）</span>'
+    statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-sm font-semibold"><i class="fas fa-clock mr-1"></i> 応募済み（未購入）</span>'
   } else if (reservation.status === 'picked_up') {
     statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-sm font-semibold"><i class="fas fa-check mr-1"></i> 購入完了</span>'
   } else if (reservation.status === 'canceled') {
@@ -187,14 +187,14 @@ function showReservation(reservation) {
   resultArea.classList.remove('hidden')
 }
 
-// 複数予約情報表示
+// 複数応募情報表示
 function showMultipleReservations(reservations) {
   const resultArea = document.getElementById('result-area')
   
   const reservationList = reservations.map(r => {
     let statusBadge = ''
     if (r.status === 'reserved') {
-      statusBadge = '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">予約済み</span>'
+      statusBadge = '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">応募済み</span>'
     } else if (r.status === 'picked_up') {
       statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">購入完了</span>'
     }
@@ -236,7 +236,7 @@ function showMultipleReservations(reservations) {
     <div class="bg-white rounded-lg shadow-md p-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">
         <i class="fas fa-list mr-2 text-blue-600"></i>
-        ${reservations.length}件の予約が見つかりました
+        ${reservations.length}件の応募が見つかりました
       </h2>
       <div class="space-y-3">
         ${reservationList}

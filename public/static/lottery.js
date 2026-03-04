@@ -1,4 +1,4 @@
-// プレミアム商品券予約・抽選システム - 当選者掲示板
+// プレミアム商品券応募・抽選システム - 当選者掲示板
 
 class LotteryResultsApp {
   constructor() {
@@ -103,10 +103,10 @@ class LotteryResultsApp {
                 当選者発表
               </h1>
               <p class="text-xl text-gray-600 mb-2">
-                プレミアム商品券予約抽選
+                プレミアム商品券応募抽選
               </p>
               <p class="text-gray-500">
-                おめでとうございます！以下の予約IDの方が当選されました
+                おめでとうございます！以下の応募IDの方が当選されました
               </p>
             </div>
 
@@ -128,11 +128,11 @@ class LotteryResultsApp {
             </div>
           </div>
 
-          <!-- 予約ID検索 -->
+          <!-- 応募ID検索 -->
           <div class="bg-white rounded-lg shadow-xl p-6 mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">
               <i class="fas fa-search text-gray-600 mr-2"></i>
-              予約ID検索
+              応募ID検索
             </h2>
             <div class="flex gap-4">
               <input 
@@ -163,7 +163,7 @@ class LotteryResultsApp {
               value="${this.escapeHtml(this.searchTerm)}"
               onchange="lotteryApp.searchTerm = this.value; lotteryApp.render()"
               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
-              placeholder="予約IDで絞り込み（部分一致）"
+              placeholder="応募IDで絞り込み（部分一致）"
             >
             ${this.searchTerm ? `
               <p class="mt-2 text-sm text-gray-600">
@@ -197,7 +197,7 @@ class LotteryResultsApp {
                         No.${index + 1}
                       </span>
                     </div>
-                    <p class="text-sm text-gray-600 mb-1">予約ID</p>
+                    <p class="text-sm text-gray-600 mb-1">応募ID</p>
                     <p class="text-lg font-bold text-gray-800 break-all mb-3">
                       ${this.escapeHtml(winner.reservation_id)}
                     </p>
@@ -220,7 +220,7 @@ class LotteryResultsApp {
             <ul class="space-y-3 text-gray-700">
               <li class="flex items-start">
                 <i class="fas fa-check-circle text-gray-600 mt-1 mr-3"></i>
-                <span>当選された方は、予約時に指定した購入日時に商品券を受け取れます</span>
+                <span>当選された方は、応募時に指定した購入日時に商品券を受け取れます</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-id-card text-gray-600 mt-1 mr-3"></i>
@@ -249,7 +249,7 @@ class LotteryResultsApp {
             </a>
             <a href="/search" class="px-8 py-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-bold shadow-lg transition">
               <i class="fas fa-search mr-2"></i>
-              予約照会
+              応募照会
             </a>
           </div>
         </div>
@@ -291,7 +291,7 @@ class LotteryResultsApp {
     if (!reservationId) {
       resultDiv.innerHTML = `
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p class="text-red-700">予約IDを入力してください</p>
+          <p class="text-red-700">応募IDを入力してください</p>
         </div>
       `
       return
@@ -311,7 +311,7 @@ class LotteryResultsApp {
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
           <p class="text-red-700">
             <i class="fas fa-times-circle mr-2"></i>
-            ${this.escapeHtml(result.error || '予約IDが見つかりませんでした')}
+            ${this.escapeHtml(result.error || '応募IDが見つかりませんでした')}
           </p>
         </div>
       `
@@ -325,7 +325,7 @@ class LotteryResultsApp {
             <i class="fas fa-check-circle text-4xl text-gray-700 mr-4"></i>
             <div>
               <p class="text-2xl font-bold text-gray-800">おめでとうございます！当選されました！</p>
-              <p class="text-sm text-gray-600 mt-1">予約ID: ${this.escapeHtml(result.reservationId)}</p>
+              <p class="text-sm text-gray-600 mt-1">応募ID: ${this.escapeHtml(result.reservationId)}</p>
             </div>
           </div>
           <div class="bg-white rounded p-4 mt-4">
@@ -335,7 +335,7 @@ class LotteryResultsApp {
             </p>
             <p class="text-sm text-gray-600 mt-3">
               <i class="fas fa-info-circle mr-2"></i>
-              予約時に指定した購入日時に商品券を受け取れます。本人確認書類をご持参ください。
+              応募時に指定した購入日時に商品券を受け取れます。本人確認書類をご持参ください。
             </p>
           </div>
         </div>
@@ -347,7 +347,7 @@ class LotteryResultsApp {
             <i class="fas fa-times-circle text-4xl text-gray-500 mr-4"></i>
             <div>
               <p class="text-xl font-bold text-gray-700">残念ながら今回は当選されませんでした</p>
-              <p class="text-sm text-gray-600 mt-1">予約ID: ${this.escapeHtml(result.reservationId)}</p>
+              <p class="text-sm text-gray-600 mt-1">応募ID: ${this.escapeHtml(result.reservationId)}</p>
             </div>
           </div>
           <p class="text-sm text-gray-600 mt-3">

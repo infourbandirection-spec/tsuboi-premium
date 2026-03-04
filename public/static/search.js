@@ -1,4 +1,4 @@
-// 予約照会システム - 電話番号と生年月日で検索
+// 応募照会システム - 電話番号と生年月日で検索
 
 class SearchApp {
   constructor() {
@@ -39,7 +39,7 @@ class SearchApp {
             <div class="flex justify-between items-center mb-4">
               <h1 class="text-3xl font-bold text-gray-800">
                 <i class="fas fa-search text-purple-500 mr-3"></i>
-                予約照会
+                応募照会
               </h1>
               <button onclick="location.href='/'" 
                       class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold">
@@ -48,7 +48,7 @@ class SearchApp {
             </div>
             <p class="text-gray-600">
               <i class="fas fa-info-circle mr-2"></i>
-              電話番号と生年月日を入力すると、予約内容を確認できます
+              電話番号と生年月日を入力すると、応募内容を確認できます
             </p>
           </div>
 
@@ -56,7 +56,7 @@ class SearchApp {
           <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-6">
               <i class="fas fa-key text-blue-500 mr-2"></i>
-              予約情報を入力してください
+              応募情報を入力してください
             </h2>
             
             <div class="space-y-6">
@@ -70,7 +70,7 @@ class SearchApp {
                        placeholder="例: 090-1234-5678"
                        maxlength="13">
                 <p class="mt-2 text-sm text-gray-500">
-                  予約時に入力した電話番号を入力してください
+                  応募時に入力した電話番号を入力してください
                 </p>
               </div>
 
@@ -83,14 +83,14 @@ class SearchApp {
                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                        max="${new Date().toISOString().split('T')[0]}">
                 <p class="mt-2 text-sm text-gray-500">
-                  予約時に入力した生年月日を入力してください
+                  応募時に入力した生年月日を入力してください
                 </p>
               </div>
 
               <!-- 検索ボタン -->
               <button onclick="searchApp.searchReservations()" id="searchBtn"
                       class="w-full px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 font-bold shadow-lg text-lg">
-                <i class="fas fa-search mr-2"></i> 予約を検索
+                <i class="fas fa-search mr-2"></i> 応募を検索
               </button>
             </div>
           </div>
@@ -172,7 +172,7 @@ class SearchApp {
       alert('検索中にエラーが発生しました')
     } finally {
       searchBtn.disabled = false
-      searchBtn.innerHTML = '<i class="fas fa-search mr-2"></i> 予約を検索'
+      searchBtn.innerHTML = '<i class="fas fa-search mr-2"></i> 応募を検索'
     }
   }
 
@@ -182,7 +182,7 @@ class SearchApp {
       <div class="bg-white rounded-lg shadow-lg p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">
           <i class="fas fa-check-circle text-green-500 mr-2"></i>
-          予約が見つかりました（${this.searchResults.length}件）
+          応募が見つかりました（${this.searchResults.length}件）
         </h2>
         
         <div class="space-y-6">
@@ -200,7 +200,7 @@ class SearchApp {
     }
 
     const statusLabels = {
-      'reserved': '予約済み',
+      'reserved': '応募済み',
       'completed': '購入完了',
       'canceled': 'キャンセル'
     }
@@ -210,7 +210,7 @@ class SearchApp {
 
     return `
       <div class="border-2 border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
-        <!-- ステータスバッジと予約ID -->
+        <!-- ステータスバッジと応募ID -->
         <div class="flex justify-between items-start mb-4">
           <div>
             <span class="inline-block px-3 py-1 ${statusColor} rounded-full text-sm font-bold mb-2">
@@ -219,7 +219,7 @@ class SearchApp {
             <h3 class="text-2xl font-bold text-gray-800 break-all">
               ${this.escapeHtml(reservation.reservation_id)}
             </h3>
-            <p class="text-sm text-gray-500 mt-1">予約ID</p>
+            <p class="text-sm text-gray-500 mt-1">応募ID</p>
           </div>
           <button onclick="searchApp.copyToClipboard('${reservation.reservation_id}')" 
                   class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold text-sm">
@@ -227,7 +227,7 @@ class SearchApp {
           </button>
         </div>
 
-        <!-- 予約詳細 -->
+        <!-- 応募詳細 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
@@ -276,7 +276,7 @@ class SearchApp {
               <strong>購入について</strong>
             </p>
             <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside ml-4">
-              <li>購入時に予約IDをご提示ください</li>
+              <li>購入時に応募IDをご提示ください</li>
               <li>購入予定日を過ぎた場合は自動的にキャンセルされます</li>
               <li>購入時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
             </ul>
@@ -300,10 +300,10 @@ class SearchApp {
     return `
       <div class="bg-white rounded-lg shadow-lg p-8 text-center">
         <i class="fas fa-exclamation-circle text-6xl text-yellow-500 mb-4"></i>
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">予約が見つかりませんでした</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">応募が見つかりませんでした</h2>
         <p class="text-gray-600 mb-6">
-          入力された電話番号と生年月日に一致する予約はありませんでした。<br>
-          予約時に入力した情報と一致しているかご確認ください。
+          入力された電話番号と生年月日に一致する応募はありませんでした。<br>
+          応募時に入力した情報と一致しているかご確認ください。
         </p>
         <div class="bg-blue-50 border-l-4 border-blue-400 p-4 text-left">
           <p class="text-sm text-gray-700 mb-2">
@@ -311,9 +311,9 @@ class SearchApp {
             <strong>確認ポイント：</strong>
           </p>
           <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-4">
-            <li>電話番号は予約時と同じものを入力していますか？</li>
-            <li>生年月日は予約時と同じものを入力していますか？</li>
-            <li>予約完了後、すぐに照会していますか？（反映には数秒かかる場合があります）</li>
+            <li>電話番号は応募時と同じものを入力していますか？</li>
+            <li>生年月日は応募時と同じものを入力していますか？</li>
+            <li>応募完了後、すぐに照会していますか？（反映には数秒かかる場合があります）</li>
           </ul>
         </div>
       </div>
@@ -322,10 +322,10 @@ class SearchApp {
 
   copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-      alert('予約IDをコピーしました')
+      alert('応募IDをコピーしました')
     }).catch(err => {
       console.error('Copy failed:', err)
-      alert('コピーに失敗しました。手動で予約IDを控えてください。')
+      alert('コピーに失敗しました。手動で応募IDを控えてください。')
     })
   }
 }

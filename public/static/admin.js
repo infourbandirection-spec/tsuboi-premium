@@ -1,4 +1,4 @@
-// プレミアム商品券予約・抽選システム - 管理画面
+// プレミアム商品券応募・抽選システム - 管理画面
 
 class AdminApp {
   constructor() {
@@ -188,7 +188,7 @@ class AdminApp {
         this.reservations = reservationsData.data
       }
       
-      // ヒートマップ用に全予約データを取得（落選者除外なし）
+      // ヒートマップ用に全応募データを取得（落選者除外なし）
       const allReservationsResponse = await fetch('/api/admin/reservations?limit=500&include_lost=true', { headers })
       const allReservationsData = await allReservationsResponse.json()
       if (allReservationsData.success) {
@@ -387,7 +387,7 @@ class AdminApp {
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600">総予約数</p>
+                <p class="text-sm text-gray-600">総応募数</p>
                 <p class="text-3xl font-bold text-gray-800">${stats.total_reservations || 0}</p>
               </div>
               <i class="fas fa-ticket-alt text-4xl text-blue-500"></i>
@@ -397,7 +397,7 @@ class AdminApp {
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600">予約済み冊数</p>
+                <p class="text-sm text-gray-600">応募済み冊数</p>
                 <p class="text-3xl font-bold text-green-600">${stats.reserved_books || 0}</p>
               </div>
               <i class="fas fa-shopping-cart text-4xl text-green-500"></i>
@@ -427,11 +427,11 @@ class AdminApp {
 
         <!-- 進捗バー -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-bold text-gray-800 mb-4">予約状況</h2>
+          <h2 class="text-lg font-bold text-gray-800 mb-4">応募状況</h2>
           <div class="space-y-4">
             <div>
               <div class="flex justify-between text-sm mb-2">
-                <span>予約済み</span>
+                <span>応募済み</span>
                 <span class="font-bold">${((stats.reserved_books || 0) / 1000 * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
@@ -454,10 +454,10 @@ class AdminApp {
         <div class="grid grid-cols-1 gap-6">
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-gray-800">日付別予約推移</h2>
+              <h2 class="text-lg font-bold text-gray-800">日付別応募推移</h2>
               <span class="text-sm text-gray-600">
                 <i class="fas fa-info-circle mr-1"></i>
-                日ごとの予約推移を表示
+                日ごとの応募推移を表示
               </span>
             </div>
             <div style="height: 300px;">
@@ -467,7 +467,7 @@ class AdminApp {
 
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-gray-800">時間帯別予約状況</h2>
+              <h2 class="text-lg font-bold text-gray-800">時間帯別応募状況</h2>
               <span class="text-sm text-gray-600">
                 <i class="fas fa-info-circle mr-1"></i>
                 時間帯ごとの混雑状況を表示
@@ -504,7 +504,7 @@ class AdminApp {
               <select id="filterStatus" onchange="adminApp.applyFilters()" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
-                <option value="reserved">予約済み（未購入）</option>
+                <option value="reserved">応募済み（未購入）</option>
                 <option value="picked_up">購入完了</option>
                 <option value="canceled">キャンセル</option>
               </select>
@@ -542,7 +542,7 @@ class AdminApp {
           <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
             <p class="text-sm text-blue-700">
               <i class="fas fa-info-circle mr-1"></i>
-              <strong>${this.getFilteredReservations().length}件</strong>の予約が見つかりました
+              <strong>${this.getFilteredReservations().length}件</strong>の応募が見つかりました
               ${this.filters.search ? `（検索: "${this.filters.search}"）` : ''}
             </p>
           </div>
@@ -639,7 +639,7 @@ class AdminApp {
                       <select onchange="adminApp.updateStatus(${reservation.id}, this.value)"
                               class="px-3 py-1 border border-gray-300 rounded">
                         <option value="">操作選択</option>
-                        <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>予約済みに変更</option>
+                        <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>応募済みに変更</option>
                         <option value="canceled" ${reservation.status === 'canceled' ? 'disabled' : ''}>キャンセルに変更</option>
                       </select>
                     `}
@@ -653,7 +653,7 @@ class AdminApp {
         ${this.getFilteredReservations().length === 0 ? `
           <div class="text-center py-12 text-gray-500">
             <i class="fas fa-inbox text-6xl mb-4"></i>
-            <p class="text-lg">該当する予約がありません</p>
+            <p class="text-lg">該当する応募がありません</p>
           </div>
         ` : ''}
       </div>
@@ -693,7 +693,7 @@ class AdminApp {
 
   renderStatusBadge(status) {
     const statusConfig = {
-      reserved: { label: '予約済み（未購入）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
+      reserved: { label: '応募済み（未購入）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
       picked_up: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
       completed: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
       canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
@@ -806,7 +806,7 @@ class AdminApp {
       return
     }
 
-    if (!confirm(`この予約を購入完了にしますか？\n\n応募ID: ${reservationId}`)) {
+    if (!confirm(`この応募を購入完了にしますか？\n\n応募ID: ${reservationId}`)) {
       return
     }
 
@@ -916,7 +916,7 @@ class AdminApp {
         resultsDiv.innerHTML = `
           <div class="text-center py-12 text-gray-500">
             <i class="fas fa-search text-6xl mb-4"></i>
-            <p class="text-lg">該当する予約が見つかりませんでした</p>
+            <p class="text-lg">該当する応募が見つかりませんでした</p>
           </div>
         `
       }
@@ -934,7 +934,7 @@ class AdminApp {
       return
     }
 
-    const headers = ['応募ID', '生年月日', '氏名', 'ふりがな', 'メール', '電話番号', '冊数', '購入日', '購入時間', '抽選結果', 'ステータス', '抽選除外', '予約日時']
+    const headers = ['応募ID', '生年月日', '氏名', 'ふりがな', 'メール', '電話番号', '冊数', '購入日', '購入時間', '抽選結果', 'ステータス', '抽選除外', '応募日時']
     const rows = data.map(r => [
       r.reservation_id,
       r.birth_date,
@@ -946,7 +946,7 @@ class AdminApp {
       r.pickup_date,
       r.pickup_time_slot,
       r.lottery_status === 'won' ? '当選' : r.lottery_status === 'lost' ? '落選' : '抽選前',
-      r.status === 'reserved' ? '予約中' : r.status === 'picked_up' ? '購入済' : 'キャンセル',
+      r.status === 'reserved' ? '応募中' : r.status === 'picked_up' ? '購入済' : 'キャンセル',
       r.excluded_from_lottery ? '除外' : '',
       r.created_at
     ])
@@ -978,7 +978,7 @@ class AdminApp {
             return `${date.getMonth() + 1}/${date.getDate()}`
           }),
           datasets: [{
-            label: '予約冊数',
+            label: '応募冊数',
             data: this.statistics.byDate.map(d => d.total_quantity),
             backgroundColor: 'rgba(16, 185, 129, 0.2)',
             borderColor: 'rgba(16, 185, 129, 1)',
@@ -1012,13 +1012,13 @@ class AdminApp {
               callbacks: {
                 title: function(context) {
                   const date = this.statistics.byDate[context[0].dataIndex].pickup_date
-                  return `${date} の予約状況`
+                  return `${date} の応募状況`
                 }.bind(this),
                 label: function(context) {
                   const dateData = this.statistics.byDate[context.dataIndex]
                   return [
-                    `予約冊数: ${dateData.total_quantity}冊`,
-                    `予約件数: ${dateData.count}件`
+                    `応募冊数: ${dateData.total_quantity}冊`,
+                    `応募件数: ${dateData.count}件`
                   ]
                 }.bind(this)
               }
@@ -1035,7 +1035,7 @@ class AdminApp {
               },
               title: {
                 display: true,
-                text: '予約冊数',
+                text: '応募冊数',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1059,7 +1059,7 @@ class AdminApp {
       dateCtx.parentElement.innerHTML = `
         <div class="text-center py-12 text-gray-400">
           <i class="fas fa-chart-line text-6xl mb-4"></i>
-          <p>予約データがありません</p>
+          <p>応募データがありません</p>
         </div>
       `
     }
@@ -1072,7 +1072,7 @@ class AdminApp {
         data: {
           labels: this.statistics.byTime.map(t => t.pickup_time_slot),
           datasets: [{
-            label: '予約冊数',
+            label: '応募冊数',
             data: this.statistics.byTime.map(t => t.total_quantity),
             backgroundColor: 'rgba(139, 92, 246, 0.7)',
             borderColor: 'rgba(139, 92, 246, 1)',
@@ -1102,8 +1102,8 @@ class AdminApp {
                   const quantity = context.parsed.y
                   const timeData = this.statistics.byTime.find(t => t.pickup_time_slot === timeSlot)
                   return [
-                    `予約冊数: ${quantity}冊`,
-                    `予約件数: ${timeData.count}件`
+                    `応募冊数: ${quantity}冊`,
+                    `応募件数: ${timeData.count}件`
                   ]
                 }.bind(this)
               }
@@ -1120,7 +1120,7 @@ class AdminApp {
               },
               title: {
                 display: true,
-                text: '予約冊数',
+                text: '応募冊数',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1144,7 +1144,7 @@ class AdminApp {
       timeCtx.parentElement.innerHTML = `
         <div class="text-center py-12 text-gray-400">
           <i class="fas fa-clock text-6xl mb-4"></i>
-          <p>予約データがありません</p>
+          <p>応募データがありません</p>
         </div>
       `
     }
@@ -1152,14 +1152,14 @@ class AdminApp {
 
   // 混雑状況ヒートマップビュー
   renderHeatmap() {
-    // ヒートマップ用のデータを取得（全予約データを使用）
+    // ヒートマップ用のデータを取得（全応募データを使用）
     const reservationsForHeatmap = this.allReservations || this.reservations || []
     
     if (reservationsForHeatmap.length === 0) {
       return `
         <div class="bg-white rounded-lg shadow p-8 text-center">
           <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
-          <p class="text-xl text-gray-500">予約データがありません</p>
+          <p class="text-xl text-gray-500">応募データがありません</p>
         </div>
       `
     }
@@ -1260,22 +1260,22 @@ class AdminApp {
             <i class="fas fa-fire mr-3"></i>
             混雑状況分析
           </h2>
-          <p class="mt-2">どの店舗・時間帯に予約が集中しているかを確認できます</p>
+          <p class="mt-2">どの店舗・時間帯に応募が集中しているかを確認できます</p>
         </div>
 
-        <!-- 日別予約状況 -->
+        <!-- 日別応募状況 -->
         <div class="bg-white rounded-lg shadow-lg p-6">
           <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
-            日別予約状況
+            日別応募状況
           </h3>
           <div class="overflow-x-auto">
             <table class="min-w-full">
               <thead>
                 <tr class="bg-gray-100">
                   <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">日付</th>
-                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約件数</th>
-                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">予約冊数</th>
+                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">応募件数</th>
+                  <th class="px-4 py-3 text-center text-sm font-bold text-gray-700">応募冊数</th>
                 </tr>
               </thead>
               <tbody>
@@ -1361,13 +1361,13 @@ class AdminApp {
               <i class="fas fa-info-circle text-blue-500 mr-2"></i>
               <strong>表示ルール:</strong>
               ${this.statistics?.lotteryExecuted 
-                ? '抽選実行済み - 当選者（Phase1）とPhase2予約のみ表示されます'
+                ? '抽選実行済み - 当選者（Phase1）とPhase2応募のみ表示されます'
                 : '抽選実行前 - すべての応募者が表示されます（Phase1: pending状態）'}
             </p>
           </div>
           <p class="text-sm text-gray-600 mb-4">
             <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
-            赤く表示されている時間帯は予約が集中しています（50件以上）。ヘルプ要員の配置を検討してください。
+            赤く表示されている時間帯は応募が集中しています（50件以上）。ヘルプ要員の配置を検討してください。
           </p>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
@@ -1400,7 +1400,7 @@ class AdminApp {
                   // 日付×時間帯のマトリックスを生成
                   // 混雑状況の表示ロジック:
                   // - 抽選実行前: すべての応募者（lottery_status='pending'のみ）を表示
-                  // - 抽選実行後: 当選者（lottery_status='won'）+ Phase2予約（lottery_status='n/a'）のみ表示
+                  // - 抽選実行後: 当選者（lottery_status='won'）+ Phase2応募（lottery_status='n/a'）のみ表示
                   const dateTimeMap = {}
                   const reservationsForHeatmap = this.allReservations || this.reservations
                   reservationsForHeatmap.forEach(r => {
@@ -1409,7 +1409,7 @@ class AdminApp {
                     // 抽選落選者は除外
                     if (r.lottery_status === 'lost') return
                     
-                    // Phase 1の予約で抽選実行済みの場合、当選者のみカウント
+                    // Phase 1の応募で抽選実行済みの場合、当選者のみカウント
                     if (r.reservation_phase === 1 && this.statistics?.lotteryExecuted) {
                       if (r.lottery_status !== 'won') return
                     }
@@ -1457,7 +1457,7 @@ class AdminApp {
                           const quantity = data ? data.quantity : 0
                           const count = data ? data.count : 0
                           
-                          // 予約件数に基づく混雑度判定
+                          // 応募件数に基づく混雑度判定
                           // 空き: 1-10件、やや混雑: 11-20件、混雑: 21-50件、非常に混雑: 50件以上
                           let bgColor = 'bg-gray-50'
                           let textColor = 'text-gray-400'
@@ -1481,7 +1481,7 @@ class AdminApp {
                           
                           return `
                             <td class="px-2 py-3 text-center text-xs border ${bgColor} ${textColor} transition-all hover:scale-105 cursor-pointer"
-                                title="${displayDate}\n${time}\n予約: ${count}件 / ${quantity}冊">
+                                title="${displayDate}\n${time}\n応募: ${count}件 / ${quantity}冊">
                               <div class="flex flex-col items-center justify-center">
                                 ${alertIcon}
                                 ${quantity > 0 ? `<div class="font-bold">${quantity}</div><div class="text-xs opacity-75">${count}件</div>` : '-'}
@@ -1515,7 +1515,7 @@ class AdminApp {
     const reservationEnabled = this.settings?.reservation_enabled === 'true'
     const currentPhase = parseInt(this.settings?.current_phase || '1')
     
-    // Phase 1の予約統計
+    // Phase 1の応募統計
     const phase1Reservations = this.reservations.filter(r => 
       r.reservation_phase === 1 && r.status === 'reserved'
     )
@@ -1534,7 +1534,7 @@ class AdminApp {
             <i class="fas fa-trophy text-yellow-500 mr-2"></i>
             抽選管理
           </h2>
-          <p class="text-gray-600">予約の抽選実行と当選者管理</p>
+          <p class="text-gray-600">応募の抽選実行と当選者管理</p>
         </div>
 
         <!-- システム状態 -->
@@ -1554,7 +1554,7 @@ class AdminApp {
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600 mb-1">予約受付</p>
+                <p class="text-sm text-gray-600 mb-1">応募受付</p>
                 <p class="text-2xl font-bold ${reservationEnabled ? 'text-green-600' : 'text-red-600'}">
                   ${reservationEnabled ? '受付中' : '停止中'}
                 </p>
@@ -1576,7 +1576,7 @@ class AdminApp {
               <i class="fas fa-layer-group text-4xl text-blue-500"></i>
             </div>
             <p class="text-xs text-gray-500 mt-2">
-              ${currentPhase === 1 ? '固定日予約期間' : '自由日選択期間'}
+              ${currentPhase === 1 ? '固定日応募期間' : '自由日選択期間'}
             </p>
           </div>
         </div>
@@ -1613,7 +1613,7 @@ class AdminApp {
               抽選実行
             </h3>
             <p class="text-gray-700 mb-4">
-              Phase 1の予約に対して抽選を実行します。
+              Phase 1の応募に対して抽選を実行します。
               ${phase1Total <= 1000 ? 
                 '応募総数が1000冊以下のため、<strong>全員が自動的に当選</strong>します。' : 
                 '応募総数が1000冊を超えているため、<strong>ランダム抽選</strong>を実行します。'}
@@ -1695,12 +1695,12 @@ class AdminApp {
     `
   }
 
-  // 予約受付ON/OFF切替
+  // 応募受付ON/OFF切替
   async toggleReservationEnabled() {
     const currentValue = this.settings?.reservation_enabled === 'true'
     const newValue = !currentValue
 
-    if (!confirm(`予約受付を${newValue ? '再開' : '停止'}しますか？`)) {
+    if (!confirm(`応募受付を${newValue ? '再開' : '停止'}しますか？`)) {
       return
     }
 
@@ -1721,7 +1721,7 @@ class AdminApp {
       const data = await response.json()
 
       if (data.success) {
-        alert(`予約受付を${newValue ? '再開' : '停止'}しました`)
+        alert(`応募受付を${newValue ? '再開' : '停止'}しました`)
         await this.loadData()
         this.render()
       } else {
@@ -1788,7 +1788,7 @@ class AdminApp {
           
           const stopData = await stopResponse.json()
           if (stopData.success) {
-            console.log('予約受付を自動停止しました')
+            console.log('応募受付を自動停止しました')
           }
         } catch (error) {
           console.error('受付停止エラー:', error)
