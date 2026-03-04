@@ -40,7 +40,7 @@ async function testEmail(type, endpoint, body) {
   console.log(`\n📮 ${type}メールのテスト送信中...`);
   
   try {
-    const response = await fetch(`https://passurt24.pages.dev${endpoint}`, {
+    const response = await fetch(`http://localhost:3000${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
