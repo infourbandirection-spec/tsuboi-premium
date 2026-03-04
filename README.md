@@ -4,11 +4,11 @@
 
 ## 🌐 アクセスURL
 
-- **本番環境**: https://passurt24.pages.dev/
-- **管理画面**: https://passurt24.pages.dev/admin
-- **応募照会**: https://passurt24.pages.dev/lookup
-- **応募検索**: https://passurt24.pages.dev/search
-- **最新デプロイ**: https://bda2ba22.passurt24.pages.dev
+- **本番環境**: https://tsuboi-premium.pages.dev/
+- **管理画面**: https://tsuboi-premium.pages.dev/admin
+- **応募照会**: https://tsuboi-premium.pages.dev/lookup
+- **応募検索**: https://tsuboi-premium.pages.dev/search
+- **最新デプロイ**: https://tsuboi-premium.pages.dev
 - **開発環境**: `http://localhost:3000`
 
 ## ✨ 主な機能

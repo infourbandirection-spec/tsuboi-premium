@@ -112,15 +112,15 @@ cd /home/user/webapp
 npx wrangler d1 migrations apply passport24-voucher-production --remote
 
 # 3. デプロイ
-npx wrangler pages deploy dist --project-name passurt24 --branch main
+npx wrangler pages deploy dist --project-name tsuboi-premium --branch main
 
 # 4. 環境変数設定
-npx wrangler pages secret put RESEND_API_KEY --project-name passurt24
-npx wrangler pages secret put RESEND_FROM_EMAIL --project-name passurt24
+npx wrangler pages secret put RESEND_API_KEY --project-name tsuboi-premium
+npx wrangler pages secret put RESEND_FROM_EMAIL --project-name tsuboi-premium
 
 # 5. 動作確認
-curl https://passurt24.pages.dev/api/status
-curl https://passurt24.pages.dev/api/stores
+curl https://tsuboi-premium.pages.dev/api/status
+curl https://tsuboi-premium.pages.dev/api/stores
 ```
 
 ## 📊 現在のシステム状態
@@ -136,8 +136,8 @@ curl https://passurt24.pages.dev/api/stores
 - **現在の予約**: 0件
 
 ### 本番環境
-- **プロジェクト名**: passurt24
-- **予定URL**: https://passurt24.pages.dev/
+- **プロジェクト名**: tsuboi-premium
+- **予定URL**: https://tsuboi-premium.pages.dev/
 - **ステータス**: ⏳ デプロイ待ち（APIトークン権限不足）
 - **データベース**: passport24-voucher-production
 - **Database ID**: 92ba7506-598f-4bb2-baf8-40d07a379224

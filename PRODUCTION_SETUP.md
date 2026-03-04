@@ -1,7 +1,8 @@
 # 本番環境セットアップガイド
 
 **作成日**: 2026-03-04  
-**バージョン**: v2.4.0
+**バージョン**: v2.4.0  
+**プロジェクト名**: tsuboi-premium
 
 ## 🚨 重要：現在の状況
 
@@ -126,22 +127,22 @@ RESEND_FROM_EMAIL=info@urbandirection.jp
 
 ```bash
 # Resend APIキーを本番環境のシークレットとして設定
-npx wrangler pages secret put RESEND_API_KEY --project-name passurt24
+npx wrangler pages secret put RESEND_API_KEY --project-name tsuboi-premium
 # プロンプトで実際のAPIキーを入力（re_で始まる文字列）
 
 # 送信元メールアドレスを設定
-npx wrangler pages secret put RESEND_FROM_EMAIL --project-name passurt24
+npx wrangler pages secret put RESEND_FROM_EMAIL --project-name tsuboi-premium
 # プロンプトで info@urbandirection.jp を入力
 
 # 設定したシークレットを確認
-npx wrangler pages secret list --project-name passurt24
+npx wrangler pages secret list --project-name tsuboi-premium
 ```
 
 ### Step 6: Pagesプロジェクトの作成（初回のみ）
 
 ```bash
 # Pagesプロジェクトを作成（初回デプロイ時のみ）
-npx wrangler pages project create passurt24 \
+npx wrangler pages project create tsuboi-premium \
   --production-branch main \
   --compatibility-date 2026-02-25
 
@@ -157,11 +158,11 @@ cd /home/user/webapp
 npm run build
 
 # 本番環境にデプロイ
-npx wrangler pages deploy dist --project-name passurt24 --branch main
+npx wrangler pages deploy dist --project-name tsuboi-premium --branch main
 
 # デプロイ成功後、以下のURLが表示されます：
-# Production: https://passurt24.pages.dev
-# Branch: https://main.passurt24.pages.dev
+# Production: https://tsuboi-premium.pages.dev
+# Branch: https://main.tsuboi-premium.pages.dev
 ```
 
 ### Step 8: D1データベースとKVのバインディング設定
@@ -185,13 +186,13 @@ Cloudflare Pagesダッシュボードでバインディングを設定：
 
 ```bash
 # システムステータス確認
-curl https://passurt24.pages.dev/api/status
+curl https://tsuboi-premium.pages.dev/api/status
 
 # 店舗一覧確認
-curl https://passurt24.pages.dev/api/stores
+curl https://tsuboi-premium.pages.dev/api/stores
 
 # 管理画面アクセス
-# https://passurt24.pages.dev/admin
+# https://tsuboi-premium.pages.dev/admin
 # ユーザー名: urbandirection
 # パスワード: urbandirection
 ```
@@ -211,7 +212,7 @@ node test-emails.js
 
 1. **Resend APIキーの確認**
    ```bash
-   npx wrangler pages secret list --project-name passurt24
+   npx wrangler pages secret list --project-name tsuboi-premium
    ```
    
 2. **送信元ドメインの認証**
@@ -372,10 +373,10 @@ RESEND_FROM_EMAIL=info@urbandirection.jp
 **本番環境**:
 ```bash
 # Cloudflare Pages Secretsに設定
-npx wrangler pages secret put RESEND_API_KEY --project-name passurt24
+npx wrangler pages secret put RESEND_API_KEY --project-name tsuboi-premium
 # プロンプトで: re_actual_key_here と入力
 
-npx wrangler pages secret put RESEND_FROM_EMAIL --project-name passurt24
+npx wrangler pages secret put RESEND_FROM_EMAIL --project-name tsuboi-premium
 # プロンプトで: info@urbandirection.jp と入力
 ```
 
@@ -441,15 +442,15 @@ npm run build
 npx wrangler d1 migrations apply passport24-voucher-production --remote
 
 # 4. デプロイ
-npx wrangler pages deploy dist --project-name passurt24 --branch main
+npx wrangler pages deploy dist --project-name tsuboi-premium --branch main
 
 # 5. シークレット設定
-npx wrangler pages secret put RESEND_API_KEY --project-name passurt24
-npx wrangler pages secret put RESEND_FROM_EMAIL --project-name passurt24
+npx wrangler pages secret put RESEND_API_KEY --project-name tsuboi-premium
+npx wrangler pages secret put RESEND_FROM_EMAIL --project-name tsuboi-premium
 
 # 6. 動作確認
-curl https://passurt24.pages.dev/api/status
-curl https://passurt24.pages.dev/api/stores
+curl https://tsuboi-premium.pages.dev/api/status
+curl https://tsuboi-premium.pages.dev/api/stores
 ```
 
 ## 📞 サポート情報

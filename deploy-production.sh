@@ -17,7 +17,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-PROJECT_NAME="passurt24"
+PROJECT_NAME="tsuboi-premium"
 DB_NAME="passport24-voucher-production"
 
 echo "Step 1: 認証確認"
