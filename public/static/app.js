@@ -114,18 +114,22 @@ class ReservationApp {
       <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
         <div class="max-w-4xl mx-auto">
           <!-- ヘッダー -->
-          <div class="bg-white shadow-lg p-6 mb-6">
-            <div class="flex justify-between items-start">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
-                  <i class="fas fa-ticket-alt text-blue-500 mr-2"></i>
-                  パスート24プレミアム商品券<br>抽選・応募システム
+          <div class="bg-white shadow-lg p-4 sm:p-6 mb-6">
+            <div class="flex justify-between items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <h1 class="text-base sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 flex items-start">
+                  <i class="fas fa-ticket-alt text-blue-500 mr-1 sm:mr-2 mt-1 text-sm sm:text-base"></i>
+                  <span class="leading-tight">
+                    パスート24プレミアム商品券<br class="sm:hidden">
+                    <span class="hidden sm:inline"> </span>
+                    抽選・応募システム
+                  </span>
                 </h1>
-                <p class="text-gray-600">ご希望の商品券をご応募いただけます</p>
+                <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">ご希望の商品券をご応募いただけます</p>
               </div>
               <button onclick="location.href='/lookup'" 
-                      class="px-4 py-2 bg-purple-500 text-white hover:bg-purple-600 transition">
-                <i class="fas fa-search mr-2"></i>応募照会
+                      class="flex-shrink-0 px-3 sm:px-4 py-2 bg-purple-500 text-white hover:bg-purple-600 transition text-xs sm:text-sm whitespace-nowrap rounded">
+                <i class="fas fa-search mr-1 sm:mr-2"></i><span class="hidden xs:inline">応募照会</span><span class="xs:hidden">照会</span>
               </button>
             </div>
           </div>

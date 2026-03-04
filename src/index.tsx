@@ -1652,6 +1652,12 @@ app.get('/', (c) => {
             display: none;
             -webkit-appearance: none;
           }
+          
+          /* xs ブレークポイント（360px以上）の定義 */
+          @media (min-width: 360px) {
+            .xs\\:inline { display: inline; }
+            .xs\\:hidden { display: none; }
+          }
         </style>
     </head>
     <body class="bg-gray-50">
