@@ -1642,15 +1642,34 @@ app.get('/', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-          /* カレンダーボタンを非表示 */
-          input[type="date"].hide-calendar-icon::-webkit-calendar-picker-indicator {
-            display: none;
-            -webkit-appearance: none;
+          /* カレンダーボタンを非表示（全ブラウザ対応） */
+          input[type="date"].hide-calendar-icon {
+            position: relative;
           }
+          
+          /* Webkit系（Chrome, Safari, Edge）のカレンダーアイコンを非表示 */
+          input[type="date"].hide-calendar-icon::-webkit-calendar-picker-indicator {
+            display: none !important;
+            -webkit-appearance: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            width: 0 !important;
+            height: 0 !important;
+          }
+          
+          /* Webkit系のスピンボタンとクリアボタンも非表示 */
           input[type="date"].hide-calendar-icon::-webkit-inner-spin-button,
           input[type="date"].hide-calendar-icon::-webkit-clear-button {
-            display: none;
-            -webkit-appearance: none;
+            display: none !important;
+            -webkit-appearance: none !important;
+          }
+          
+          /* Firefox用のカレンダーボタンを非表示 */
+          input[type="date"].hide-calendar-icon::-moz-calendar-picker-indicator {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
           }
           
           /* xs ブレークポイント（360px以上）の定義 */
@@ -1808,15 +1827,34 @@ app.get('/lookup', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-          /* カレンダーボタンを非表示 */
+          /* カレンダーボタンを非表示（全ブラウザ対応） */
+          input[type="date"].hide-calendar-icon {
+            position: relative;
+          }
+          
+          /* Webkit系（Chrome, Safari, Edge）のカレンダーアイコンを非表示 */
           input[type="date"].hide-calendar-icon::-webkit-calendar-picker-indicator {
             display: none !important;
-            -webkit-appearance: none;
+            -webkit-appearance: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            width: 0 !important;
+            height: 0 !important;
           }
+          
+          /* Webkit系のスピンボタンとクリアボタンも非表示 */
           input[type="date"].hide-calendar-icon::-webkit-inner-spin-button,
           input[type="date"].hide-calendar-icon::-webkit-clear-button {
             display: none !important;
-            -webkit-appearance: none;
+            -webkit-appearance: none !important;
+          }
+          
+          /* Firefox用のカレンダーボタンを非表示 */
+          input[type="date"].hide-calendar-icon::-moz-calendar-picker-indicator {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
           }
         </style>
     </head>
