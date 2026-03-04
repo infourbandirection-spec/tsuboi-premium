@@ -338,7 +338,7 @@ class AdminApp {
           <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold flex items-center">
               <i class="fas fa-cog mr-3"></i>
-              パスート24 プレミアム商品券 管理画面
+              坪井繁栄会 プレミアム商品券 管理画面
             </h1>
             <div class="flex items-center gap-4">
               <span class="text-sm opacity-90">

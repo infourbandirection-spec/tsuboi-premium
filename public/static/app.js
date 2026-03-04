@@ -11,7 +11,7 @@ class ReservationApp {
       phoneNumber: '',
       email: '',
       quantity: 1,
-      store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+      store: '坪井繁栄会（熊本県熊本市中央区中央街4-29）',
       pickupDate: '',
       pickupTime: ''
     }
@@ -154,7 +154,7 @@ class ReservationApp {
                 <h1 class="text-base sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 flex items-start">
                   <i class="fas fa-ticket-alt text-blue-500 mr-1 sm:mr-2 mt-1 text-sm sm:text-base"></i>
                   <span class="leading-tight">
-                    パスート24プレミアム商品券<br class="sm:hidden">
+                    坪井繁栄会プレミアム商品券<br class="sm:hidden">
                     <span class="hidden sm:inline"> </span>
                     抽選・応募フォーム
                   </span>
@@ -327,10 +327,10 @@ class ReservationApp {
               <div class="text-sm text-gray-700">
                 <p class="font-bold mb-2">ご利用に際しての注意</p>
                 <div class="space-y-1">
-                  <p>●パスート24プレミアム付商品券は、パスート24の立体駐車場および熊本市辛島公園地下駐車場でご利用いただけます。</p>
+                  <p>●坪井繁栄会プレミアム付商品券は、坪井繁栄会の立体駐車場および熊本市辛島公園地下駐車場でご利用いただけます。</p>
                   <p>●お釣銭は出ませんので本券額面以上のお支払いの際にご利用ください。</p>
-                  <p>●一度ご購入いただいたパスート24プレミアム付商品券の返品及び現金とのお取替えはできません。</p>
-                  <p>●パスート24プレミアム付商品券は次に該当するものにはご利用できません。</p>
+                  <p>●一度ご購入いただいた坪井繁栄会プレミアム付商品券の返品及び現金とのお取替えはできません。</p>
+                  <p>●坪井繁栄会プレミアム付商品券は次に該当するものにはご利用できません。</p>
 
                   <div class="mt-3">
                     <p class="font-bold mb-2 text-red-600">ご利用できないもの：</p>
@@ -350,7 +350,7 @@ class ReservationApp {
                     </div>
                   </div>
 
-                  <p class="mt-3">●パスート24プレミアム付商品券の盗難、紛失または減失に対し、発行者では一切その責任を負いません。</p>
+                  <p class="mt-3">●坪井繁栄会プレミアム付商品券の盗難、紛失または減失に対し、発行者では一切その責任を負いません。</p>
                   
                   <div class="bg-white border border-blue-300 p-2 mt-3">
                     <p class="font-bold text-blue-700">◆ご利用期間：令和8年5月31日まで</p>

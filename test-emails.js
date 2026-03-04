@@ -11,7 +11,7 @@ const testData = {
     reservationId: 'TEST-20260302-ABCD12',
     fullName: 'テスト 太郎',
     quantity: 3,
-    store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+    store: '坪井繁栄会（熊本県熊本市中央区中央街4-29）',
     pickupDate: '2026-03-17',
     pickupTime: '15:00～16:00',
     reservationPhase: 1,
@@ -23,7 +23,7 @@ const testData = {
     reservationId: 'TEST-20260302-WINNER',
     fullName: 'テスト 花子',
     quantity: 2,
-    store: '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+    store: '坪井繁栄会（熊本県熊本市中央区中央街4-29）',
     pickupDate: '2026-03-18',
     pickupTime: '16:00～17:00'
   },

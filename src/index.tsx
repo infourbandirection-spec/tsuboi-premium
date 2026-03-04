@@ -1087,7 +1087,7 @@ app.post('/api/reserve',
       console.log('Attempting to send email to:', data.email)
       const emailResult = await sendEmail(
         data.email,
-        'パスート24 プレミアム商品券 応募完了',
+        '坪井繁栄会 プレミアム商品券 応募完了',
         emailHTML,
         c.env,
         reservationId,
@@ -1696,7 +1696,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>パスート24 プレミアム商品券抽選・応募フォーム</title>
+        <title>坪井繁栄会 プレミアム商品券抽選・応募フォーム</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -1755,7 +1755,7 @@ app.get('/success', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>応募完了 - パスート24 プレミアム商品券</title>
+        <title>応募完了 - 坪井繁栄会 プレミアム商品券</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -2035,7 +2035,7 @@ app.get('/search', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>応募照会 - パスート24 プレミアム商品券</title>
+        <title>応募照会 - 坪井繁栄会 プレミアム商品券</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -2055,7 +2055,7 @@ app.get('/lottery-results', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>当選者発表 - パスート24 プレミアム商品券</title>
+        <title>当選者発表 - 坪井繁栄会 プレミアム商品券</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -2076,7 +2076,7 @@ app.get('/admin', (c) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data: https: blob:; connect-src 'self'; worker-src 'self' blob:;">
-        <title>管理画面 - パスート24 プレミアム商品券</title>
+        <title>管理画面 - 坪井繁栄会 プレミアム商品券</title>
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
@@ -2098,7 +2098,7 @@ app.get('/privacy', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>プライバシーポリシー - パスート24 プレミアム商品券</title>
+        <title>プライバシーポリシー - 坪井繁栄会 プレミアム商品券</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -2351,7 +2351,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
           const emailResult = await sendEmail(
             res.email,
-            'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
+            '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
             emailHTML,
             c.env,
             res.reservation_id,
@@ -2462,7 +2462,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         const emailResult = await sendEmail(
           winner.email,
-          'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
+          '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
           emailHTML,
           c.env,
           winner.reservation_id,
@@ -2488,7 +2488,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         const emailResult = await sendEmail(
           loser.email,
-          'パスート24 プレミアム商品券 抽選結果のお知らせ',
+          '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ',
           emailHTML,
           c.env,
           loser.reservation_id,

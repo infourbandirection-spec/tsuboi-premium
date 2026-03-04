@@ -232,7 +232,7 @@ class LotteryResultsApp {
               </li>
               <li class="flex items-start">
                 <i class="fas fa-map-marker-alt text-gray-600 mt-1 mr-3"></i>
-                <span>購入場所: <strong>株式会社パスート24</strong>（熊本県熊本市中央区中央街4-29）</span>
+                <span>購入場所: <strong>坪井繁栄会</strong>（熊本県熊本市中央区中央街4-29）</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-exclamation-triangle text-gray-600 mt-1 mr-3"></i>
