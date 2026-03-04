@@ -934,16 +934,20 @@ class AdminApp {
       return
     }
 
-    const headers = ['応募ID', '生年月日', '氏名', '電話番号', '冊数', '受取日', '受取時間', 'ステータス', '予約日時']
+    const headers = ['応募ID', '生年月日', '氏名', 'ふりがな', 'メール', '電話番号', '冊数', '受取日', '受取時間', '抽選結果', 'ステータス', '抽選除外', '予約日時']
     const rows = data.map(r => [
       r.reservation_id,
       r.birth_date,
       r.full_name,
+      r.kana || '',
+      r.email || '',
       r.phone_number,
       r.quantity,
       r.pickup_date,
       r.pickup_time_slot,
-      r.status,
+      r.lottery_status === 'won' ? '当選' : r.lottery_status === 'lost' ? '落選' : '抽選前',
+      r.status === 'reserved' ? '予約中' : r.status === 'picked_up' ? '受取済' : 'キャンセル',
+      r.excluded_from_lottery ? '除外' : '',
       r.created_at
     ])
 
