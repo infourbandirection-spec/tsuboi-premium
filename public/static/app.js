@@ -280,7 +280,7 @@ class ReservationApp {
                   <li>応募IDは必ず控えてください</li>
                   <li>お一人様1回限りの応募です</li>
                   <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
-                  <li><strong>購入時に身分証明証をご持参ください</strong></li>
+                  <li><strong>購入時に本人確認書類をご持参ください</strong></li>
                 </ul>
               </div>
             </div>

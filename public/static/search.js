@@ -288,7 +288,7 @@ class SearchApp {
             </p>
             <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside ml-4">
               <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
-              <li><strong>身分証明証をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
+              <li><strong>本人確認書類をご持参ください</strong>（運転免許証、マイナンバーカード等）</li>
             </ul>
           </div>
         ` : ''}

@@ -199,7 +199,7 @@ function getReservationConfirmationEmailHTML(data: {
       <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 重要な注意事項</h3>
       <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
         <li>応募IDは必ず控えてください</li>
-        <li>購入時には身分証明証をご持参ください</li>
+        <li>購入時には本人確認書類をご持参ください</li>
         <li>ご本人様のみ購入可能です（代理人不可）</li>
         <li>購入予定日を過ぎると自動的にキャンセルされます</li>
       </ul>
@@ -288,7 +288,7 @@ function getLotteryWinnerEmailHTML(data: {
     <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
       <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 購入時の注意事項</h3>
       <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
-        <li><strong>身分証明証を必ずご持参ください</strong></li>
+        <li><strong>本人確認書類を必ずご持参ください</strong></li>
         <li><strong>ご本人様のみ購入可能です</strong>（代理人不可）</li>
         <li>購入予定日を過ぎると自動的にキャンセルされます</li>
         <li>応募IDをお控えください</li>

@@ -224,7 +224,7 @@ class LotteryResultsApp {
               </li>
               <li class="flex items-start">
                 <i class="fas fa-id-card text-gray-600 mt-1 mr-3"></i>
-                <span><strong>身分証明証（運転免許証、マイナンバーカード等）</strong>を必ずご持参ください</span>
+                <span><strong>本人確認書類（運転免許証、マイナンバーカード等）</strong>を必ずご持参ください</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-user text-gray-600 mt-1 mr-3"></i>
@@ -335,7 +335,7 @@ class LotteryResultsApp {
             </p>
             <p class="text-sm text-gray-600 mt-3">
               <i class="fas fa-info-circle mr-2"></i>
-              予約時に指定した購入日時に商品券を受け取れます。身分証明証をご持参ください。
+              予約時に指定した購入日時に商品券を受け取れます。本人確認書類をご持参ください。
             </p>
           </div>
         </div>
