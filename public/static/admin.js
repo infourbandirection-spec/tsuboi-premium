@@ -2407,10 +2407,15 @@ class AdminApp {
                 <td class="px-4 py-3 text-sm text-gray-900">${date.pickup_date}</td>
                 <td class="px-4 py-3 text-sm text-gray-900">${date.display_label}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                               ${date.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
-                    ${date.is_active ? '有効' : '無効'}
-                  </span>
+                  <button onclick="adminApp.togglePickupDateStatus(${date.id}, ${date.is_active})"
+                          class="px-4 py-2 text-sm font-semibold rounded-lg transition
+                                 ${date.is_active ? 
+                                   'bg-green-500 text-white hover:bg-green-600' : 
+                                   'bg-gray-400 text-white hover:bg-gray-500'}">
+                    ${date.is_active ? 
+                      '<i class="fas fa-toggle-on mr-1"></i> 有効' : 
+                      '<i class="fas fa-toggle-off mr-1"></i> 無効'}
+                  </button>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <button onclick="adminApp.showEditPickupDateModal(${date.id})" 
@@ -2679,6 +2684,53 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Delete pickup date error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async togglePickupDateStatus(id, currentStatus) {
+    const date = this.pickupDates.find(d => d.id === id)
+    if (!date) return
+
+    const newStatus = currentStatus ? 0 : 1
+    const statusText = newStatus ? '有効' : '無効'
+
+    if (!confirm(`「${date.display_label}」を${statusText}にしますか？\n\n${newStatus ? '応募フォームに表示されます' : '応募フォームから非表示になります（既存の応募データは保持されます）'}`)) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-dates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          pickup_date: date.pickup_date,
+          display_label: date.display_label,
+          phase: date.phase,
+          is_active: newStatus,
+          display_order: date.display_order
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // データを再読み込み
+        await this.loadPickupDates()
+      } else {
+        alert('ステータス変更に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Toggle status error:', error)
       alert('システムエラーが発生しました')
     }
   }
