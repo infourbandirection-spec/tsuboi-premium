@@ -181,15 +181,15 @@ function getReservationConfirmationEmailHTML(data: {
           <td style="padding: 8px 0; font-weight: bold;">${data.quantity}冊</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取店舗:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入店舗:</td>
           <td style="padding: 8px 0;">${data.storeLocation}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取日:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入日:</td>
           <td style="padding: 8px 0;">${data.pickupDate}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取時間:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入時間:</td>
           <td style="padding: 8px 0;">${data.pickupTime}</td>
         </tr>
       </table>
@@ -199,9 +199,9 @@ function getReservationConfirmationEmailHTML(data: {
       <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 重要な注意事項</h3>
       <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
         <li>応募IDは必ず控えてください</li>
-        <li>受取時には身分証明証をご持参ください</li>
-        <li>ご本人様のみ受け取り可能です（代理人不可）</li>
-        <li>受取予定日を過ぎると自動的にキャンセルされます</li>
+        <li>購入時には身分証明証をご持参ください</li>
+        <li>ご本人様のみ購入可能です（代理人不可）</li>
+        <li>購入予定日を過ぎると自動的にキャンセルされます</li>
       </ul>
     </div>
     
@@ -257,10 +257,10 @@ function getLotteryWinnerEmailHTML(data: {
     </div>
     
     <p>プレミアム商品券の抽選に当選いたしました。<br>
-    以下の日時にご来店いただき、商品券をお受け取りください。</p>
+    以下の日時にご来店いただき、商品券をお購入ください。</p>
     
     <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">受取情報</h2>
+      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">購入情報</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
           <td style="padding: 8px 0; color: #6b7280;">応募ID:</td>
@@ -271,26 +271,26 @@ function getLotteryWinnerEmailHTML(data: {
           <td style="padding: 8px 0; font-weight: bold;">${data.quantity}冊</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取店舗:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入店舗:</td>
           <td style="padding: 8px 0;">${data.storeLocation}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取日:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入日:</td>
           <td style="padding: 8px 0; font-weight: bold; color: #dc2626;">${data.pickupDate}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">受取時間:</td>
+          <td style="padding: 8px 0; color: #6b7280;">購入時間:</td>
           <td style="padding: 8px 0; font-weight: bold; color: #dc2626;">${data.pickupTime}</td>
         </tr>
       </table>
     </div>
     
     <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 受取時の注意事項</h3>
+      <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 購入時の注意事項</h3>
       <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
         <li><strong>身分証明証を必ずご持参ください</strong></li>
-        <li><strong>ご本人様のみ受け取り可能です</strong>（代理人不可）</li>
-        <li>受取予定日を過ぎると自動的にキャンセルされます</li>
+        <li><strong>ご本人様のみ購入可能です</strong>（代理人不可）</li>
+        <li>購入予定日を過ぎると自動的にキャンセルされます</li>
         <li>応募IDをお控えください</li>
       </ul>
     </div>
@@ -805,12 +805,12 @@ function validateReservation(data: any, currentPhase: number = 1): { valid: bool
     return { valid: false, error: '冊数は1～6の範囲で指定してください' }
   }
 
-  // 受け取り日チェック（フェーズによって異なる）
+  // 購入日チェック（フェーズによって異なる）
   if (currentPhase === 1) {
     // Phase 1: 固定の3日間のみ
     const allowedDates = ['2026-03-16', '2026-03-17', '2026-03-18']
     if (!allowedDates.includes(data.pickupDate)) {
-      return { valid: false, error: '受け取り日は指定された日付から選択してください' }
+      return { valid: false, error: '購入日は指定された日付から選択してください' }
     }
   } else if (currentPhase === 2) {
     // Phase 2: 3月17日以降の自由選択
@@ -818,17 +818,17 @@ function validateReservation(data: any, currentPhase: number = 1): { valid: bool
     const pickupDate = new Date(data.pickupDate)
     
     if (pickupDate < minDate) {
-      return { valid: false, error: '受け取り日は3月17日以降を選択してください' }
+      return { valid: false, error: '購入日は3月17日以降を選択してください' }
     }
   }
 
-  // 受け取り時間チェック（固定の7つの時間帯）
+  // 購入時間チェック（固定の7つの時間帯）
   const allowedTimes = [
     '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
     '17:00～18:00', '18:00～19:00', '19:00～20:00'
   ]
   if (!allowedTimes.includes(data.pickupTime)) {
-    return { valid: false, error: '受け取り時間は指定された時間帯から選択してください' }
+    return { valid: false, error: '購入時間は指定された時間帯から選択してください' }
   }
 
   return { valid: true }
@@ -1494,7 +1494,7 @@ app.put('/api/admin/reservations/:id/status', async (c) => {
   }
 })
 
-// 受取完了処理（管理画面用）
+// 購入完了処理（管理画面用）
 app.post('/api/admin/reservations/:id/pickup', async (c) => {
   const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
@@ -1516,15 +1516,15 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
       }, 404)
     }
 
-    // 既に受取済みかチェック
+    // 既に購入済みかチェック
     if ((reservation as any).status === 'picked_up') {
       return c.json({
         success: false,
-        error: 'この応募は既に受取完了しています'
+        error: 'この応募は既に購入完了しています'
       }, 400)
     }
 
-    // 受取完了に更新
+    // 購入完了に更新
     await db.prepare(`
       UPDATE reservations 
       SET status = 'picked_up',
@@ -1535,7 +1535,7 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
 
     return c.json({
       success: true,
-      message: '受取完了を記録しました',
+      message: '購入完了を記録しました',
       pickedUpAt: new Date().toISOString()
     })
 
@@ -1748,7 +1748,7 @@ app.get('/success', (c) => {
                 <ul class="space-y-2 text-sm text-gray-700">
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
-                        <span>受取日を過ぎると<strong>自動的にキャンセル</strong>されます</span>
+                        <span>購入日を過ぎると<strong>自動的にキャンセル</strong>されます</span>
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
@@ -1760,11 +1760,11 @@ app.get('/success', (c) => {
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
-                        <span>受取時は<strong>ご本人様</strong>がご来店ください（代理不可）</span>
+                        <span>購入時は<strong>ご本人様</strong>がご来店ください（代理不可）</span>
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
-                        <span>受取時に<strong>身分証明書</strong>をご提示ください</span>
+                        <span>購入時に<strong>身分証明書</strong>をご提示ください</span>
                     </li>
                 </ul>
             </div>
@@ -2005,7 +2005,7 @@ app.get('/privacy', (c) => {
                     <li>氏名（フルネーム）</li>
                     <li>生年月日</li>
                     <li>電話番号</li>
-                    <li>受取店舗および受取日時</li>
+                    <li>購入店舗および購入日時</li>
                 </ul>
             </section>
 

@@ -250,11 +250,11 @@ class ReservationApp {
                 ` : ''}
               </div>
 
-              <!-- 受取日時 -->
+              <!-- 購入日時 -->
               <div class="mb-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
                   <i class="fas fa-clock text-blue-500 mr-2"></i>
-                  受け取り日時
+                  購入日時
                 </h3>
                 ${this.renderPickupDateTimeSection()}
               </div>
@@ -276,11 +276,11 @@ class ReservationApp {
               <div class="text-sm text-gray-700">
                 <p class="font-bold mb-2">重要な注意事項</p>
                 <ul class="list-disc list-inside space-y-1">
-                  <li>受け取り予定日を過ぎた場合は自動的にキャンセルされます</li>
+                  <li>購入予定日を過ぎた場合は自動的にキャンセルされます</li>
                   <li>応募IDは必ず控えてください</li>
                   <li>お一人様1回限りの応募です</li>
                   <li><strong>必ずご本人様がお越しください</strong>（代理人不可）</li>
-                  <li><strong>受け取り時に身分証明証をご持参ください</strong></li>
+                  <li><strong>購入時に身分証明証をご持参ください</strong></li>
                 </ul>
               </div>
             </div>
@@ -360,7 +360,7 @@ class ReservationApp {
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り日 <span class="text-red-500">*</span>
+            購入日 <span class="text-red-500">*</span>
           </label>
           <select id="pickupDate"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -373,7 +373,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り時間 <span class="text-red-500">*</span>
+            購入時間 <span class="text-red-500">*</span>
           </label>
           <select id="pickupTime"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -411,7 +411,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り日 <span class="text-red-500">*</span>
+            購入日 <span class="text-red-500">*</span>
           </label>
           <input type="date" 
                  id="pickupDate"
@@ -423,7 +423,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            受け取り時間 <span class="text-red-500">*</span>
+            購入時間 <span class="text-red-500">*</span>
           </label>
           <select id="pickupTime"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -498,15 +498,15 @@ class ReservationApp {
                 <p class="text-lg font-medium">${this.formData.quantity}冊</p>
               </div>
               <div class="border-b pb-3">
-                <p class="text-sm text-gray-600">受取店舗</p>
+                <p class="text-sm text-gray-600">購入店舗</p>
                 <p class="text-lg font-medium">${this.escapeHtml(this.formData.store)}</p>
               </div>
               <div class="border-b pb-3">
-                <p class="text-sm text-gray-600">受け取り日</p>
+                <p class="text-sm text-gray-600">購入日</p>
                 <p class="text-lg font-medium">${this.escapeHtml(this.formData.pickupDate)}</p>
               </div>
               <div class="border-b pb-3">
-                <p class="text-sm text-gray-600">受け取り時間</p>
+                <p class="text-sm text-gray-600">購入時間</p>
                 <p class="text-lg font-medium">${this.escapeHtml(this.formData.pickupTime)}</p>
               </div>
             </div>

@@ -95,9 +95,9 @@ function showReservation(reservation) {
   // ステータスバッジ
   let statusBadge = ''
   if (reservation.status === 'reserved') {
-    statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-sm font-semibold"><i class="fas fa-clock mr-1"></i> 予約済み（未受取）</span>'
+    statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-sm font-semibold"><i class="fas fa-clock mr-1"></i> 予約済み（未購入）</span>'
   } else if (reservation.status === 'picked_up') {
-    statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-sm font-semibold"><i class="fas fa-check mr-1"></i> 受取完了</span>'
+    statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-sm font-semibold"><i class="fas fa-check mr-1"></i> 購入完了</span>'
   } else if (reservation.status === 'canceled') {
     statusBadge = '<span class="px-3 py-1 bg-red-100 text-red-800 border border-red-300 rounded-full text-sm font-semibold"><i class="fas fa-times mr-1"></i> キャンセル済み</span>'
   }
@@ -146,7 +146,7 @@ function showReservation(reservation) {
         
         <div class="flex items-start">
           <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-calendar mr-2"></i>受取日時
+            <i class="fas fa-calendar mr-2"></i>購入日時
           </div>
           <div class="flex-1 text-gray-900">
             ${reservation.pickup_date}<br>
@@ -167,7 +167,7 @@ function showReservation(reservation) {
           <p class="text-green-800">
             <i class="fas fa-check-circle mr-2"></i>
             <strong>当選おめでとうございます！</strong><br>
-            指定の日時に店舗でお受け取りください。
+            指定の日時に店舗でお購入ください。
           </p>
         </div>
       ` : ''}
@@ -196,7 +196,7 @@ function showMultipleReservations(reservations) {
     if (r.status === 'reserved') {
       statusBadge = '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">予約済み</span>'
     } else if (r.status === 'picked_up') {
-      statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">受取完了</span>'
+      statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">購入完了</span>'
     }
     
     let lotteryBadge = ''

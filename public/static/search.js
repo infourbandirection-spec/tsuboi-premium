@@ -201,7 +201,7 @@ class SearchApp {
 
     const statusLabels = {
       'reserved': '予約済み',
-      'completed': '受取完了',
+      'completed': '購入完了',
       'canceled': 'キャンセル'
     }
 
@@ -253,14 +253,14 @@ class SearchApp {
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
-              <i class="fas fa-map-marker-alt mr-2"></i>受取場所
+              <i class="fas fa-map-marker-alt mr-2"></i>購入場所
             </p>
             <p class="text-lg font-bold">${this.escapeHtml(reservation.store_location)}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
             <p class="text-sm text-gray-600 mb-1">
-              <i class="fas fa-clock mr-2"></i>受取日時
+              <i class="fas fa-clock mr-2"></i>購入日時
             </p>
             <p class="text-lg font-bold">
               ${this.escapeHtml(reservation.pickup_date)} ${this.escapeHtml(reservation.pickup_time_slot)}
@@ -273,12 +273,12 @@ class SearchApp {
           <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-2">
             <p class="text-sm text-gray-800 mb-2">
               <i class="fas fa-clock text-yellow-500 mr-2"></i>
-              <strong>受け取りについて</strong>
+              <strong>購入について</strong>
             </p>
             <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside ml-4">
-              <li>受取時に予約IDをご提示ください</li>
-              <li>受け取り予定日を過ぎた場合は自動的にキャンセルされます</li>
-              <li>受け取り時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
+              <li>購入時に予約IDをご提示ください</li>
+              <li>購入予定日を過ぎた場合は自動的にキャンセルされます</li>
+              <li>購入時間は混雑状況の目安です（時間を多少前後しても大丈夫です）</li>
             </ul>
           </div>
           <div class="mt-2 bg-orange-50 border-l-4 border-orange-500 p-4">

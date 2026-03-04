@@ -407,7 +407,7 @@ class AdminApp {
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600">受取完了冊数</p>
+                <p class="text-sm text-gray-600">購入完了冊数</p>
                 <p class="text-3xl font-bold text-purple-600">${stats.completed_books || 0}</p>
               </div>
               <i class="fas fa-check-circle text-4xl text-purple-500"></i>
@@ -440,7 +440,7 @@ class AdminApp {
             </div>
             <div>
               <div class="flex justify-between text-sm mb-2">
-                <span>受取完了</span>
+                <span>購入完了</span>
                 <span class="font-bold">${((stats.completed_books || 0) / 1000 * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
@@ -504,8 +504,8 @@ class AdminApp {
               <select id="filterStatus" onchange="adminApp.applyFilters()" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
-                <option value="reserved">予約済み（未受取）</option>
-                <option value="picked_up">受取完了</option>
+                <option value="reserved">予約済み（未購入）</option>
+                <option value="picked_up">購入完了</option>
                 <option value="canceled">キャンセル</option>
               </select>
             </div>
@@ -520,7 +520,7 @@ class AdminApp {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">受取日</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">購入日</label>
               <input type="date" id="filterDate" onchange="adminApp.applyFilters()"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
             </div>
@@ -560,7 +560,7 @@ class AdminApp {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mail</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">冊数</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">受取日時</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">購入日時</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抽選除外</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抽選結果</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
@@ -622,17 +622,17 @@ class AdminApp {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     ${this.renderStatusBadge(reservation.status)}
-                    ${reservation.picked_up_at ? `<div class="text-xs text-gray-500 mt-1">受取: ${new Date(reservation.picked_up_at).toLocaleString('ja-JP')}</div>` : ''}
+                    ${reservation.picked_up_at ? `<div class="text-xs text-gray-500 mt-1">購入: ${new Date(reservation.picked_up_at).toLocaleString('ja-JP')}</div>` : ''}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
                     ${reservation.status === 'reserved' && reservation.lottery_status === 'won' ? `
                       <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
                               class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
-                        <i class="fas fa-check mr-1"></i> 受取完了にする
+                        <i class="fas fa-check mr-1"></i> 購入完了にする
                       </button>
                     ` : reservation.status === 'picked_up' ? `
                       <span class="inline-block px-4 py-2 bg-green-500 text-white rounded font-bold">
-                        <i class="fas fa-check-circle mr-1"></i> 受取完了
+                        <i class="fas fa-check-circle mr-1"></i> 購入完了
                       </span>
                       ${reservation.picked_up_by ? `<div class="text-xs text-gray-500">担当: ${reservation.picked_up_by}</div>` : ''}
                     ` : `
@@ -693,9 +693,9 @@ class AdminApp {
 
   renderStatusBadge(status) {
     const statusConfig = {
-      reserved: { label: '予約済み（未受取）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
-      picked_up: { label: '✓ 受取完了', color: 'bg-green-100 text-green-800 border border-green-300' },
-      completed: { label: '✓ 受取完了', color: 'bg-green-100 text-green-800 border border-green-300' },
+      reserved: { label: '予約済み（未購入）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
+      picked_up: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
+      completed: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
       canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
     }
     const config = statusConfig[status] || { label: status, color: 'bg-gray-100 text-gray-800' }
@@ -799,14 +799,14 @@ class AdminApp {
   }
 
   async confirmPickup(id, reservationId) {
-    const staffName = prompt(`応募ID: ${reservationId}\n\n受取確認を行います。\n担当者名を入力してください（省略可）:`, '')
+    const staffName = prompt(`応募ID: ${reservationId}\n\n購入確認を行います。\n担当者名を入力してください（省略可）:`, '')
     
     if (staffName === null) {
       // キャンセルされた
       return
     }
 
-    if (!confirm(`この予約を受取完了にしますか？\n\n応募ID: ${reservationId}`)) {
+    if (!confirm(`この予約を購入完了にしますか？\n\n応募ID: ${reservationId}`)) {
       return
     }
 
@@ -822,7 +822,7 @@ class AdminApp {
       const data = await response.json()
 
       if (data.success) {
-        alert('✅ 受取完了を記録しました')
+        alert('✅ 購入完了を記録しました')
         await this.loadData()
         this.render()
       } else {
@@ -891,7 +891,7 @@ class AdminApp {
                       <p class="font-bold">${r.quantity} 冊</p>
                     </div>
                     <div class="col-span-2">
-                      <p class="text-sm text-gray-600">受取日時</p>
+                      <p class="text-sm text-gray-600">購入日時</p>
                       <p class="font-bold">${r.pickup_date} ${r.pickup_time_slot}</p>
                     </div>
                     <div>
@@ -934,7 +934,7 @@ class AdminApp {
       return
     }
 
-    const headers = ['応募ID', '生年月日', '氏名', 'ふりがな', 'メール', '電話番号', '冊数', '受取日', '受取時間', '抽選結果', 'ステータス', '抽選除外', '予約日時']
+    const headers = ['応募ID', '生年月日', '氏名', 'ふりがな', 'メール', '電話番号', '冊数', '購入日', '購入時間', '抽選結果', 'ステータス', '抽選除外', '予約日時']
     const rows = data.map(r => [
       r.reservation_id,
       r.birth_date,
@@ -946,7 +946,7 @@ class AdminApp {
       r.pickup_date,
       r.pickup_time_slot,
       r.lottery_status === 'won' ? '当選' : r.lottery_status === 'lost' ? '落選' : '抽選前',
-      r.status === 'reserved' ? '予約中' : r.status === 'picked_up' ? '受取済' : 'キャンセル',
+      r.status === 'reserved' ? '予約中' : r.status === 'picked_up' ? '購入済' : 'キャンセル',
       r.excluded_from_lottery ? '除外' : '',
       r.created_at
     ])
@@ -1045,7 +1045,7 @@ class AdminApp {
             x: {
               title: {
                 display: true,
-                text: '受け取り日',
+                text: '購入日',
                 font: {
                   size: 14,
                   weight: 'bold'
@@ -1130,7 +1130,7 @@ class AdminApp {
             x: {
               title: {
                 display: true,
-                text: '受け取り時間帯',
+                text: '購入時間帯',
                 font: {
                   size: 14,
                   weight: 'bold'

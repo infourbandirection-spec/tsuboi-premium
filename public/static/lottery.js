@@ -215,12 +215,12 @@ class LotteryResultsApp {
           <div class="bg-white rounded-lg shadow-xl p-6 mt-8">
             <h3 class="text-xl font-bold text-gray-800 mb-4">
               <i class="fas fa-info-circle text-gray-600 mr-2"></i>
-              受け取りについて
+              購入について
             </h3>
             <ul class="space-y-3 text-gray-700">
               <li class="flex items-start">
                 <i class="fas fa-check-circle text-gray-600 mt-1 mr-3"></i>
-                <span>当選された方は、予約時に指定した受け取り日時に商品券を受け取れます</span>
+                <span>当選された方は、予約時に指定した購入日時に商品券を受け取れます</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-id-card text-gray-600 mt-1 mr-3"></i>
@@ -228,15 +228,15 @@ class LotteryResultsApp {
               </li>
               <li class="flex items-start">
                 <i class="fas fa-user text-gray-600 mt-1 mr-3"></i>
-                <span><strong>ご本人様のみ</strong>受け取り可能です（代理人不可）</span>
+                <span><strong>ご本人様のみ</strong>購入可能です（代理人不可）</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-map-marker-alt text-gray-600 mt-1 mr-3"></i>
-                <span>受け取り場所: <strong>株式会社パスート24</strong>（熊本県熊本市中央区中央街4-29）</span>
+                <span>購入場所: <strong>株式会社パスート24</strong>（熊本県熊本市中央区中央街4-29）</span>
               </li>
               <li class="flex items-start">
                 <i class="fas fa-exclamation-triangle text-gray-600 mt-1 mr-3"></i>
-                <span>受け取り予定日を過ぎた場合は<strong>自動的にキャンセル</strong>されます</span>
+                <span>購入予定日を過ぎた場合は<strong>自動的にキャンセル</strong>されます</span>
               </li>
             </ul>
           </div>
@@ -335,7 +335,7 @@ class LotteryResultsApp {
             </p>
             <p class="text-sm text-gray-600 mt-3">
               <i class="fas fa-info-circle mr-2"></i>
-              予約時に指定した受け取り日時に商品券を受け取れます。身分証明証をご持参ください。
+              予約時に指定した購入日時に商品券を受け取れます。身分証明証をご持参ください。
             </p>
           </div>
         </div>
