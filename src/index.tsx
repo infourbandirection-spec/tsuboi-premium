@@ -1807,6 +1807,18 @@ app.get('/lookup', (c) => {
         <title>応募照会 - プレミアム引換券応募システム</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          /* カレンダーボタンを非表示 */
+          input[type="date"].hide-calendar-icon::-webkit-calendar-picker-indicator {
+            display: none !important;
+            -webkit-appearance: none;
+          }
+          input[type="date"].hide-calendar-icon::-webkit-inner-spin-button,
+          input[type="date"].hide-calendar-icon::-webkit-clear-button {
+            display: none !important;
+            -webkit-appearance: none;
+          }
+        </style>
     </head>
     <body class="bg-gray-50">
         <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
