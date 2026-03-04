@@ -12,27 +12,17 @@
       "database_name": "passport24-voucher-production",
       "database_id": "92ba7506-598f-4bb2-baf8-40d07a379224"
     }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CSRF_TOKENS",
+      "id": "620dcfa3ae4e4c7bbf155e07c1840a93"
+    },
+    {
+      "binding": "RATE_LIMIT",
+      "id": "8d09805b2d1b4b3db141bbe067e34537"
+    }
   ]
-  // KV Namespaces (optional - for enhanced security)
-  // To enable, create KV namespaces and uncomment:
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "CSRF_TOKENS",
-  //     "id": "your-csrf-tokens-kv-id",
-  //     "preview_id": "your-csrf-tokens-preview-id"
-  //   },
-  //   {
-  //     "binding": "RATE_LIMIT",
-  //     "id": "your-rate-limit-kv-id",
-  //     "preview_id": "your-rate-limit-preview-id"
-  //   }
-  // ]
-  // Create KV namespaces:
-  // npx wrangler kv namespace create CSRF_TOKENS
-  // npx wrangler kv namespace create CSRF_TOKENS --preview
-  // npx wrangler kv namespace create RATE_LIMIT
-  // npx wrangler kv namespace create RATE_LIMIT --preview
-  
   // Resend API configuration
   // ローカル開発用: .dev.vars ファイルに RESEND_FROM_EMAIL を設定
   // 本番環境用: wrangler pages secret put RESEND_FROM_EMAIL で設定済み
