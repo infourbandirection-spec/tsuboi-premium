@@ -597,21 +597,21 @@ class AdminApp {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-center">
                     ${reservation.excluded_from_lottery ? `
-                      <div class="space-y-1">
-                        <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold">
-                          <i class="fas fa-ban mr-1"></i> 除外済み
+                      <div class="flex flex-col items-center gap-1">
+                        <span class="inline-block px-1.5 py-0.5 bg-red-100 text-red-800 rounded text-xs font-medium">
+                          <i class="fas fa-ban text-xs"></i> 除外済み
                         </span>
                         <button onclick="adminApp.confirmExclude('${reservation.reservation_id}', false)"
-                                class="w-full px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs">
-                          <i class="fas fa-undo mr-1"></i> 解除
+                                class="px-1.5 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs">
+                          <i class="fas fa-undo text-xs"></i> 解除
                         </button>
                       </div>
                     ` : reservation.lottery_status === 'lost' ? `
                       <span class="text-gray-400 text-xs">-</span>
                     ` : (reservation.lottery_status === 'pending' || !reservation.lottery_status) && reservation.status === 'reserved' ? `
                       <button onclick="adminApp.showExcludeModal('${reservation.reservation_id}', '${reservation.reservation_id}', '管理者による除外')"
-                              class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-xs">
-                        <i class="fas fa-ban mr-1"></i> 除外
+                              class="px-1.5 py-0.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-xs">
+                        <i class="fas fa-ban text-xs"></i> 除外
                       </button>
                     ` : `
                       <span class="text-gray-400 text-xs">-</span>
