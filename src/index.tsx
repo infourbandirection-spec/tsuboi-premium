@@ -2841,7 +2841,7 @@ app.post('/api/test/email/reservation', async (c) => {
       fullName: data.fullName || 'テスト 太郎',
       reservationId: data.reservationId || 'TEST-20260302-ABCD12',
       quantity: data.quantity || 3,
-      storeLocation: data.store || '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+      storeLocation: data.store || '一畳屋ショールーム（熊本県熊本市中央区坪井5丁目2-27）',
       pickupDate: data.pickupDate || '2026-03-17',
       pickupTime: data.pickupTime || '15:00～16:00',
       reservationPhase: data.reservationPhase || 1,
@@ -2894,7 +2894,7 @@ app.post('/api/test/email/winner', async (c) => {
       fullName: data.fullName || 'テスト 花子',
       reservationId: data.reservationId || 'TEST-20260302-WINNER',
       quantity: data.quantity || 2,
-      storeLocation: data.store || '株式会社パスート24（熊本県熊本市中央区中央街4-29）',
+      storeLocation: data.store || '一畳屋ショールーム（熊本県熊本市中央区坪井5丁目2-27）',
       pickupDate: data.pickupDate || '2026-03-18',
       pickupTime: data.pickupTime || '16:00～17:00'
     })

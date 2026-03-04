@@ -11,7 +11,7 @@ class ReservationApp {
       phoneNumber: '',
       email: '',
       quantity: 1,
-      store: '坪井繁栄会（熊本県熊本市中央区中央街4-29）',
+      store: '一畳屋ショールーム（熊本県熊本市中央区坪井5丁目2-27）',
       pickupDate: '',
       pickupTime: ''
     }

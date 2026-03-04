@@ -49,9 +49,7 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 
 -- 店舗データ挿入
 INSERT INTO stores (store_name, address, phone, business_hours, is_active) VALUES
-('坪井繁栄会上通', '熊本市中央区上通町7-2', '096-356-4500', '24時間営業', 1),
-('坪井繁栄会銀座プレス', '熊本市中央区銀座通1-10', '096-312-3400', '24時間営業', 1),
-('坪井繁栄会熊本中央', '熊本市中央区花畑町9-23', '096-322-5400', '24時間営業', 1);
+('一畳屋ショールーム', '熊本県熊本市中央区坪井5丁目2-27', '096-XXX-XXXX', '営業時間はお問い合わせください', 1);
 
 -- 更新日時自動更新トリガー（reservations）
 CREATE TRIGGER IF NOT EXISTS update_reservations_timestamp 
