@@ -4,9 +4,11 @@
 
 ## 🌐 アクセスURL
 
-- **予約画面（一般ユーザー）**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/
-- **管理画面**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/admin
-- **競合状態テストツール**: https://3000-ias0xb1bnq0w0e36xso19-cc2fbc16.sandbox.novita.ai/static/test-race-condition.html
+- **本番環境**: https://passurt24.pages.dev/
+- **管理画面**: https://passurt24.pages.dev/admin
+- **応募照会**: https://passurt24.pages.dev/lookup
+- **応募検索**: https://passurt24.pages.dev/search
+- **最新デプロイ**: https://bda2ba22.passurt24.pages.dev
 - **開発環境**: `http://localhost:3000`
 
 ## ✨ 主な機能
@@ -65,6 +67,8 @@
 - ✅ **リアルタイムダッシュボード** - 予約状況の可視化
 - ✅ **混雑状況ヒートマップ** - 店舗×時間帯の予約集中度を色分け表示
 - ✅ **予約一覧・検索** - フィルター機能による高度な検索
+- ✅ **重複チェック機能** - 氏名・電話番号の重複検出
+- ✅ **抽選除外ボタン** - 不正応募を抽選対象から除外
 - ✅ **ステータス管理** - ワンクリックでステータス変更
 - ✅ **統計分析** - 店舗別・日付別・時間帯別の集計
 - ✅ **CSV出力** - 会計処理や分析用データの出力
@@ -507,11 +511,19 @@ npx wrangler pages secret put ADMIN_PASSWORD --project-name webapp
 
 ---
 
-**最終更新**: 2026-02-28  
-**バージョン**: 2.0.0  
+**最終更新**: 2026-03-04  
+**バージョン**: 2.1.0  
 **開発環境**: Cloudflare Pages + Hono + D1 Database
 
 ## 📝 変更履歴
+
+### v2.1.0 (2026-03-04)
+- ✅ **重複チェック機能実装**（氏名・電話番号の重複検出）
+- ✅ **抽選除外ボタン追加**（管理画面で不正応募を除外可能）
+- ✅ **古いコード削除**（重複API、未使用エンドポイント）
+- ✅ **セキュリティ強化**（全API認証確認完了）
+- ✅ **パフォーマンス最適化**（ビルドサイズ削減: 100KB→97.59KB）
+- ✅ **応答時間改善**（約160ms、グローバルエッジ配信）
 
 ### v2.0.0 (2026-02-28)
 - ✅ Phase 1無制限応募システム実装
