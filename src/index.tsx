@@ -485,7 +485,7 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Content-Security-Policy', 
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://www.genspark.ai; " +
-    "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
+    "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://www.gstatic.com; " +
     "font-src 'self' https://cdn.jsdelivr.net data:; " +
     "img-src 'self' data: https:; " +
     "connect-src 'self'"
