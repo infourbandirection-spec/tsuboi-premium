@@ -1872,7 +1872,12 @@ app.get('/lookup', (c) => {
                                     <i class="fas fa-birthday-cake mr-1"></i> 生年月日
                                 </label>
                                 <input type="date" id="input-birth-date" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                                       max="${new Date().toISOString().split('T')[0]}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 hide-calendar-icon">
+                                <p class="text-xs text-gray-500 mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    未来の日付は選択できません
+                                </p>
                             </div>
 
                             <div>
