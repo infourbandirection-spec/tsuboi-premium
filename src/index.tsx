@@ -1971,7 +1971,7 @@ app.get('/admin', (c) => {
     </head>
     <body class="bg-gray-50">
         <div id="admin-app"></div>
-        <script src="/static/admin.js"></script>
+        <script src="/static/admin.js?v=${Date.now()}"></script>
     </body>
     </html>
   `)
