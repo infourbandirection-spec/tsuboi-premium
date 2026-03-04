@@ -730,16 +730,20 @@ class AdminApp {
   }
 
   renderLotteryStatusBadge(lotteryStatus, phase) {
-    if (phase === 2 || !lotteryStatus) {
-      return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Phase 2</span>'
+    // Phase 2の場合は抽選なし
+    if (phase === 2) {
+      return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-300">Phase 2</span>'
     }
     
+    // Phase 1の場合は抽選ステータスに応じて表示
     const lotteryConfig = {
       won: { label: '✓ 当選', color: 'bg-green-100 text-green-800 border border-green-300' },
       lost: { label: '× 落選', color: 'bg-red-100 text-red-800 border border-red-300' },
       pending: { label: '抽選前', color: 'bg-yellow-100 text-yellow-800 border border-yellow-300' }
     }
-    const config = lotteryConfig[lotteryStatus] || { label: '抽選前', color: 'bg-yellow-100 text-yellow-800' }
+    
+    // 抽選ステータスがない場合は「抽選前」として扱う
+    const config = lotteryConfig[lotteryStatus] || lotteryConfig['pending']
     return `<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color}">${config.label}</span>`
   }
 

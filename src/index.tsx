@@ -1201,7 +1201,19 @@ app.post('/api/reservation/lookup/id',
 
     return c.json({
       success: true,
-      reservation
+      reservation: {
+        id: reservation.reservation_id,
+        fullName: reservation.full_name,
+        phoneNumber: reservation.phone_number,
+        quantity: reservation.quantity,
+        storeLocation: reservation.store_location,
+        pickupDate: reservation.pickup_date,
+        pickupTimeSlot: reservation.pickup_time_slot,
+        status: reservation.status,
+        reservationPhase: reservation.reservation_phase,
+        lotteryStatus: reservation.lottery_status,
+        createdAt: reservation.created_at
+      }
     })
 
   } catch (error) {
@@ -1247,7 +1259,19 @@ app.post('/api/reservation/lookup/birthdate',
 
     return c.json({
       success: true,
-      reservations: reservations.results
+      reservations: reservations.results.map((r: any) => ({
+        id: r.reservation_id,
+        fullName: r.full_name,
+        phoneNumber: r.phone_number,
+        quantity: r.quantity,
+        storeLocation: r.store_location,
+        pickupDate: r.pickup_date,
+        pickupTimeSlot: r.pickup_time_slot,
+        status: r.status,
+        reservationPhase: r.reservation_phase,
+        lotteryStatus: r.lottery_status,
+        createdAt: r.created_at
+      }))
     })
 
   } catch (error) {
@@ -2618,110 +2642,6 @@ app.post('/api/lottery/check', async (c) => {
     })
   } catch (error) {
     logSecureError('CheckLottery', error)
-    return c.json({
-      success: false,
-      error: 'システムエラーが発生しました'
-    }, 500)
-  }
-})
-
-// 応募照会API（応募IDで検索）
-app.post('/api/reservation/lookup/id', async (c) => {
-  try {
-    const db = c.env.DB
-    const { reservationId } = await c.req.json()
-
-    if (!reservationId) {
-      return c.json({
-        success: false,
-        error: '応募IDを入力してください'
-      }, 400)
-    }
-
-    const reservation = await db.prepare(`
-      SELECT * FROM reservations WHERE reservation_id = ?
-    `).bind(reservationId).first()
-
-    if (!reservation) {
-      return c.json({
-        success: false,
-        error: '応募が見つかりませんでした'
-      }, 404)
-    }
-
-    return c.json({
-      success: true,
-      reservation: {
-        id: reservation.reservation_id,
-        fullName: reservation.full_name,
-        phoneNumber: reservation.phone_number,
-        quantity: reservation.quantity,
-        storeLocation: reservation.store_location,
-        pickupDate: reservation.pickup_date,
-        pickupTimeSlot: reservation.pickup_time_slot,
-        status: reservation.status,
-        reservationPhase: reservation.reservation_phase,
-        lotteryStatus: reservation.lottery_status,
-        createdAt: reservation.created_at
-      }
-    })
-  } catch (error) {
-    logSecureError('ReservationLookupById', error)
-    return c.json({
-      success: false,
-      error: 'システムエラーが発生しました'
-    }, 500)
-  }
-})
-
-// 応募照会API（生年月日+電話番号で検索）
-app.post('/api/reservation/lookup/birthdate', async (c) => {
-  try {
-    const db = c.env.DB
-    const { birthDate, phoneNumber } = await c.req.json()
-
-    if (!birthDate || !phoneNumber) {
-      return c.json({
-        success: false,
-        error: '生年月日と電話番号を入力してください'
-      }, 400)
-    }
-
-    // 電話番号のハイフンを除去して検索
-    const normalizedPhone = phoneNumber.replace(/-/g, '')
-
-    const reservations = await db.prepare(`
-      SELECT * FROM reservations 
-      WHERE birth_date = ? 
-      AND REPLACE(phone_number, '-', '') = ?
-      ORDER BY created_at DESC
-    `).bind(birthDate, normalizedPhone).all()
-
-    if (!reservations.results || reservations.results.length === 0) {
-      return c.json({
-        success: false,
-        error: '応募が見つかりませんでした'
-      }, 404)
-    }
-
-    return c.json({
-      success: true,
-      reservations: reservations.results.map((r: any) => ({
-        id: r.reservation_id,
-        fullName: r.full_name,
-        phoneNumber: r.phone_number,
-        quantity: r.quantity,
-        storeLocation: r.store_location,
-        pickupDate: r.pickup_date,
-        pickupTimeSlot: r.pickup_time_slot,
-        status: r.status,
-        reservationPhase: r.reservation_phase,
-        lotteryStatus: r.lottery_status,
-        createdAt: r.created_at
-      }))
-    })
-  } catch (error) {
-    logSecureError('ReservationLookupByBirthdate', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
