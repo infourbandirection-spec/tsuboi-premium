@@ -25,6 +25,6 @@
   ]
   // Resend API configuration
   // ローカル開発用: .dev.vars ファイルに RESEND_FROM_EMAIL を設定
-  // 本番環境用: wrangler pages secret put RESEND_FROM_EMAIL で設定済み
-  // 現在の送信元: info.urbandirection@gmail.com
+  // 本番環境用: Cloudflare Pagesダッシュボードで RESEND_FROM_EMAIL を設定済み
+  // 現在の送信元: info@urbandirection.jp
 }
