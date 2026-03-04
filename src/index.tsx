@@ -1600,6 +1600,18 @@ app.get('/', (c) => {
         <title>パスート24 プレミアム商品券抽選・応募システム</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          /* カレンダーボタンを非表示 */
+          input[type="date"].hide-calendar-icon::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+          }
+          input[type="date"].hide-calendar-icon::-webkit-inner-spin-button,
+          input[type="date"].hide-calendar-icon::-webkit-clear-button {
+            display: none;
+            -webkit-appearance: none;
+          }
+        </style>
     </head>
     <body class="bg-gray-50">
         <div id="app"></div>

@@ -154,7 +154,7 @@ class ReservationApp {
                        id="birthDate"
                        value="${this.formData.birthDate}"
                        max="${new Date().toISOString().split('T')[0]}"
-                       class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                       class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 hide-calendar-icon"
                        required>
                 <p class="text-xs text-gray-500 mt-2">
                   <i class="fas fa-info-circle mr-1"></i>
