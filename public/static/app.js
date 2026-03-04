@@ -121,11 +121,11 @@ class ReservationApp {
                   <i class="fas fa-ticket-alt text-blue-500 mr-2"></i>
                   パスート24プレミアム商品券<br>抽選・応募システム
                 </h1>
-                <p class="text-gray-600">ご希望の商品券をご予約いただけます</p>
+                <p class="text-gray-600">ご希望の商品券をご応募いただけます</p>
               </div>
               <button onclick="location.href='/lookup'" 
                       class="px-4 py-2 bg-purple-500 text-white hover:bg-purple-600 transition">
-                <i class="fas fa-search mr-2"></i>予約照会
+                <i class="fas fa-search mr-2"></i>応募照会
               </button>
             </div>
           </div>

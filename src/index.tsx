@@ -92,7 +92,7 @@ async function sendEmail(
 }
 
 /**
- * 予約完了メールのHTMLテンプレート
+ * 応募完了メールのHTMLテンプレート
  */
 function getReservationConfirmationEmailHTML(data: {
   fullName: string
@@ -107,7 +107,7 @@ function getReservationConfirmationEmailHTML(data: {
   const phaseText = data.reservationPhase === 1 ? '抽選' : '先着順'
   const lotteryNote = data.reservationPhase === 1 
     ? '<p style="color: #ef4444; font-weight: bold;">※抽選結果は後日メールでお知らせいたします。</p>'
-    : '<p style="color: #10b981; font-weight: bold;">※先着順での予約が確定しました。</p>'
+    : '<p style="color: #10b981; font-weight: bold;">※先着順での応募が確定しました。</p>'
 
   return `
 <!DOCTYPE html>
@@ -115,29 +115,29 @@ function getReservationConfirmationEmailHTML(data: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>予約完了のお知らせ</title>
+  <title>応募完了のお知らせ</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(to right, #10b981, #3b82f6); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-    <h1 style="margin: 0; font-size: 24px;">🎫 プレミアム商品券 予約完了</h1>
+    <h1 style="margin: 0; font-size: 24px;">🎫 プレミアム商品券 応募完了</h1>
   </div>
   
   <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
     <p><strong>${data.fullName}</strong> 様</p>
     
-    <p>プレミアム商品券の予約が完了しました。</p>
+    <p>プレミアム商品券の応募が完了しました。</p>
     
     ${lotteryNote}
     
     <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">予約内容</h2>
+      <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">応募内容</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; color: #6b7280;">応募ID:</td>
           <td style="padding: 8px 0; font-weight: bold; color: #3b82f6;">${data.reservationId}</td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">予約区分:</td>
+          <td style="padding: 8px 0; color: #6b7280;">応募区分:</td>
           <td style="padding: 8px 0; font-weight: bold;">${phaseText}</td>
         </tr>
         <tr>
@@ -162,7 +162,7 @@ function getReservationConfirmationEmailHTML(data: {
     <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
       <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">⚠️ 重要な注意事項</h3>
       <ul style="margin: 10px 0; padding-left: 20px; color: #78350f;">
-        <li>予約IDは必ず控えてください</li>
+        <li>応募IDは必ず控えてください</li>
         <li>受取時には身分証明証をご持参ください</li>
         <li>ご本人様のみ受け取り可能です（代理人不可）</li>
         <li>受取予定日を過ぎると自動的にキャンセルされます</li>
@@ -172,7 +172,7 @@ function getReservationConfirmationEmailHTML(data: {
     <p style="text-align: center; margin-top: 30px;">
       <a href="https://passurt24.pages.dev/lookup" 
          style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-        予約内容を確認する
+        応募内容を確認する
       </a>
     </p>
     
@@ -227,7 +227,7 @@ function getLotteryWinnerEmailHTML(data: {
       <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">受取情報</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; color: #6b7280;">応募ID:</td>
           <td style="padding: 8px 0; font-weight: bold; color: #10b981;">${data.reservationId}</td>
         </tr>
         <tr>
@@ -255,14 +255,14 @@ function getLotteryWinnerEmailHTML(data: {
         <li><strong>身分証明証を必ずご持参ください</strong></li>
         <li><strong>ご本人様のみ受け取り可能です</strong>（代理人不可）</li>
         <li>受取予定日を過ぎると自動的にキャンセルされます</li>
-        <li>予約IDをお控えください</li>
+        <li>応募IDをお控えください</li>
       </ul>
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
       <a href="https://passurt24.pages.dev/lookup" 
          style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-        予約内容を確認する
+        応募内容を確認する
       </a>
     </p>
     
@@ -312,7 +312,7 @@ function getLotteryLoserEmailHTML(data: {
       <h2 style="color: #1f2937; font-size: 18px; margin-top: 0;">応募情報</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 0; color: #6b7280;">予約ID:</td>
+          <td style="padding: 8px 0; color: #6b7280;">応募ID:</td>
           <td style="padding: 8px 0; font-weight: bold;">${data.reservationId}</td>
         </tr>
         <tr>
@@ -608,7 +608,7 @@ function sanitizeInput(input: string): string {
     .substring(0, 100) // 最大長制限
 }
 
-// 予約ID生成
+// 応募ID生成
 function generateReservationId(): string {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // 紛らわしい文字を除外
@@ -833,7 +833,7 @@ app.get('/api/status', async (c) => {
   try {
     const db = c.env.DB
 
-    // 現在の予約済み冊数を取得
+    // 現在の応募済み冊数を取得
     const result = await db.prepare(`
       SELECT SUM(quantity) as total 
       FROM reservations 
@@ -860,7 +860,7 @@ app.get('/api/status', async (c) => {
     const remaining = Math.max(0, maxTotal - Number(reservedCount))
     
     // Phase 1（応募期間）は在庫に関係なく受け付ける
-    // Phase 2（予約期間）は在庫がある場合のみ受け付ける
+    // Phase 2（応募期間）は在庫がある場合のみ受け付ける
     const isAccepting = currentPhase === 1 ? reservationEnabled : (remaining > 0 && reservationEnabled)
 
     return c.json({
@@ -904,7 +904,7 @@ app.get('/api/stores', async (c) => {
   }
 })
 
-// 予約作成（レート制限ミドルウェア適用）
+// 応募作成（レート制限ミドルウェア適用）
 app.post('/api/reserve',
   rateLimiter({ windowMs: 60000, maxRequests: 10, message: 'リクエスト数が制限を超えました。1分後にお試しください。' }),
   async (c) => {
@@ -917,7 +917,7 @@ app.post('/api/reserve',
       data.pickupTime = data.pickupTime.replace(/~/g, '～')
     }
 
-    // 予約受付停止チェック
+    // 応募受付停止チェック
     const reservationEnabledCheck = await db.prepare(
       "SELECT setting_value FROM system_settings WHERE setting_key = 'reservation_enabled'"
     ).first()
@@ -925,7 +925,7 @@ app.post('/api/reserve',
     if (reservationEnabledCheck?.setting_value === 'false') {
       return c.json({
         success: false,
-        error: '現在、予約受付を停止しています。しばらく後に再度お試しください。'
+        error: '現在、応募受付を停止しています。しばらく後に再度お試しください。'
       }, 403)
     }
 
@@ -944,7 +944,7 @@ app.post('/api/reserve',
       }, 400)
     }
 
-    // 予約ID生成
+    // 応募ID生成
     const reservationId = generateReservationId()
 
     // 在庫チェック（Phase 2のみ）
@@ -963,7 +963,7 @@ app.post('/api/reserve',
       if (currentReserved + data.quantity > maxTotal) {
         return c.json({
           success: false,
-          error: `申し訳ございません。予約上限に達しました。現在の残り冊数: ${remainingBooks}冊`,
+          error: `申し訳ございません。応募上限に達しました。現在の残り冊数: ${remainingBooks}冊`,
           remainingBooks: remainingBooks,
           requestedQuantity: data.quantity
         }, 400)
@@ -981,13 +981,13 @@ app.post('/api/reserve',
       if (finalReserved + data.quantity > maxTotal) {
         return c.json({
           success: false,
-          error: '申し訳ございません。他の方の予約が完了し、予約上限に達しました。',
+          error: '申し訳ございません。他の方の応募が完了し、応募上限に達しました。',
           remainingBooks: Math.max(0, maxTotal - finalReserved)
         }, 400)
       }
     }
 
-    // 予約挿入
+    // 応募挿入
     await db.prepare(`
       INSERT INTO reservations 
       (reservation_id, birth_date, full_name, kana, phone_number, quantity, 
@@ -1024,7 +1024,7 @@ app.post('/api/reserve',
       console.log('Attempting to send email to:', data.email)
       const emailResult = await sendEmail(
         data.email,
-        'パスート24 プレミアム商品券 予約完了',
+        'パスート24 プレミアム商品券 応募完了',
         emailHTML,
         c.env
       )
@@ -1033,7 +1033,7 @@ app.post('/api/reserve',
         console.log('Reservation confirmation email sent successfully:', emailResult.messageId)
       } else {
         console.warn('Failed to send reservation confirmation email:', emailResult.error)
-        // メール送信失敗してもエラーレスポンスは返さない（予約自体は成功）
+        // メール送信失敗してもエラーレスポンスは返さない（応募自体は成功）
       }
     }
 
@@ -1041,7 +1041,7 @@ app.post('/api/reserve',
     return c.json({
       success: true,
       reservationId,
-      message: '予約が完了しました。予約IDを大切に保管してください。',
+      message: '応募が完了しました。応募IDを大切に保管してください。',
       reservationDetails: {
         id: reservationId,
         name: data.fullName,
@@ -1060,7 +1060,7 @@ app.post('/api/reserve',
   }
 })
 
-// 予約検索（予約IDまたは電話番号）
+// 応募検索（応募IDまたは電話番号）
 app.post('/api/search', async (c) => {
   try {
     const { searchType, searchValue } = await c.req.json()
@@ -1105,7 +1105,7 @@ app.post('/api/search', async (c) => {
   }
 })
 
-// 予約照会API（予約IDで検索） - レート制限適用
+// 応募照会API（応募IDで検索） - レート制限適用
 app.post('/api/reservation/lookup/id',
   rateLimiter({ windowMs: 60000, maxRequests: 20, message: '照会リクエストが多すぎます。1分後にお試しください。' }),
   async (c) => {
@@ -1116,7 +1116,7 @@ app.post('/api/reservation/lookup/id',
     if (!reservationId) {
       return c.json({
         success: false,
-        error: '予約IDを入力してください'
+        error: '応募IDを入力してください'
       }, 400)
     }
 
@@ -1127,7 +1127,7 @@ app.post('/api/reservation/lookup/id',
     if (!reservation) {
       return c.json({
         success: false,
-        error: '予約が見つかりませんでした'
+        error: '応募が見つかりませんでした'
       }, 404)
     }
 
@@ -1145,7 +1145,7 @@ app.post('/api/reservation/lookup/id',
   }
 })
 
-// 予約照会API（生年月日・電話番号で検索） - レート制限適用
+// 応募照会API（生年月日・電話番号で検索） - レート制限適用
 app.post('/api/reservation/lookup/birthdate',
   rateLimiter({ windowMs: 60000, maxRequests: 20, message: '照会リクエストが多すぎます。1分後にお試しください。' }),
   async (c) => {
@@ -1173,7 +1173,7 @@ app.post('/api/reservation/lookup/birthdate',
     if (!reservations.results || reservations.results.length === 0) {
       return c.json({
         success: false,
-        error: '予約が見つかりませんでした'
+        error: '応募が見つかりませんでした'
       }, 404)
     }
 
@@ -1310,7 +1310,7 @@ app.post('/api/admin/verify', async (c) => {
   }
 })
 
-// 予約一覧取得（管理画面用）
+// 応募一覧取得（管理画面用）
 app.get('/api/admin/reservations', async (c) => {
   const authResponse = await verifySessionToken(c)
   if (authResponse) return authResponse
@@ -1465,7 +1465,7 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
     const { staffName } = await c.req.json()
     const db = c.env.DB
 
-    // 予約存在チェック
+    // 応募存在チェック
     const reservation = await db.prepare(`
       SELECT * FROM reservations WHERE id = ?
     `).bind(id).first()
@@ -1473,7 +1473,7 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
     if (!reservation) {
       return c.json({
         success: false,
-        error: '予約が見つかりません'
+        error: '応募が見つかりません'
       }, 404)
     }
 
@@ -1481,7 +1481,7 @@ app.post('/api/admin/reservations/:id/pickup', async (c) => {
     if ((reservation as any).status === 'picked_up') {
       return c.json({
         success: false,
-        error: 'この予約は既に受取完了しています'
+        error: 'この応募は既に受取完了しています'
       }, 400)
     }
 
@@ -1517,7 +1517,7 @@ app.get('/api/admin/statistics', async (c) => {
   try {
     const db = c.env.DB
 
-    // 総予約数・総冊数
+    // 総応募数・総冊数
     const totalStats = await db.prepare(`
       SELECT 
         COUNT(*) as total_reservations,
@@ -1652,13 +1652,13 @@ app.get('/success', (c) => {
                 </p>
             </div>
 
-            <!-- 予約ID -->
+            <!-- 応募ID -->
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                <p class="text-sm text-gray-600 mb-1">予約ID</p>
+                <p class="text-sm text-gray-600 mb-1">応募ID</p>
                 <p class="text-2xl font-bold text-blue-600 font-mono">${reservationId || 'N/A'}</p>
                 <p class="text-xs text-gray-500 mt-2">
                     <i class="fas fa-info-circle mr-1"></i>
-                    この予約IDは必ず控えておいてください
+                    この応募IDは必ず控えておいてください
                 </p>
             </div>
 
@@ -1675,7 +1675,7 @@ app.get('/success', (c) => {
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
-                        <span>予約IDを<strong>必ず保管</strong>してください</span>
+                        <span>応募IDを<strong>必ず保管</strong>してください</span>
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
@@ -1705,7 +1705,7 @@ app.get('/success', (c) => {
                 <a href="/lookup" 
                    class="flex-1 text-center bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition font-bold">
                     <i class="fas fa-search mr-2"></i>
-                    予約照会
+                    応募照会
                 </a>
                 <a href="/" 
                    class="flex-1 text-center bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition font-bold">
@@ -1719,7 +1719,7 @@ app.get('/success', (c) => {
   `)
 })
 
-// 予約照会ページ（新版）
+// 応募照会ページ（新版）
 app.get('/lookup', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -1727,7 +1727,7 @@ app.get('/lookup', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>予約照会 - プレミアム引換券予約システム</title>
+        <title>応募照会 - プレミアム引換券応募システム</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -1738,10 +1738,10 @@ app.get('/lookup', (c) => {
                 <div class="text-center mb-8">
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">
                         <i class="fas fa-search mr-2 text-blue-600"></i>
-                        予約照会
+                        応募照会
                     </h1>
                     <p class="text-gray-600">
-                        予約IDまたは生年月日と電話番号で予約内容を確認できます
+                        応募IDまたは生年月日と電話番号で応募内容を確認できます
                     </p>
                 </div>
 
@@ -1753,7 +1753,7 @@ app.get('/lookup', (c) => {
                                     class="tab-button active flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm"
                                     onclick="switchTab('id')">
                                 <i class="fas fa-id-card mr-2"></i>
-                                予約IDで照会
+                                応募IDで照会
                             </button>
                             <button id="tab-birthdate" 
                                     class="tab-button flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm"
@@ -1764,19 +1764,19 @@ app.get('/lookup', (c) => {
                         </nav>
                     </div>
 
-                    <!-- 予約IDで照会 -->
+                    <!-- 応募IDで照会 -->
                     <div id="content-id" class="tab-content p-6">
                         <form id="form-id" class="space-y-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-id-card mr-1"></i> 予約ID
+                                    <i class="fas fa-id-card mr-1"></i> 応募ID
                                 </label>
                                 <input type="text" id="input-reservation-id" required
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                                        placeholder="例: PRE-20260227-ABCD12">
                                 <p class="mt-2 text-sm text-gray-500">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    予約完了時に表示された予約IDを入力してください
+                                    応募完了時に表示された応募IDを入力してください
                                 </p>
                             </div>
 
@@ -1837,7 +1837,7 @@ app.get('/lookup', (c) => {
   `)
 })
 
-// 予約照会ページ
+// 応募照会ページ
 app.get('/search', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -1845,7 +1845,7 @@ app.get('/search', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>予約照会 - パスート24 プレミアム商品券</title>
+        <title>応募照会 - パスート24 プレミアム商品券</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -1922,7 +1922,7 @@ app.get('/privacy', (c) => {
             <section class="mb-8">
                 <h2 class="text-xl font-bold text-gray-800 mb-3">1. 個人情報の収集</h2>
                 <p class="text-gray-700 mb-3">
-                    当システムでは、プレミアム商品券の予約管理のために、以下の個人情報を収集します：
+                    当システムでは、プレミアム商品券の応募管理のために、以下の個人情報を収集します：
                 </p>
                 <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
                     <li>氏名（フルネーム）</li>
@@ -1938,10 +1938,10 @@ app.get('/privacy', (c) => {
                     収集した個人情報は、以下の目的でのみ使用します：
                 </p>
                 <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                    <li>プレミアム商品券の予約管理</li>
-                    <li>予約内容の確認</li>
+                    <li>プレミアム商品券の応募管理</li>
+                    <li>応募内容の確認</li>
                     <li>本人確認</li>
-                    <li>予約に関する連絡・通知</li>
+                    <li>応募に関する連絡・通知</li>
                     <li>統計情報の作成（個人を特定できない形式）</li>
                 </ul>
             </section>
@@ -1991,7 +1991,7 @@ app.get('/privacy', (c) => {
                 <h2 class="text-xl font-bold text-gray-800 mb-3">7. お問い合わせ</h2>
                 <p class="text-gray-700">
                     個人情報の取扱いに関するお問い合わせ、開示請求、訂正、削除等のご要望は、
-                    予約時にご登録いただいた電話番号にてお問い合わせください。
+                    応募時にご登録いただいた電話番号にてお問い合わせください。
                 </p>
             </section>
 
@@ -2092,7 +2092,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
       }, 400)
     }
 
-    // Phase 1の予約を取得（status='reserved', lottery_status='pending'）
+    // Phase 1の応募を取得（status='reserved', lottery_status='pending'）
     const reservations = await db.prepare(`
       SELECT * FROM reservations 
       WHERE status = 'reserved' 
@@ -2375,7 +2375,7 @@ app.get('/api/lottery/winners', async (c) => {
       })
     }
 
-    // 当選者の予約IDリストを取得
+    // 当選者の応募IDリストを取得
     const winners = await db.prepare(`
       SELECT reservation_id, full_name, quantity, created_at
       FROM reservations 
@@ -2398,7 +2398,7 @@ app.get('/api/lottery/winners', async (c) => {
   }
 })
 
-// 予約IDで当選確認（公開API）
+// 応募IDで当選確認（公開API）
 app.post('/api/lottery/check', async (c) => {
   try {
     const { reservationId } = await c.req.json()
@@ -2407,7 +2407,7 @@ app.post('/api/lottery/check', async (c) => {
     if (!reservationId) {
       return c.json({
         success: false,
-        error: '予約IDを入力してください'
+        error: '応募IDを入力してください'
       }, 400)
     }
 
@@ -2424,7 +2424,7 @@ app.post('/api/lottery/check', async (c) => {
       })
     }
 
-    // 予約を検索
+    // 応募を検索
     const reservation = await db.prepare(`
       SELECT reservation_id, lottery_status, quantity
       FROM reservations 
@@ -2434,7 +2434,7 @@ app.post('/api/lottery/check', async (c) => {
     if (!reservation) {
       return c.json({
         success: false,
-        error: '予約IDが見つかりません'
+        error: '応募IDが見つかりません'
       }, 404)
     }
 
@@ -2458,7 +2458,7 @@ app.post('/api/lottery/check', async (c) => {
   }
 })
 
-// 予約照会API（予約IDで検索）
+// 応募照会API（応募IDで検索）
 app.post('/api/reservation/lookup/id', async (c) => {
   try {
     const db = c.env.DB
@@ -2467,7 +2467,7 @@ app.post('/api/reservation/lookup/id', async (c) => {
     if (!reservationId) {
       return c.json({
         success: false,
-        error: '予約IDを入力してください'
+        error: '応募IDを入力してください'
       }, 400)
     }
 
@@ -2478,7 +2478,7 @@ app.post('/api/reservation/lookup/id', async (c) => {
     if (!reservation) {
       return c.json({
         success: false,
-        error: '予約が見つかりませんでした'
+        error: '応募が見つかりませんでした'
       }, 404)
     }
 
@@ -2507,7 +2507,7 @@ app.post('/api/reservation/lookup/id', async (c) => {
   }
 })
 
-// 予約照会API（生年月日+電話番号で検索）
+// 応募照会API（生年月日+電話番号で検索）
 app.post('/api/reservation/lookup/birthdate', async (c) => {
   try {
     const db = c.env.DB
@@ -2533,7 +2533,7 @@ app.post('/api/reservation/lookup/birthdate', async (c) => {
     if (!reservations.results || reservations.results.length === 0) {
       return c.json({
         success: false,
-        error: '予約が見つかりませんでした'
+        error: '応募が見つかりませんでした'
       }, 404)
     }
 
@@ -2619,7 +2619,7 @@ app.post('/api/admin/change-password', async (c) => {
 
 // ===== テストメール送信API =====
 
-// 予約完了メールのテスト送信
+// 応募完了メールのテスト送信
 app.post('/api/test/email/reservation', async (c) => {
   try {
     const data = await c.req.json()
@@ -2644,7 +2644,7 @@ app.post('/api/test/email/reservation', async (c) => {
     
     const emailResult = await sendEmail(
       data.email,
-      'パスート24 プレミアム商品券 予約完了',
+      'パスート24 プレミアム商品券 応募完了',
       emailHTML,
       c.env
     )
