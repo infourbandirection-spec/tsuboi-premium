@@ -31,3 +31,10 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# test files
+test_*.sql
+clean_*.sql
+import_*.sql
+reset_*.sql
+seed.sql
