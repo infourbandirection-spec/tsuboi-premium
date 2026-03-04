@@ -451,9 +451,16 @@ class AdminApp {
 
           <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600">残り冊数</p>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-sm text-gray-600">残り冊数</p>
+                  <button onclick="adminApp.showEditMaxTotalModal()" 
+                          class="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                    <i class="fas fa-edit mr-1"></i>上限編集
+                  </button>
+                </div>
                 <p class="text-3xl font-bold text-orange-600">${remaining}</p>
+                <p class="text-xs text-gray-500 mt-1">上限: ${this.statistics.maxTotal || 1000}冊</p>
               </div>
               <i class="fas fa-box text-4xl text-orange-500"></i>
             </div>
@@ -3253,6 +3260,121 @@ class AdminApp {
     const modal = document.getElementById('time-slot-modal')
     if (modal) {
       modal.remove()
+    }
+  }
+
+  // 上限冊数編集モーダル表示
+  showEditMaxTotalModal() {
+    const currentMax = this.statistics?.maxTotal || 1000
+
+    const modal = document.createElement('div')
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-gray-800">
+            <i class="fas fa-box mr-2 text-orange-500"></i>
+            総発行上限冊数の編集
+          </h3>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              現在の上限冊数
+            </label>
+            <div class="text-2xl font-bold text-gray-600">${currentMax}冊</div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              新しい上限冊数 <span class="text-red-500">*</span>
+            </label>
+            <input type="number" id="newMaxTotal" value="${currentMax}" min="0" step="1"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fas fa-info-circle mr-1"></i>
+              0以上の整数を入力してください
+            </p>
+          </div>
+
+          <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
+            <p class="text-xs text-yellow-800">
+              <i class="fas fa-exclamation-triangle mr-1"></i>
+              <strong>注意:</strong> この変更は直ちに反映され、応募受付の上限が変更されます。既存の応募には影響しません。
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+              キャンセル
+            </button>
+            <button onclick="adminApp.updateMaxTotal()" 
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              <i class="fas fa-save mr-1"></i>
+              更新
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+    document.body.appendChild(modal)
+  }
+
+  // 上限冊数更新処理
+  async updateMaxTotal() {
+    const input = document.getElementById('newMaxTotal')
+    const newMaxTotal = parseInt(input.value)
+
+    if (isNaN(newMaxTotal) || newMaxTotal < 0) {
+      alert('有効な数値を入力してください（0以上の整数）')
+      return
+    }
+
+    if (!confirm(`総発行上限を ${newMaxTotal}冊 に変更しますか？`)) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: 'max_total_books',
+          value: newMaxTotal.toString()
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // モーダルを閉じる
+        document.querySelector('.fixed.inset-0').remove()
+        
+        // データを再読み込み
+        await this.loadStatistics()
+        await this.render()
+        
+        alert(`上限冊数を ${newMaxTotal}冊 に更新しました`)
+      } else {
+        alert('更新に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Update max total error:', error)
+      alert('システムエラーが発生しました')
     }
   }
 
