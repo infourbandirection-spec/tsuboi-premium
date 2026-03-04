@@ -315,7 +315,7 @@ class AdminApp {
       { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
-      { id: 'search', icon: 'fa-search', label: '予約検索' }
+      { id: 'search', icon: 'fa-search', label: '応募検索' }
     ]
 
     return `
@@ -619,7 +619,7 @@ class AdminApp {
   renderSearch() {
     return `
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-6">予約検索</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-6">応募検索</h2>
         
         <div class="max-w-2xl space-y-6">
           <div>
