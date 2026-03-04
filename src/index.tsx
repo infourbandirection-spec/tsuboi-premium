@@ -524,7 +524,7 @@ app.use('*', async (c, next) => {
     "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://www.gstatic.com; " +
     "font-src 'self' https://cdn.jsdelivr.net data:; " +
     "img-src 'self' data: https:; " +
-    "connect-src 'self' https://cdn.jsdelivr.net"
+    "connect-src 'self' https://cdn.jsdelivr.net https://*.cloudflare.com"
   )
 })
 

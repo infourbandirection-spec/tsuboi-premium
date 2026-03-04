@@ -304,6 +304,13 @@ class AdminApp {
         this.renderCharts()
       }, 100)
     }
+
+    // 購入日データ読み込み（購入日管理ビュー表示時のみ）
+    if (this.currentView === 'pickup-dates') {
+      setTimeout(() => {
+        this.loadPickupDates()
+      }, 100)
+    }
   }
 
   renderHeader() {
@@ -744,9 +751,16 @@ class AdminApp {
     })
   }
 
-  switchView(view) {
+  async switchView(view) {
     this.currentView = view
-    this.render()
+    
+    // 購入日管理ビューに切り替えた時はデータを読み込む
+    if (view === 'pickup-dates') {
+      this.render() // 先にローディング表示
+      await this.loadPickupDates()
+    } else {
+      this.render()
+    }
   }
 
   async applyFilters() {
