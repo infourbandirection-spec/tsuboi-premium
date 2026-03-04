@@ -142,7 +142,7 @@ class ReservationApp {
 
   renderSinglePageForm() {
     const remaining = this.systemStatus.remaining || 0
-    const maxQuantity = Math.min(6, remaining)
+    const maxQuantity = Math.min(3, remaining)
     
     return `
       <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
@@ -274,7 +274,7 @@ class ReservationApp {
                     `<option value="${num}" ${num === this.formData.quantity ? 'selected' : ''}>${num}冊</option>`
                   ).join('')}
                 </select>
-                ${remaining < 6 ? `
+                ${remaining < 3 ? `
                   <div class="mt-3 bg-yellow-50 border-l-4 border-yellow-400 p-3">
                     <p class="text-sm text-yellow-700">
                       <i class="fas fa-exclamation-triangle mr-2"></i>

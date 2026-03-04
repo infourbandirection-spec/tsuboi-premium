@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     birth_date TEXT NOT NULL,
     full_name TEXT NOT NULL,
     phone_number TEXT NOT NULL,
-    quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 6),
+    quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 3),
     store_location TEXT NOT NULL,
     pickup_date TEXT NOT NULL,
     pickup_time_slot TEXT NOT NULL,
