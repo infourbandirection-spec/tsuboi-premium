@@ -1587,6 +1587,13 @@ class AdminApp {
               </div>
               <i class="fas ${lotteryExecuted ? 'fa-check-circle' : 'fa-clock'} text-4xl ${lotteryExecuted ? 'text-green-500' : 'text-yellow-500'}"></i>
             </div>
+            ${lotteryExecuted ? `
+              <button onclick="adminApp.viewWinners()" 
+                      class="mt-4 w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded font-semibold transition">
+                <i class="fas fa-trophy mr-2"></i>
+                当選者一覧を表示
+              </button>
+            ` : ''}
           </div>
 
           <div class="bg-white rounded-lg shadow p-6">
@@ -1827,6 +1834,20 @@ class AdminApp {
       console.error('Execute lottery error:', error)
       alert('システムエラーが発生しました')
     }
+  }
+
+  viewWinners() {
+    // 応募一覧画面に切り替え
+    this.switchView('reservations')
+    
+    // フィルターを当選者に設定（少し遅延させてDOM生成を待つ）
+    setTimeout(() => {
+      const lotteryResultFilter = document.getElementById('filter-lottery-result')
+      if (lotteryResultFilter) {
+        lotteryResultFilter.value = 'won'
+        this.applyFilters()
+      }
+    }, 100)
   }
 
   showPasswordChangeModal() {
