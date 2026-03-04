@@ -755,7 +755,7 @@ function validatePhoneNumber(phone: string): { valid: boolean; error?: string } 
 }
 
 // 総合バリデーション
-function validateReservation(data: any, currentPhase: number = 1): { valid: boolean; error?: string } {
+async function validateReservation(data: any, currentPhase: number = 1, db?: D1Database): Promise<{ valid: boolean; error?: string }> {
   // 入力サニタイゼーション（セキュリティ対策）
   if (data.fullName) data.fullName = sanitizeInput(data.fullName)
   if (data.kana) data.kana = sanitizeInput(data.kana)
@@ -805,21 +805,32 @@ function validateReservation(data: any, currentPhase: number = 1): { valid: bool
     return { valid: false, error: '冊数は1～6の範囲で指定してください' }
   }
 
-  // 購入日チェック（フェーズによって異なる）
-  if (currentPhase === 1) {
-    // Phase 1: 固定の3日間のみ
-    const allowedDates = ['2026-03-16', '2026-03-17', '2026-03-18']
-    if (!allowedDates.includes(data.pickupDate)) {
-      return { valid: false, error: '購入日は指定された日付から選択してください' }
+  // 購入日チェック（データベースから有効な日付を取得）
+  if (db) {
+    try {
+      const validDatesResult = await db.prepare(`
+        SELECT pickup_date 
+        FROM pickup_dates 
+        WHERE phase = ? AND is_active = 1
+      `).bind(currentPhase).all()
+
+      const allowedDates = validDatesResult.results.map((row: any) => row.pickup_date)
+
+      if (allowedDates.length === 0) {
+        return { valid: false, error: '現在、選択可能な購入日が設定されていません' }
+      }
+
+      if (!allowedDates.includes(data.pickupDate)) {
+        return { valid: false, error: '購入日は指定された日付から選択してください' }
+      }
+    } catch (error) {
+      console.error('Purchase date validation error:', error)
+      return { valid: false, error: '購入日の検証中にエラーが発生しました' }
     }
-  } else if (currentPhase === 2) {
-    // Phase 2: 3月17日以降の自由選択
-    const minDate = new Date('2026-03-17')
-    const pickupDate = new Date(data.pickupDate)
-    
-    if (pickupDate < minDate) {
-      return { valid: false, error: '購入日は3月17日以降を選択してください' }
-    }
+  } else {
+    // データベースが利用できない場合のフォールバック（通常は発生しない）
+    console.warn('Database not available for pickup date validation')
+    return { valid: false, error: 'システムエラー：データベースに接続できません' }
   }
 
   // 購入時間チェック（固定の7つの時間帯）
@@ -972,7 +983,7 @@ app.post('/api/reserve',
     const currentPhase = parseInt(phaseCheck?.setting_value || '1')
 
     // バリデーション
-    const validation = validateReservation(data, currentPhase)
+    const validation = await validateReservation(data, currentPhase, db)
     if (!validation.valid) {
       return c.json({
         success: false,
