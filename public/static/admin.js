@@ -176,7 +176,7 @@ class AdminApp {
         'Content-Type': 'application/json'
       }
       
-      // 予約一覧取得（全件取得 + 抽選ステータスフィルター適用）
+      // 応募一覧取得（全件取得 + 抽選ステータスフィルター適用）
       let url = '/api/admin/reservations?limit=500'
       if (this.filters.lottery_status) {
         url += `&lottery_status=${this.filters.lottery_status}`
@@ -314,7 +314,7 @@ class AdminApp {
       { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
       { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
-      { id: 'reservations', icon: 'fa-list', label: '予約一覧' },
+      { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
       { id: 'search', icon: 'fa-search', label: '予約検索' }
     ]
 
@@ -465,10 +465,10 @@ class AdminApp {
           <!-- 検索ボックス -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              <i class="fas fa-search mr-1"></i> 検索（予約ID・氏名・電話番号）
+              <i class="fas fa-search mr-1"></i> 検索（応募ID・氏名・電話番号）
             </label>
             <input type="text" id="filterSearch" 
-                   placeholder="予約ID、氏名、または電話番号で検索..." 
+                   placeholder="応募ID、氏名、または電話番号で検索..." 
                    oninput="adminApp.applyFilters()"
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
           </div>
@@ -529,7 +529,7 @@ class AdminApp {
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">予約ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">応募ID</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">氏名</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ふりがな</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mail</th>
@@ -625,14 +625,14 @@ class AdminApp {
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">検索タイプ</label>
             <select id="searchType" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-              <option value="id">予約IDで検索</option>
+              <option value="id">応募IDで検索</option>
               <option value="phone">電話番号で検索</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">検索値</label>
-            <input type="text" id="searchValue" placeholder="予約IDまたは電話番号を入力"
+            <input type="text" id="searchValue" placeholder="応募IDまたは電話番号を入力"
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg">
           </div>
 
@@ -677,7 +677,7 @@ class AdminApp {
       if (this.filters.status && r.status !== this.filters.status) return false
       if (this.filters.date && r.pickup_date !== this.filters.date) return false
       
-      // 検索キーワードでフィルタリング（予約ID、氏名、電話番号）
+      // 検索キーワードでフィルタリング（応募ID、氏名、電話番号）
       if (this.filters.search) {
         const searchLower = this.filters.search.toLowerCase()
         const matchesId = r.reservation_id?.toLowerCase().includes(searchLower)
@@ -747,14 +747,14 @@ class AdminApp {
   }
 
   async confirmPickup(id, reservationId) {
-    const staffName = prompt(`予約ID: ${reservationId}\n\n受取確認を行います。\n担当者名を入力してください（省略可）:`, '')
+    const staffName = prompt(`応募ID: ${reservationId}\n\n受取確認を行います。\n担当者名を入力してください（省略可）:`, '')
     
     if (staffName === null) {
       // キャンセルされた
       return
     }
 
-    if (!confirm(`この予約を受取完了にしますか？\n\n予約ID: ${reservationId}`)) {
+    if (!confirm(`この予約を受取完了にしますか？\n\n応募ID: ${reservationId}`)) {
       return
     }
 
@@ -815,7 +815,7 @@ class AdminApp {
                 <div class="p-6">
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <p class="text-sm text-gray-600">予約ID</p>
+                      <p class="text-sm text-gray-600">応募ID</p>
                       <p class="font-bold font-mono">${r.reservation_id}</p>
                     </div>
                     <div>
@@ -866,7 +866,7 @@ class AdminApp {
       return
     }
 
-    const headers = ['予約ID', '生年月日', '氏名', '電話番号', '冊数', '受取日', '受取時間', 'ステータス', '予約日時']
+    const headers = ['応募ID', '生年月日', '氏名', '電話番号', '冊数', '受取日', '受取時間', 'ステータス', '予約日時']
     const rows = data.map(r => [
       r.reservation_id,
       r.birth_date,
