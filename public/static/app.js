@@ -1,4 +1,4 @@
-// プレミアム商品券応募システム - 単一ページ形式
+// プレミアム商品券応募フォーム - 単一ページ形式
 
 class ReservationApp {
   constructor() {
@@ -156,7 +156,7 @@ class ReservationApp {
                   <span class="leading-tight">
                     パスート24プレミアム商品券<br class="sm:hidden">
                     <span class="hidden sm:inline"> </span>
-                    抽選・応募システム
+                    抽選・応募フォーム
                   </span>
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">ご希望の商品券をご応募いただけます</p>
