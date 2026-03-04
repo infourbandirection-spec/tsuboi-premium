@@ -104,10 +104,10 @@ function showReservation(reservation) {
   
   // 抽選結果バッジ
   let lotteryBadge = ''
-  if (reservation.reservation_phase === 1) {
-    if (reservation.lottery_status === 'won') {
+  if (reservation.reservationPhase === 1) {
+    if (reservation.lotteryStatus === 'won') {
       lotteryBadge = '<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-sm font-semibold"><i class="fas fa-check-circle mr-1"></i> 当選</span>'
-    } else if (reservation.lottery_status === 'lost') {
+    } else if (reservation.lotteryStatus === 'lost') {
       lotteryBadge = '<span class="px-3 py-1 bg-red-100 text-red-800 border border-red-300 rounded-full text-sm font-semibold"><i class="fas fa-times-circle mr-1"></i> 落選</span>'
     } else {
       lotteryBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full text-sm font-semibold"><i class="fas fa-hourglass-half mr-1"></i> 抽選前</span>'
@@ -149,8 +149,8 @@ function showReservation(reservation) {
             <i class="fas fa-calendar mr-2"></i>購入日時
           </div>
           <div class="flex-1 text-gray-900">
-            ${reservation.pickup_date}<br>
-            ${reservation.pickup_time_slot}
+            ${reservation.pickupDate}<br>
+            ${reservation.pickupTimeSlot}
           </div>
         </div>
         
@@ -162,7 +162,7 @@ function showReservation(reservation) {
         </div>
       </div>
       
-      ${reservation.lottery_status === 'won' ? `
+      ${reservation.lotteryStatus === 'won' ? `
         <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <p class="text-green-800">
             <i class="fas fa-check-circle mr-2"></i>
@@ -172,7 +172,7 @@ function showReservation(reservation) {
         </div>
       ` : ''}
       
-      ${reservation.lottery_status === 'lost' ? `
+      ${reservation.lotteryStatus === 'lost' ? `
         <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p class="text-red-800">
             <i class="fas fa-times-circle mr-2"></i>
@@ -209,7 +209,7 @@ function showMultipleReservations(reservations) {
         lotteryBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">抽選前</span>'
       }
     } else {
-      lotteryBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Phase 2</span>'
+      lotteryBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Phase 2（先着順）</span>'
     }
     
     return `
