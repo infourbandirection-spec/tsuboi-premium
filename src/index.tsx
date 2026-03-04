@@ -206,7 +206,7 @@ function getReservationConfirmationEmailHTML(data: {
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
-      <a href="https://passurt24.pages.dev/lookup" 
+      <a href="https://tsuboi-premium.pages.dev/lookup" 
          style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
         応募内容を確認する
       </a>
@@ -296,7 +296,7 @@ function getLotteryWinnerEmailHTML(data: {
     </div>
     
     <p style="text-align: center; margin-top: 30px;">
-      <a href="https://passurt24.pages.dev/lookup" 
+      <a href="https://tsuboi-premium.pages.dev/lookup" 
          style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
         応募内容を確認する
       </a>
