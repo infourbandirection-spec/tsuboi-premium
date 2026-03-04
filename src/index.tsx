@@ -1623,6 +1623,102 @@ app.get('/', (c) => {
   `)
 })
 
+// 応募完了ページ
+app.get('/success', (c) => {
+  const reservationId = c.req.query('id')
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>応募完了 - パスート24 プレミアム商品券</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full bg-white shadow-2xl rounded-lg p-8">
+            <!-- 成功アイコン -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                    <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    応募が完了しました
+                </h1>
+                <p class="text-gray-600">
+                    ご応募ありがとうございます
+                </p>
+            </div>
+
+            <!-- 予約ID -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                <p class="text-sm text-gray-600 mb-1">予約ID</p>
+                <p class="text-2xl font-bold text-blue-600 font-mono">${reservationId || 'N/A'}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    この予約IDは必ず控えておいてください
+                </p>
+            </div>
+
+            <!-- 重要な注意事項 -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <h2 class="font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    重要な注意事項
+                </h2>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>受取日を過ぎると<strong>自動的にキャンセル</strong>されます</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>予約IDを<strong>必ず保管</strong>してください</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>お一人様<strong>1回のみ</strong>の応募となります</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>受取時は<strong>ご本人様</strong>がご来店ください（代理不可）</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <span>受取時に<strong>身分証明書</strong>をご提示ください</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- メール送信通知 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-gray-700">
+                    <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                    確認メールをお送りしました。メールが届かない場合は、迷惑メールフォルダをご確認ください。
+                </p>
+            </div>
+
+            <!-- ボタン -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="/lookup" 
+                   class="flex-1 text-center bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition font-bold">
+                    <i class="fas fa-search mr-2"></i>
+                    予約照会
+                </a>
+                <a href="/" 
+                   class="flex-1 text-center bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition font-bold">
+                    <i class="fas fa-home mr-2"></i>
+                    トップページ
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
 // 予約照会ページ（新版）
 app.get('/lookup', (c) => {
   return c.html(`
