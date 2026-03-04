@@ -1695,7 +1695,7 @@ app.get('/success', (c) => {
                 <p class="text-sm text-gray-600 mb-1">応募ID</p>
                 <div class="flex items-center gap-3">
                     <p id="reservationId" class="text-2xl font-bold text-blue-600 font-mono flex-1">${reservationId || 'N/A'}</p>
-                    <button onclick="copyReservationId()" 
+                    <button onclick="copyReservationId(this)" 
                             class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 font-bold">
                         <i class="fas fa-copy"></i>
                         <span class="hidden sm:inline">コピー</span>
@@ -1708,13 +1708,12 @@ app.get('/success', (c) => {
             </div>
             
             <script>
-            function copyReservationId() {
+            function copyReservationId(button) {
                 const reservationId = document.getElementById('reservationId').innerText;
                 
                 // クリップボードにコピー
                 navigator.clipboard.writeText(reservationId).then(() => {
                     // 成功フィードバック
-                    const button = event.target.closest('button');
                     const originalHTML = button.innerHTML;
                     button.innerHTML = '<i class="fas fa-check"></i><span class="hidden sm:inline ml-2">コピー完了</span>';
                     button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
