@@ -37,7 +37,9 @@ async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  env: Bindings
+  env: Bindings,
+  reservationId?: string,
+  emailType: 'confirmation' | 'winner' | 'loser' = 'confirmation'
 ): Promise<{ success: boolean; error?: string; messageId?: string }> {
   try {
     // APIキーの確認
@@ -78,12 +80,46 @@ async function sendEmail(
     }
 
     console.log('Email sent successfully:', data.id)
+    
+    // メールログをデータベースに記録
+    if (reservationId) {
+      try {
+        await env.DB.prepare(`
+          INSERT INTO email_logs (reservation_id, recipient_email, email_type, subject, status, message_id)
+          VALUES (?, ?, ?, ?, 'success', ?)
+        `).bind(reservationId, to, emailType, subject, data.id).run()
+        console.log('Email log recorded successfully')
+      } catch (logError) {
+        console.error('Failed to record email log:', logError)
+        // ログ記録失敗してもメール送信自体は成功とする
+      }
+    }
+    
     return { 
       success: true, 
       messageId: data.id 
     }
   } catch (error) {
     console.error('Email sending error:', error)
+    
+    // エラー時もログに記録
+    if (reservationId) {
+      try {
+        await env.DB.prepare(`
+          INSERT INTO email_logs (reservation_id, recipient_email, email_type, subject, status, error_message)
+          VALUES (?, ?, ?, ?, 'failed', ?)
+        `).bind(
+          reservationId, 
+          to, 
+          emailType, 
+          subject, 
+          error instanceof Error ? error.message : 'Unknown error'
+        ).run()
+      } catch (logError) {
+        console.error('Failed to record error log:', logError)
+      }
+    }
+    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
@@ -1026,7 +1062,9 @@ app.post('/api/reserve',
         data.email,
         'パスート24 プレミアム商品券 応募完了',
         emailHTML,
-        c.env
+        c.env,
+        reservationId,
+        'confirmation'
       )
 
       if (emailResult.success) {
@@ -2163,7 +2201,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
             res.email,
             'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
             emailHTML,
-            c.env
+            c.env,
+            res.reservation_id,
+            'winner'
           )
 
           if (emailResult.success) {
@@ -2272,7 +2312,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
           winner.email,
           'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
           emailHTML,
-          c.env
+          c.env,
+          winner.reservation_id,
+          'winner'
         )
 
         if (emailResult.success) {
@@ -2296,7 +2338,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
           loser.email,
           'パスート24 プレミアム商品券 抽選結果のお知らせ',
           emailHTML,
-          c.env
+          c.env,
+          loser.reservation_id,
+          'loser'
         )
 
         if (emailResult.success) {
@@ -2646,7 +2690,9 @@ app.post('/api/test/email/reservation', async (c) => {
       data.email,
       'パスート24 プレミアム商品券 応募完了',
       emailHTML,
-      c.env
+      c.env,
+      data.reservationId || 'TEST-20260302-ABCD12',
+      'confirmation'
     )
     
     if (emailResult.success) {
@@ -2695,7 +2741,9 @@ app.post('/api/test/email/winner', async (c) => {
       data.email,
       'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
       emailHTML,
-      c.env
+      c.env,
+      data.reservationId || 'TEST-20260302-WINNER',
+      'winner'
     )
     
     if (emailResult.success) {
@@ -2741,7 +2789,9 @@ app.post('/api/test/email/loser', async (c) => {
       data.email,
       'パスート24 プレミアム商品券 抽選結果のお知らせ',
       emailHTML,
-      c.env
+      c.env,
+      data.reservationId || 'TEST-20260302-LOSER',
+      'loser'
     )
     
     if (emailResult.success) {
@@ -2758,6 +2808,96 @@ app.post('/api/test/email/loser', async (c) => {
     }
   } catch (error) {
     logSecureError('Test email - loser', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// メールログ取得API（管理者用）
+app.get('/api/admin/email-logs', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const limit = parseInt(c.req.query('limit') || '100')
+    const offset = parseInt(c.req.query('offset') || '0')
+    const reservationId = c.req.query('reservation_id')
+    const status = c.req.query('status')
+    
+    let query = 'SELECT * FROM email_logs WHERE 1=1'
+    const params: any[] = []
+    
+    if (reservationId) {
+      query += ' AND reservation_id = ?'
+      params.push(reservationId)
+    }
+    
+    if (status) {
+      query += ' AND status = ?'
+      params.push(status)
+    }
+    
+    query += ' ORDER BY sent_at DESC LIMIT ? OFFSET ?'
+    params.push(limit, offset)
+    
+    const result = await db.prepare(query).bind(...params).all()
+    
+    // 総件数も取得
+    let countQuery = 'SELECT COUNT(*) as total FROM email_logs WHERE 1=1'
+    const countParams: any[] = []
+    
+    if (reservationId) {
+      countQuery += ' AND reservation_id = ?'
+      countParams.push(reservationId)
+    }
+    
+    if (status) {
+      countQuery += ' AND status = ?'
+      countParams.push(status)
+    }
+    
+    const countResult = await db.prepare(countQuery).bind(...countParams).first()
+    
+    return c.json({
+      success: true,
+      data: result.results,
+      total: (countResult as any)?.total || 0,
+      limit,
+      offset
+    })
+  } catch (error) {
+    logSecureError('GetEmailLogs', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 特定の応募IDに対するメールログ取得API
+app.get('/api/admin/email-logs/:reservationId', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const reservationId = c.req.param('reservationId')
+    const db = c.env.DB
+    
+    const result = await db.prepare(`
+      SELECT * FROM email_logs 
+      WHERE reservation_id = ? 
+      ORDER BY sent_at DESC
+    `).bind(reservationId).all()
+    
+    return c.json({
+      success: true,
+      data: result.results
+    })
+  } catch (error) {
+    logSecureError('GetEmailLogsByReservationId', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
