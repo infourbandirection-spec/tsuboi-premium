@@ -1026,15 +1026,16 @@ app.post('/api/reserve',
     // 応募挿入
     await db.prepare(`
       INSERT INTO reservations 
-      (reservation_id, birth_date, full_name, kana, phone_number, quantity, 
+      (reservation_id, birth_date, full_name, kana, phone_number, email, quantity, 
        store_location, pickup_date, pickup_time_slot, status, reservation_phase, lottery_status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?)
     `).bind(
       reservationId,
       data.birthDate,
       data.fullName,
       data.kana,
       data.phoneNumber,
+      data.email || null,
       data.quantity,
       data.store,
       data.pickupDate,
