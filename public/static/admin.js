@@ -1606,53 +1606,39 @@ class AdminApp {
         </div>
 
         <!-- 抽選実行 -->
-        ${!lotteryExecuted ? `
-          <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow p-6 border-2 border-yellow-300">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">
-              <i class="fas fa-dice mr-2 text-yellow-600"></i>
-              抽選実行
-            </h3>
-            <p class="text-gray-700 mb-4">
-              Phase 1の応募に対して抽選を実行します。
-              ${phase1Total <= 1000 ? 
-                '応募総数が1000冊以下のため、<strong>全員が自動的に当選</strong>します。' : 
-                '応募総数が1000冊を超えているため、<strong>ランダム抽選</strong>を実行します。'}
-            </p>
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow p-6 border-2 border-yellow-300">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-dice mr-2 text-yellow-600"></i>
+            抽選実行
+          </h3>
+          <p class="text-gray-700 mb-4">
+            Phase 1の応募に対して抽選を実行します。
+            ${phase1Total <= 1000 ? 
+              '応募総数が1000冊以下のため、<strong>全員が自動的に当選</strong>します。' : 
+              '応募総数が1000冊を超えているため、<strong>ランダム抽選</strong>を実行します。'}
+          </p>
+          ${lotteryExecuted ? `
+            <div class="bg-blue-100 border border-blue-300 rounded p-4 mb-4">
+              <p class="text-sm text-blue-800">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>情報:</strong> 前回の抽選は実行済みです。新しい応募に対して再度抽選を実行できます。
+              </p>
+            </div>
+          ` : `
             <div class="bg-yellow-100 border border-yellow-300 rounded p-4 mb-4">
               <p class="text-sm text-yellow-800">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                <strong>注意:</strong> 抽選は一度のみ実行可能です。実行後は取り消せません。
+                <strong>注意:</strong> lottery_status='pending'の応募のみが抽選対象になります。
               </p>
             </div>
-            <button onclick="adminApp.executeLottery()" 
-                    class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transition"
-                    ${phase1Count === 0 ? 'disabled' : ''}>
-              <i class="fas fa-trophy mr-2"></i>
-              抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
-            </button>
-          </div>
-        ` : `
-          <div class="bg-green-50 rounded-lg shadow p-6 border-2 border-green-300">
-            <h3 class="text-xl font-bold text-green-800 mb-4">
-              <i class="fas fa-check-circle mr-2"></i>
-              抽選完了
-            </h3>
-            <p class="text-gray-700 mb-4">
-              抽選は既に実行済みです。当選者は ${winners.length} 名、合計 ${winnersTotal} 冊です。
-            </p>
-            ${this.lotteryResults && this.lotteryResults.length > 0 ? `
-              <div class="bg-white rounded p-4 mb-4">
-                <p class="text-sm text-gray-600 mb-2">実行日時: ${new Date(this.lotteryResults[0].execution_date).toLocaleString('ja-JP')}</p>
-                <p class="text-sm text-gray-700">${this.lotteryResults[0].notes || ''}</p>
-              </div>
-            ` : ''}
-            <a href="/lottery-results" target="_blank" 
-               class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold transition">
-              <i class="fas fa-external-link-alt mr-2"></i>
-              当選者掲示板を開く
-            </a>
-          </div>
-        `}
+          `}
+          <button onclick="adminApp.executeLottery()" 
+                  class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transition"
+                  ${phase1Count === 0 ? 'disabled' : ''}>
+            <i class="fas fa-trophy mr-2"></i>
+            抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
+          </button>
+        </div>
 
         <!-- 抽選結果履歴 -->
         ${this.lotteryResults && this.lotteryResults.length > 0 ? `

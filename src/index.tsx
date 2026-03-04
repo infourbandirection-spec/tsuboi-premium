@@ -2158,19 +2158,8 @@ app.post('/api/admin/lottery/execute', async (c) => {
   try {
     const db = c.env.DB
 
-    // 既に抽選済みかチェック
-    const lotteryCheck = await db.prepare(
-      "SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'"
-    ).first()
-
-    if (lotteryCheck?.setting_value === 'true') {
-      return c.json({
-        success: false,
-        error: '抽選は既に実行済みです'
-      }, 400)
-    }
-
     // Phase 1の応募を取得（status='reserved', lottery_status='pending'）
+    // 注: lottery_status='pending'の応募のみ対象とすることで、複数回実行可能
     const reservations = await db.prepare(`
       SELECT * FROM reservations 
       WHERE status = 'reserved' 
@@ -2182,6 +2171,15 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
     const totalApplications = reservations.results.length
     const totalQuantity = reservations.results.reduce((sum: number, r: any) => sum + r.quantity, 0)
+    
+    // 応募が0件の場合はエラー
+    if (totalApplications === 0) {
+      return c.json({
+        success: false,
+        error: '抽選対象の応募がありません'
+      }, 400)
+    }
+    
     const maxQuantity = 1000
 
     // 1000冊未満の場合は全員当選
