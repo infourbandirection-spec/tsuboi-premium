@@ -21,14 +21,14 @@ function switchTab(tab) {
   document.getElementById('result-area').innerHTML = ''
 }
 
-// 予約IDで照会
+// 応募IDで照会
 document.getElementById('form-id').addEventListener('submit', async (e) => {
   e.preventDefault()
   
   const reservationId = document.getElementById('input-reservation-id').value.trim()
   
   if (!reservationId) {
-    showError('予約IDを入力してください')
+    showError('応募IDを入力してください')
     return
   }
   
@@ -44,7 +44,7 @@ document.getElementById('form-id').addEventListener('submit', async (e) => {
     if (data.success) {
       showReservation(data.reservation)
     } else {
-      showError(data.error || '予約が見つかりませんでした')
+      showError(data.error || '応募が見つかりませんでした')
     }
   } catch (error) {
     console.error('Lookup error:', error)
@@ -80,7 +80,7 @@ document.getElementById('form-birthdate').addEventListener('submit', async (e) =
         showMultipleReservations(data.reservations)
       }
     } else {
-      showError(data.error || '予約が見つかりませんでした')
+      showError(data.error || '応募が見つかりませんでした')
     }
   } catch (error) {
     console.error('Lookup error:', error)
@@ -104,10 +104,10 @@ function showReservation(reservation) {
   
   // 抽選結果バッジ
   let lotteryBadge = ''
-  if (reservation.reservationPhase === 1) {
-    if (reservation.lotteryStatus === 'won') {
+  if (reservation.reservation_phase === 1) {
+    if (reservation.lottery_status === 'won') {
       lotteryBadge = '<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-sm font-semibold"><i class="fas fa-check-circle mr-1"></i> 当選</span>'
-    } else if (reservation.lotteryStatus === 'lost') {
+    } else if (reservation.lottery_status === 'lost') {
       lotteryBadge = '<span class="px-3 py-1 bg-red-100 text-red-800 border border-red-300 rounded-full text-sm font-semibold"><i class="fas fa-times-circle mr-1"></i> 落選</span>'
     } else {
       lotteryBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full text-sm font-semibold"><i class="fas fa-hourglass-half mr-1"></i> 抽選前</span>'
@@ -121,7 +121,7 @@ function showReservation(reservation) {
       <div class="border-b border-gray-200 pb-4 mb-4">
         <h2 class="text-xl font-bold text-gray-900 mb-2">
           <i class="fas fa-file-alt mr-2 text-blue-600"></i>
-          予約詳細
+          応募詳細
         </h2>
         <div class="flex flex-wrap gap-2">
           ${statusBadge}
@@ -132,23 +132,9 @@ function showReservation(reservation) {
       <div class="space-y-4">
         <div class="flex items-start">
           <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-id-card mr-2"></i>予約ID
+            <i class="fas fa-id-card mr-2"></i>応募ID
           </div>
-          <div class="flex-1 text-gray-900 font-mono">${reservation.id}</div>
-        </div>
-        
-        <div class="flex items-start">
-          <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-user mr-2"></i>氏名
-          </div>
-          <div class="flex-1 text-gray-900">${reservation.fullName}</div>
-        </div>
-        
-        <div class="flex items-start">
-          <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-phone mr-2"></i>電話番号
-          </div>
-          <div class="flex-1 text-gray-900">${reservation.phoneNumber}</div>
+          <div class="flex-1 text-gray-900 font-mono">${reservation.reservation_id}</div>
         </div>
         
         <div class="flex items-start">
@@ -160,30 +146,23 @@ function showReservation(reservation) {
         
         <div class="flex items-start">
           <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-map-marker-alt mr-2"></i>受取店舗
-          </div>
-          <div class="flex-1 text-gray-900">${reservation.storeLocation}</div>
-        </div>
-        
-        <div class="flex items-start">
-          <div class="w-32 text-sm font-medium text-gray-500">
             <i class="fas fa-calendar mr-2"></i>受取日時
           </div>
           <div class="flex-1 text-gray-900">
-            ${reservation.pickupDate}<br>
-            ${reservation.pickupTimeSlot}
+            ${reservation.pickup_date}<br>
+            ${reservation.pickup_time_slot}
           </div>
         </div>
         
         <div class="flex items-start">
           <div class="w-32 text-sm font-medium text-gray-500">
-            <i class="fas fa-clock mr-2"></i>予約日時
+            <i class="fas fa-clock mr-2"></i>応募日時
           </div>
-          <div class="flex-1 text-gray-900">${new Date(reservation.createdAt).toLocaleString('ja-JP')}</div>
+          <div class="flex-1 text-gray-900">${new Date(reservation.created_at).toLocaleString('ja-JP')}</div>
         </div>
       </div>
       
-      ${reservation.lotteryStatus === 'won' ? `
+      ${reservation.lottery_status === 'won' ? `
         <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <p class="text-green-800">
             <i class="fas fa-check-circle mr-2"></i>
@@ -193,7 +172,7 @@ function showReservation(reservation) {
         </div>
       ` : ''}
       
-      ${reservation.lotteryStatus === 'lost' ? `
+      ${reservation.lottery_status === 'lost' ? `
         <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p class="text-red-800">
             <i class="fas fa-times-circle mr-2"></i>
