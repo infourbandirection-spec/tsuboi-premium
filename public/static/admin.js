@@ -372,11 +372,11 @@ class AdminApp {
         <div class="flex border-b">
           ${tabs.map(tab => `
             <button onclick="adminApp.switchView('${tab.id}')"
-                    class="flex-1 px-6 py-4 text-center font-medium transition
+                    class="flex-1 px-3 py-3 text-center text-sm transition
                            ${this.currentView === tab.id ? 
                              'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 
                              'text-gray-600 hover:bg-gray-50'}">
-              <i class="fas ${tab.icon} mr-2"></i>
+              <i class="fas ${tab.icon} mr-1 text-xs"></i>
               ${tab.label}
             </button>
           `).join('')}
