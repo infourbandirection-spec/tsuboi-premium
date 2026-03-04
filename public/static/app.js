@@ -108,7 +108,7 @@ class ReservationApp {
 
   renderSinglePageForm() {
     const remaining = this.systemStatus.remaining || 0
-    const maxQuantity = Math.min(5, remaining)
+    const maxQuantity = Math.min(6, remaining)
     
     return `
       <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
