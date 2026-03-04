@@ -1,12 +1,13 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
+import { rateLimiter, getCSRFTokenAPI } from './middleware/security'
 
 type Bindings = {
   DB: D1Database
   ADMIN_PASSWORD?: string
-  CSRF_KV?: KVNamespace
-  RATE_LIMIT_KV?: KVNamespace
+  CSRF_TOKENS?: KVNamespace
+  RATE_LIMIT?: KVNamespace
   RESEND_API_KEY?: string
   RESEND_FROM_EMAIL?: string
 }
@@ -824,6 +825,9 @@ app.get('/api/csrf-token', async (c) => {
   }
 })
 
+// CSRFトークン取得API（KV利用可能時のみ動作）
+app.get('/api/csrf-token', getCSRFTokenAPI)
+
 // システム状態取得
 app.get('/api/status', async (c) => {
   try {
@@ -900,17 +904,11 @@ app.get('/api/stores', async (c) => {
   }
 })
 
-// 予約作成
-app.post('/api/reserve', async (c) => {
+// 予約作成（レート制限ミドルウェア適用）
+app.post('/api/reserve',
+  rateLimiter({ windowMs: 60000, maxRequests: 10, message: 'リクエスト数が制限を超えました。1分後にお試しください。' }),
+  async (c) => {
   try {
-    // レート制限チェック（1分間に10リクエストまで）
-    const rateLimitError = await checkRateLimit(c, 'reserve', 10, 60)
-    if (rateLimitError) return rateLimitError
-    
-    // CSRF検証
-    const csrfError = await verifyCsrfToken(c)
-    if (csrfError) return csrfError
-    
     const data: Reservation = await c.req.json()
     const db = c.env.DB
 
@@ -1107,8 +1105,10 @@ app.post('/api/search', async (c) => {
   }
 })
 
-// 予約照会API（予約IDで検索）
-app.post('/api/reservation/lookup/id', async (c) => {
+// 予約照会API（予約IDで検索） - レート制限適用
+app.post('/api/reservation/lookup/id',
+  rateLimiter({ windowMs: 60000, maxRequests: 20, message: '照会リクエストが多すぎます。1分後にお試しください。' }),
+  async (c) => {
   try {
     const { reservationId } = await c.req.json()
     const db = c.env.DB
@@ -1145,8 +1145,10 @@ app.post('/api/reservation/lookup/id', async (c) => {
   }
 })
 
-// 予約照会API（生年月日・電話番号で検索）
-app.post('/api/reservation/lookup/birthdate', async (c) => {
+// 予約照会API（生年月日・電話番号で検索） - レート制限適用
+app.post('/api/reservation/lookup/birthdate',
+  rateLimiter({ windowMs: 60000, maxRequests: 20, message: '照会リクエストが多すぎます。1分後にお試しください。' }),
+  async (c) => {
   try {
     const { birthDate, phoneNumber } = await c.req.json()
     const db = c.env.DB
