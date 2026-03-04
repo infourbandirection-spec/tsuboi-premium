@@ -7,6 +7,7 @@ class AdminApp {
     this.statistics = null
     this.settings = null
     this.lotteryResults = null
+    this.duplicates = null
     this.filters = {
       status: '',
       store: '',
@@ -214,6 +215,28 @@ class AdminApp {
       if (lotteryData.success) {
         this.lotteryResults = lotteryData.results
       }
+
+      // 重複チェックデータ取得
+      const [nameResponse, phoneResponse] = await Promise.all([
+        fetch('/api/admin/reservations/check-duplicates/name', { 
+          method: 'POST',
+          headers 
+        }),
+        fetch('/api/admin/reservations/check-duplicates/phone', { 
+          method: 'POST',
+          headers 
+        })
+      ])
+      
+      const nameData = await nameResponse.json()
+      const phoneData = await phoneResponse.json()
+      
+      if (nameData.success && phoneData.success) {
+        this.duplicates = {
+          nameDuplicates: nameData.duplicates || [],
+          phoneDuplicates: phoneData.duplicates || []
+        }
+      }
     } catch (error) {
       console.error('Data load error:', error)
     }
@@ -315,7 +338,8 @@ class AdminApp {
       { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
-      { id: 'search', icon: 'fa-search', label: '応募検索' }
+      { id: 'search', icon: 'fa-search', label: '応募検索' },
+      { id: 'duplicates', icon: 'fa-copy', label: '重複チェック' }
     ]
 
     return `
@@ -343,6 +367,7 @@ class AdminApp {
       case 'heatmap': return this.renderHeatmap()
       case 'reservations': return this.renderReservationsList()
       case 'search': return this.renderSearch()
+      case 'duplicates': return this.renderDuplicates()
       default: return ''
     }
   }
@@ -536,6 +561,7 @@ class AdminApp {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">電話番号</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">冊数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">受取日時</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抽選除外</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">抽選結果</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
@@ -569,6 +595,28 @@ class AdminApp {
                     ${reservation.pickup_date}<br>
                     ${reservation.pickup_time_slot}
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    ${reservation.excluded_from_lottery ? `
+                      <div class="space-y-1">
+                        <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold">
+                          <i class="fas fa-ban mr-1"></i> 除外済み
+                        </span>
+                        <button onclick="adminApp.confirmExclude('${reservation.reservation_id}', false)"
+                                class="w-full px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs">
+                          <i class="fas fa-undo mr-1"></i> 解除
+                        </button>
+                      </div>
+                    ` : reservation.lottery_status === 'lost' ? `
+                      <span class="text-gray-400 text-xs">-</span>
+                    ` : (reservation.lottery_status === 'pending' || !reservation.lottery_status) && reservation.status === 'reserved' ? `
+                      <button onclick="adminApp.showExcludeModal('${reservation.reservation_id}', '${reservation.reservation_id}', '管理者による除外')"
+                              class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-xs">
+                        <i class="fas fa-ban mr-1"></i> 除外
+                      </button>
+                    ` : `
+                      <span class="text-gray-400 text-xs">-</span>
+                    `}
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     ${this.renderLotteryStatusBadge(reservation.lottery_status, reservation.reservation_phase)}
                   </td>
@@ -577,13 +625,9 @@ class AdminApp {
                     ${reservation.picked_up_at ? `<div class="text-xs text-gray-500 mt-1">受取: ${new Date(reservation.picked_up_at).toLocaleString('ja-JP')}</div>` : ''}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    ${reservation.lottery_status === 'lost' ? `
-                      <span class="text-gray-500 text-sm">
-                        <i class="fas fa-ban mr-1"></i> 操作不可
-                      </span>
-                    ` : reservation.status === 'reserved' ? `
+                    ${reservation.status === 'reserved' && reservation.lottery_status === 'won' ? `
                       <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
-                              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
+                              class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
                         <i class="fas fa-check mr-1"></i> 受取完了にする
                       </button>
                     ` : reservation.status === 'picked_up' ? `
@@ -1913,6 +1957,332 @@ class AdminApp {
       errorDiv.classList.remove('hidden')
       btn.disabled = false
       btn.innerHTML = '<i class="fas fa-save mr-2"></i> 変更する'
+    }
+  }
+
+  // 重複チェックビューのレンダリング
+  renderDuplicates() {
+    if (!this.duplicates) {
+      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>'
+    }
+
+    const { phoneDuplicates, nameDuplicates } = this.duplicates
+
+    return `
+      <div class="space-y-6">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-copy mr-2 text-yellow-600"></i>
+            重複応募チェック
+          </h2>
+
+          <!-- 電話番号の重複 -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center">
+              <i class="fas fa-phone mr-2 text-blue-600"></i>
+              電話番号の重複 (${phoneDuplicates.length}件)
+            </h3>
+            ${phoneDuplicates.length === 0 ? `
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
+                <i class="fas fa-check-circle mr-2"></i>
+                電話番号の重複はありません
+              </div>
+            ` : `
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        電話番号
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        重複数
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        氏名
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        応募ID
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        操作
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    ${phoneDuplicates.map(dup => {
+                      const ids = dup.ids.split(',')
+                      const names = dup.names.split(',')
+                      const reservationIds = dup.reservation_ids.split(',')
+                      return `
+                        <tr class="hover:bg-yellow-50">
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${dup.phone_number}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                              ${dup.count}件
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 text-sm text-gray-900">
+                            ${names.map((name, i) => `
+                              <div class="mb-1">${i + 1}. ${name}</div>
+                            `).join('')}
+                          </td>
+                          <td class="px-6 py-4 text-sm text-gray-900 font-mono">
+                            ${reservationIds.map((rid, i) => `
+                              <div class="mb-1">${i + 1}. ${rid}</div>
+                            `).join('')}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            ${ids.map((id, i) => `
+                              <button onclick="adminApp.showExcludeModal(${id}, '${reservationIds[i]}', '電話番号重複')"
+                                      class="mb-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-xs w-full">
+                                <i class="fas fa-ban mr-1"></i>${i + 1}を除外
+                              </button>
+                            `).join('')}
+                          </td>
+                        </tr>
+                      `
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+
+          <!-- 名前の重複 -->
+          <div>
+            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center">
+              <i class="fas fa-user mr-2 text-purple-600"></i>
+              氏名の重複 (${nameDuplicates.length}件)
+            </h3>
+            ${nameDuplicates.length === 0 ? `
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
+                <i class="fas fa-check-circle mr-2"></i>
+                氏名の重複はありません
+              </div>
+            ` : `
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        氏名 / カナ
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        重複数
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        電話番号
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        応募ID
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        操作
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    ${nameDuplicates.map(dup => {
+                      const ids = dup.ids.split(',')
+                      const phones = dup.phone_numbers.split(',')
+                      const reservationIds = dup.reservation_ids.split(',')
+                      return `
+                        <tr class="hover:bg-yellow-50">
+                          <td class="px-6 py-4 text-sm text-gray-900">
+                            <div class="font-medium">${dup.full_name}</div>
+                            <div class="text-gray-500">${dup.kana || '-'}</div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                              ${dup.count}件
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 text-sm text-gray-900">
+                            ${phones.map((phone, i) => `
+                              <div class="mb-1">${i + 1}. ${phone}</div>
+                            `).join('')}
+                          </td>
+                          <td class="px-6 py-4 text-sm text-gray-900 font-mono">
+                            ${reservationIds.map((rid, i) => `
+                              <div class="mb-1">${i + 1}. ${rid}</div>
+                            `).join('')}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            ${ids.map((id, i) => `
+                              <button onclick="adminApp.showExcludeModal(${id}, '${reservationIds[i]}', '氏名重複')"
+                                      class="mb-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-xs w-full">
+                                <i class="fas fa-ban mr-1"></i>${i + 1}を除外
+                              </button>
+                            `).join('')}
+                          </td>
+                        </tr>
+                      `
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  // 抽選除外モーダルを表示
+  showExcludeModal(id, reservationId, defaultReason) {
+    const modal = document.createElement('div')
+    modal.id = 'exclude-modal'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+          <i class="fas fa-ban mr-2 text-red-600"></i>
+          抽選対象から除外
+        </h3>
+        <p class="text-gray-700 mb-4">
+          応募ID: <span class="font-mono font-bold">${reservationId}</span>
+        </p>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            除外理由
+          </label>
+          <textarea id="exclude-reason" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                    rows="3"
+                    placeholder="除外理由を入力してください">${defaultReason}</textarea>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="document.getElementById('exclude-modal').remove()"
+                  class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+            キャンセル
+          </button>
+          <button onclick="adminApp.excludeFromLottery(${id}, '${reservationId}')"
+                  class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-bold">
+            <i class="fas fa-ban mr-2"></i>除外する
+          </button>
+        </div>
+      </div>
+    `
+    document.body.appendChild(modal)
+  }
+
+  // 抽選除外を実行
+  showExcludeModal(id, reservationId, reason) {
+    // 既存のモーダルを削除
+    const existingModal = document.getElementById('exclude-modal')
+    if (existingModal) {
+      existingModal.remove()
+    }
+
+    // モーダルを作成
+    const modal = document.createElement('div')
+    modal.id = 'exclude-modal'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">
+          <i class="fas fa-ban text-red-500 mr-2"></i>
+          抽選から除外
+        </h3>
+        <div class="mb-4">
+          <p class="text-gray-700 mb-2">以下の応募を抽選対象から除外しますか？</p>
+          <div class="bg-gray-50 p-3 rounded">
+            <p class="font-medium">応募ID: ${reservationId}</p>
+            <p class="text-sm text-gray-600">理由: ${reason}</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            追加メモ（任意）
+          </label>
+          <textarea id="exclude-reason" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    placeholder="除外理由を記入してください"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="adminApp.confirmExclude('${reservationId}', true)"
+                  class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold transition">
+            <i class="fas fa-ban mr-2"></i>除外する
+          </button>
+          <button onclick="adminApp.closeExcludeModal()"
+                  class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-bold transition">
+            キャンセル
+          </button>
+        </div>
+      </div>
+    `
+    document.body.appendChild(modal)
+  }
+
+  closeExcludeModal() {
+    const modal = document.getElementById('exclude-modal')
+    if (modal) {
+      modal.remove()
+    }
+  }
+
+  async confirmExclude(reservationId, excluded) {
+    const token = localStorage.getItem('adminToken')
+
+    try {
+      const response = await fetch(`/api/admin/reservations/${reservationId}/exclude`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ excluded })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(data.message || '設定を更新しました')
+        this.closeExcludeModal()
+        // データを再読み込み
+        await this.loadData()
+        this.render()
+      } else {
+        alert('設定の更新に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Exclude error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async excludeFromLottery(id, reservationId) {
+    const reason = document.getElementById('exclude-reason').value
+    const token = localStorage.getItem('adminToken')
+
+    try {
+      const response = await fetch(`/api/admin/reservations/${id}/exclude`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`応募ID「${reservationId}」を抽選対象から除外しました`)
+        document.getElementById('exclude-modal').remove()
+        // データを再読み込み
+        await this.loadData()
+        this.render()
+      } else {
+        alert('除外に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Exclude error:', error)
+      alert('システムエラーが発生しました')
     }
   }
 

@@ -2084,6 +2084,129 @@ app.get('/privacy', (c) => {
   `)
 })
 
+// 重複応募チェック（管理者用）
+app.get('/api/admin/duplicates', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    
+    // 電話番号の重複をチェック
+    const phoneDuplicates = await db.prepare(`
+      SELECT 
+        phone_number,
+        COUNT(*) as count,
+        GROUP_CONCAT(reservation_id) as reservation_ids,
+        GROUP_CONCAT(full_name) as names,
+        GROUP_CONCAT(id) as ids
+      FROM reservations
+      WHERE phone_number IS NOT NULL
+      GROUP BY phone_number
+      HAVING COUNT(*) > 1
+      ORDER BY count DESC
+    `).all()
+
+    // 名前の重複をチェック（カナも含む）
+    const nameDuplicates = await db.prepare(`
+      SELECT 
+        full_name,
+        kana,
+        COUNT(*) as count,
+        GROUP_CONCAT(reservation_id) as reservation_ids,
+        GROUP_CONCAT(phone_number) as phones,
+        GROUP_CONCAT(id) as ids
+      FROM reservations
+      WHERE full_name IS NOT NULL
+      GROUP BY full_name, kana
+      HAVING COUNT(*) > 1
+      ORDER BY count DESC
+    `).all()
+
+    return c.json({
+      success: true,
+      phoneDuplicates: phoneDuplicates.results || [],
+      nameDuplicates: nameDuplicates.results || []
+    })
+  } catch (error) {
+    logSecureError('GetDuplicates', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選除外設定（管理者用）
+app.post('/api/admin/reservations/:id/exclude', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+    const { reason } = await c.req.json()
+
+    // 管理者情報を取得（セッショントークンから）
+    const token = c.req.header('Authorization')?.replace('Bearer ', '') || ''
+    const sessionResult = await db.prepare('SELECT username FROM admin_sessions WHERE token = ?').bind(token).first()
+    const adminUser = sessionResult?.username || 'unknown'
+
+    await db.prepare(`
+      UPDATE reservations 
+      SET 
+        excluded_from_lottery = 1,
+        excluded_reason = ?,
+        excluded_at = datetime('now'),
+        excluded_by = ?
+      WHERE id = ?
+    `).bind(reason || '管理者による除外', adminUser, id).run()
+
+    return c.json({
+      success: true,
+      message: '抽選対象から除外しました'
+    })
+  } catch (error) {
+    logSecureError('ExcludeFromLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選除外解除（管理者用）
+app.post('/api/admin/reservations/:id/include', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+
+    await db.prepare(`
+      UPDATE reservations 
+      SET 
+        excluded_from_lottery = 0,
+        excluded_reason = NULL,
+        excluded_at = NULL,
+        excluded_by = NULL
+      WHERE id = ?
+    `).bind(id).run()
+
+    return c.json({
+      success: true,
+      message: '抽選対象に戻しました'
+    })
+  } catch (error) {
+    logSecureError('IncludeInLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // ===== 抽選システムAPI =====
 
 // システム設定取得
@@ -2169,6 +2292,7 @@ app.post('/api/admin/lottery/execute', async (c) => {
       WHERE status = 'reserved' 
       AND reservation_phase = 1
       AND (lottery_status = 'pending' OR lottery_status IS NULL)
+      AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       ORDER BY created_at ASC
     `).all()
 
@@ -2632,6 +2756,120 @@ app.post('/api/reservation/lookup/birthdate', async (c) => {
     })
   } catch (error) {
     logSecureError('ReservationLookupByBirthdate', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 重複チェックAPI - 氏名で重複検索
+app.post('/api/admin/reservations/check-duplicates/name', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+
+    // 同じ氏名で複数応募がある場合を検出
+    const duplicates = await db.prepare(`
+      SELECT 
+        full_name,
+        COUNT(*) as count,
+        GROUP_CONCAT(id) as ids,
+        GROUP_CONCAT(reservation_id) as reservation_ids,
+        GROUP_CONCAT(phone_number) as phone_numbers
+      FROM reservations
+      WHERE status = 'reserved'
+      GROUP BY full_name
+      HAVING COUNT(*) > 1
+      ORDER BY count DESC, full_name
+    `).all()
+
+    return c.json({
+      success: true,
+      duplicates: duplicates.results || []
+    })
+  } catch (error) {
+    logSecureError('CheckDuplicatesName', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 重複チェックAPI - 電話番号で重複検索
+app.post('/api/admin/reservations/check-duplicates/phone', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+
+    // 同じ電話番号で複数応募がある場合を検出
+    const duplicates = await db.prepare(`
+      SELECT 
+        phone_number,
+        COUNT(*) as count,
+        GROUP_CONCAT(id) as ids,
+        GROUP_CONCAT(reservation_id) as reservation_ids,
+        GROUP_CONCAT(full_name) as names
+      FROM reservations
+      WHERE status = 'reserved'
+      GROUP BY phone_number
+      HAVING COUNT(*) > 1
+      ORDER BY count DESC, phone_number
+    `).all()
+
+    return c.json({
+      success: true,
+      duplicates: duplicates.results || []
+    })
+  } catch (error) {
+    logSecureError('CheckDuplicatesPhone', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選除外フラグ設定API
+app.post('/api/admin/reservations/:id/exclude', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    const reservationId = c.req.param('id')
+    const { excluded } = await c.req.json()
+
+    // 対象の応募を確認
+    const reservation = await db.prepare(`
+      SELECT id, reservation_id FROM reservations WHERE reservation_id = ?
+    `).bind(reservationId).first()
+
+    if (!reservation) {
+      return c.json({
+        success: false,
+        error: '応募が見つかりません'
+      }, 404)
+    }
+
+    // 除外フラグを更新
+    await db.prepare(`
+      UPDATE reservations 
+      SET excluded_from_lottery = ?, updated_at = datetime('now')
+      WHERE reservation_id = ?
+    `).bind(excluded ? 1 : 0, reservationId).run()
+
+    return c.json({
+      success: true,
+      message: excluded ? '抽選から除外しました' : '抽選除外を解除しました'
+    })
+  } catch (error) {
+    logSecureError('ExcludeFromLottery', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
