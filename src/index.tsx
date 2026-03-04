@@ -48,7 +48,7 @@ async function sendEmail(
       return { success: false, error: 'Email service not configured' }
     }
 
-    const fromEmail = env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+    const fromEmail = env.RESEND_FROM_EMAIL || 'info@urbandirection.jp'
     
     console.log('Sending email via Resend API...')
     console.log('From:', fromEmail)
