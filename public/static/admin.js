@@ -823,12 +823,16 @@ class AdminApp {
                       ${this.renderStatusBadge(r.status)}
                     </div>
                     <div>
-                      <p class="text-sm text-gray-600">氏名</p>
-                      <p class="font-bold">${r.full_name}</p>
+                      <p class="text-sm text-gray-600">生年月日</p>
+                      <p class="font-bold">${r.birth_date}</p>
                     </div>
                     <div>
-                      <p class="text-sm text-gray-600">電話番号</p>
-                      <p class="font-bold">${r.phone_number}</p>
+                      <p class="text-sm text-gray-600">ふりがな</p>
+                      <p class="font-bold">${r.kana || '-'}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">メールアドレス</p>
+                      <p class="font-bold text-sm">${r.email || '-'}</p>
                     </div>
                     <div>
                       <p class="text-sm text-gray-600">冊数</p>
@@ -837,6 +841,18 @@ class AdminApp {
                     <div class="col-span-2">
                       <p class="text-sm text-gray-600">受取日時</p>
                       <p class="font-bold">${r.pickup_date} ${r.pickup_time_slot}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">応募フェーズ</p>
+                      <p class="font-bold">Phase ${r.reservation_phase}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">抽選結果</p>
+                      ${this.renderLotteryStatusBadge(r.lottery_status, r.reservation_phase)}
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-sm text-gray-600">応募日時</p>
+                      <p class="font-bold text-sm">${r.created_at}</p>
                     </div>
                   </div>
                 </div>
