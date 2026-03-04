@@ -129,7 +129,7 @@ class ReservationApp {
               </div>
               <button onclick="location.href='/lookup'" 
                       class="flex-shrink-0 px-3 sm:px-4 py-2 bg-purple-500 text-white hover:bg-purple-600 transition text-xs sm:text-sm whitespace-nowrap rounded">
-                <i class="fas fa-search mr-1 sm:mr-2"></i><span class="hidden xs:inline">応募照会</span><span class="xs:hidden">照会</span>
+                <i class="fas fa-search mr-1 sm:mr-2"></i><span>応募照会</span>
               </button>
             </div>
           </div>
