@@ -18,6 +18,7 @@ class ReservationApp {
     this.systemStatus = null
     this.stores = []
     this.availablePickupDates = []
+    this.availableTimeSlots = []
     this.init()
   }
 
@@ -38,6 +39,7 @@ class ReservationApp {
     await this.loadSystemStatus()
     await this.loadStores()
     await this.loadPickupDates()
+    await this.loadPickupTimeSlots()
     this.render()
   }
 
@@ -78,6 +80,21 @@ class ReservationApp {
     } catch (error) {
       console.error('Pickup dates load error:', error)
       this.availablePickupDates = []
+    }
+  }
+
+  async loadPickupTimeSlots() {
+    try {
+      const phase = this.currentPhase || 1
+      const response = await fetch(`/api/pickup-time-slots?phase=${phase}`)
+      const data = await response.json()
+      if (data.success) {
+        this.availableTimeSlots = data.data || []
+        console.log(`[App] Loaded ${this.availableTimeSlots.length} time slots for phase ${phase}`)
+      }
+    } catch (error) {
+      console.error('Pickup time slots load error:', error)
+      this.availableTimeSlots = []
     }
   }
 
@@ -364,11 +381,7 @@ class ReservationApp {
   renderPhase1PickupSection() {
     // 購入日はAPIから動的に取得されるため、プレースホルダーを表示
     const pickupDates = this.availablePickupDates || []
-
-    const timeSlots = [
-      '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
-      '17:00～18:00', '18:00～19:00', '19:00～20:00'
-    ]
+    const timeSlots = this.availableTimeSlots || []
 
     return `
       <div class="space-y-4">
@@ -396,9 +409,12 @@ class ReservationApp {
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   required>
             <option value="">選択してください</option>
-            ${timeSlots.map(time => 
-              `<option value="${time}" ${this.formData.pickupTime === time ? 'selected' : ''}>${time}</option>`
-            ).join('')}
+            ${timeSlots.length === 0 ?
+              '<option value="" disabled>読み込み中...</option>' :
+              timeSlots.map(time => 
+                `<option value="${time.time_slot}" ${this.formData.pickupTime === time.time_slot ? 'selected' : ''}>${time.display_label}</option>`
+              ).join('')
+            }
           </select>
           <p class="mt-1 text-xs text-gray-500">※購入いただく目安時間です。多少前後されても問題ございません</p>
         </div>
@@ -409,11 +425,7 @@ class ReservationApp {
   renderPhase2PickupSection() {
     // Phase 2では管理者が設定した購入日を選択
     const pickupDates = this.availablePickupDates || []
-
-    const timeSlots = [
-      '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
-      '17:00～18:00', '18:00～19:00', '19:00～20:00'
-    ]
+    const timeSlots = this.availableTimeSlots || []
 
     return `
       <div class="space-y-4">
@@ -448,9 +460,12 @@ class ReservationApp {
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   required>
             <option value="">選択してください</option>
-            ${timeSlots.map(time => 
-              `<option value="${time}" ${this.formData.pickupTime === time ? 'selected' : ''}>${time}</option>`
-            ).join('')}
+            ${timeSlots.length === 0 ?
+              '<option value="" disabled>読み込み中...</option>' :
+              timeSlots.map(time => 
+                `<option value="${time.time_slot}" ${this.formData.pickupTime === time.time_slot ? 'selected' : ''}>${time.display_label}</option>`
+              ).join('')
+            }
           </select>
           <p class="mt-1 text-xs text-gray-500">※購入いただく目安時間です。多少前後されても問題ございません</p>
         </div>

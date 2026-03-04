@@ -833,13 +833,31 @@ async function validateReservation(data: any, currentPhase: number = 1, db?: D1D
     return { valid: false, error: 'システムエラー：データベースに接続できません' }
   }
 
-  // 購入時間チェック（固定の7つの時間帯）
-  const allowedTimes = [
-    '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
-    '17:00～18:00', '18:00～19:00', '19:00～20:00'
-  ]
-  if (!allowedTimes.includes(data.pickupTime)) {
-    return { valid: false, error: '購入時間は指定された時間帯から選択してください' }
+  // 購入時間チェック（データベースから有効な時間帯を取得）
+  if (db) {
+    try {
+      const validTimeSlotsResult = await db.prepare(`
+        SELECT time_slot 
+        FROM pickup_time_slots 
+        WHERE phase = ? AND is_active = 1
+      `).bind(currentPhase).all()
+
+      const allowedTimes = validTimeSlotsResult.results.map((row: any) => row.time_slot)
+
+      if (allowedTimes.length === 0) {
+        return { valid: false, error: '現在、選択可能な購入時間が設定されていません' }
+      }
+
+      if (!allowedTimes.includes(data.pickupTime)) {
+        return { valid: false, error: '購入時間は指定された時間帯から選択してください' }
+      }
+    } catch (error) {
+      console.error('Purchase time validation error:', error)
+      return { valid: false, error: '購入時間の検証中にエラーが発生しました' }
+    }
+  } else {
+    console.warn('Database not available for pickup time validation')
+    return { valid: false, error: 'システムエラー：データベースに接続できません' }
   }
 
   return { valid: true }
@@ -3185,6 +3203,32 @@ app.get('/api/pickup-dates', async (c) => {
   }
 })
 
+// 購入時間取得（公開API - 有効な時間帯のみ）
+app.get('/api/pickup-time-slots', async (c) => {
+  try {
+    const db = c.env.DB
+    const phase = c.req.query('phase') || '1'
+    
+    const result = await db.prepare(`
+      SELECT id, time_slot, display_label, phase, display_order
+      FROM pickup_time_slots
+      WHERE phase = ? AND is_active = 1
+      ORDER BY display_order ASC, time_slot ASC
+    `).bind(parseInt(phase)).all()
+    
+    return c.json({
+      success: true,
+      data: result.results
+    })
+  } catch (error) {
+    logSecureError('GetActivePickupTimeSlots', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // 購入日登録
 app.post('/api/admin/pickup-dates', async (c) => {
   try {
@@ -3359,6 +3403,204 @@ app.delete('/api/admin/pickup-dates/:id', async (c) => {
     })
   } catch (error) {
     logSecureError('DeletePickupDate', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// ===== 購入時間管理API =====
+
+// 購入時間一覧取得
+app.get('/api/admin/pickup-time-slots', async (c) => {
+  try {
+    const db = c.env.DB
+    const phase = c.req.query('phase') || '1'
+    
+    const result = await db.prepare(`
+      SELECT * FROM pickup_time_slots
+      WHERE phase = ?
+      ORDER BY display_order, time_slot
+    `).bind(parseInt(phase)).all()
+    
+    return c.json({
+      success: true,
+      data: result.results
+    })
+  } catch (error) {
+    logSecureError('GetPickupTimeSlots', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入時間追加
+app.post('/api/admin/pickup-time-slots', async (c) => {
+  try {
+    const db = c.env.DB
+    const { time_slot, display_label, phase, is_active, display_order } = await c.req.json()
+    
+    if (!time_slot || !display_label) {
+      return c.json({
+        success: false,
+        error: '購入時間と表示ラベルは必須です'
+      }, 400)
+    }
+    
+    // 時間帯フォーマット検証（HH:MM～HH:MM）
+    const timeRegex = /^\d{2}:\d{2}～\d{2}:\d{2}$/
+    if (!timeRegex.test(time_slot)) {
+      return c.json({
+        success: false,
+        error: '購入時間はHH:MM～HH:MM形式で入力してください（例: 10:00～11:00）'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      INSERT INTO pickup_time_slots (time_slot, display_label, phase, is_active, display_order)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      time_slot,
+      display_label,
+      phase || 1,
+      is_active !== undefined ? is_active : 1,
+      display_order || 0
+    ).run()
+    
+    return c.json({
+      success: true,
+      data: {
+        id: result.meta.last_row_id,
+        time_slot,
+        display_label,
+        phase: phase || 1,
+        is_active: is_active !== undefined ? is_active : 1,
+        display_order: display_order || 0
+      }
+    })
+  } catch (error: any) {
+    logSecureError('CreatePickupTimeSlot', error)
+    
+    if (error.message && error.message.includes('UNIQUE constraint failed')) {
+      return c.json({
+        success: false,
+        error: 'この購入時間は既に登録されています'
+      }, 400)
+    }
+    
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入時間更新
+app.put('/api/admin/pickup-time-slots/:id', async (c) => {
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+    const { time_slot, display_label, phase, is_active, display_order } = await c.req.json()
+    
+    if (!time_slot || !display_label) {
+      return c.json({
+        success: false,
+        error: '購入時間と表示ラベルは必須です'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      UPDATE pickup_time_slots 
+      SET time_slot = ?,
+          display_label = ?,
+          phase = ?,
+          is_active = ?,
+          display_order = ?,
+          updated_at = datetime('now', 'localtime')
+      WHERE id = ?
+    `).bind(
+      time_slot,
+      display_label,
+      phase || 1,
+      is_active !== undefined ? is_active : 1,
+      display_order || 0,
+      id
+    ).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({
+        success: false,
+        error: '購入時間が見つかりません'
+      }, 404)
+    }
+    
+    return c.json({
+      success: true,
+      data: {
+        id,
+        time_slot,
+        display_label,
+        phase: phase || 1,
+        is_active: is_active !== undefined ? is_active : 1,
+        display_order: display_order || 0
+      }
+    })
+  } catch (error: any) {
+    logSecureError('UpdatePickupTimeSlot', error)
+    
+    if (error.message && error.message.includes('UNIQUE constraint failed')) {
+      return c.json({
+        success: false,
+        error: 'この購入時間は既に登録されています'
+      }, 400)
+    }
+    
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入時間削除
+app.delete('/api/admin/pickup-time-slots/:id', async (c) => {
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+    
+    // この時間帯を使用している応募があるかチェック
+    const usageCheck = await db.prepare(`
+      SELECT COUNT(*) as count FROM reservations WHERE pickup_time_slot = (
+        SELECT time_slot FROM pickup_time_slots WHERE id = ?
+      )
+    `).bind(id).first()
+    
+    if (usageCheck && (usageCheck as any).count > 0) {
+      return c.json({
+        success: false,
+        error: 'この購入時間を使用している応募が存在するため削除できません'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      DELETE FROM pickup_time_slots WHERE id = ?
+    `).bind(id).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({
+        success: false,
+        error: '購入時間が見つかりません'
+      }, 404)
+    }
+    
+    return c.json({
+      success: true
+    })
+  } catch (error) {
+    logSecureError('DeletePickupTimeSlot', error)
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'

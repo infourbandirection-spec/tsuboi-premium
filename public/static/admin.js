@@ -10,6 +10,8 @@ class AdminApp {
     this.duplicates = null
     this.pickupDates = []
     this.currentPickupPhase = 1
+    this.pickupTimeSlots = []
+    this.currentTimeSlotPhase = 1
     this.filters = {
       status: '',
       store: '',
@@ -311,6 +313,13 @@ class AdminApp {
         this.loadPickupDates()
       }, 100)
     }
+
+    // 購入時間データ読み込み（購入時間管理ビュー表示時のみ）
+    if (this.currentView === 'pickup-times') {
+      setTimeout(() => {
+        this.loadPickupTimeSlots()
+      }, 100)
+    }
   }
 
   renderHeader() {
@@ -351,6 +360,7 @@ class AdminApp {
       { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
       { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
       { id: 'pickup-dates', icon: 'fa-calendar-alt', label: '購入日管理' },
+      { id: 'pickup-times', icon: 'fa-clock', label: '購入時間管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
       { id: 'search', icon: 'fa-search', label: '応募検索' },
@@ -380,6 +390,7 @@ class AdminApp {
       case 'dashboard': return this.renderDashboard()
       case 'lottery': return this.renderLottery()
       case 'pickup-dates': return this.renderPickupDates()
+      case 'pickup-times': return this.renderPickupTimes()
       case 'heatmap': return this.renderHeatmap()
       case 'reservations': return this.renderReservationsList()
       case 'search': return this.renderSearch()
@@ -2734,6 +2745,484 @@ class AdminApp {
       alert('システムエラーが発生しました')
     }
   }
+
+  // ===== 購入時間管理機能 =====
+
+  renderPickupTimes() {
+    return `
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-clock mr-2"></i>
+            購入時間管理
+          </h2>
+          <button onclick="adminApp.showAddTimeSlotModal()" 
+                  class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            <i class="fas fa-plus mr-2"></i>
+            新規追加
+          </button>
+        </div>
+
+        <!-- Phase切替 -->
+        <div class="mb-4">
+          <label class="inline-flex items-center mr-4">
+            <input type="radio" name="time-phase" value="1" 
+                   ${this.currentTimeSlotPhase === 1 ? 'checked' : ''}
+                   onchange="adminApp.filterTimeSlotsByPhase(1)"
+                   class="mr-2">
+            <span>Phase 1</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="time-phase" value="2" 
+                   ${this.currentTimeSlotPhase === 2 ? 'checked' : ''}
+                   onchange="adminApp.filterTimeSlotsByPhase(2)"
+                   class="mr-2">
+            <span>Phase 2</span>
+          </label>
+        </div>
+
+        <div id="time-slots-list">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+            <p class="text-gray-500 mt-2">読み込み中...</p>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  async filterTimeSlotsByPhase(phase) {
+    this.currentTimeSlotPhase = phase
+    await this.loadPickupTimeSlots()
+  }
+
+  async loadPickupTimeSlots() {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    const phase = this.currentTimeSlotPhase || 1
+
+    try {
+      const response = await fetch(`/api/admin/pickup-time-slots?phase=${phase}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        this.pickupTimeSlots = data.data || []
+        this.renderTimeSlotsList()
+      } else {
+        console.error('Failed to load time slots:', data.error)
+        document.getElementById('time-slots-list').innerHTML = `
+          <div class="text-center py-8 text-red-600">
+            <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+            <p>データの読み込みに失敗しました</p>
+          </div>
+        `
+      }
+    } catch (error) {
+      console.error('Load time slots error:', error)
+      document.getElementById('time-slots-list').innerHTML = `
+        <div class="text-center py-8 text-red-600">
+          <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+          <p>システムエラーが発生しました</p>
+        </div>
+      `
+    }
+  }
+
+  renderTimeSlotsList() {
+    const listContainer = document.getElementById('time-slots-list')
+    if (!listContainer) return
+
+    if (this.pickupTimeSlots.length === 0) {
+      listContainer.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+          <i class="far fa-clock text-4xl mb-2"></i>
+          <p>登録されている購入時間はありません</p>
+        </div>
+      `
+      return
+    }
+
+    listContainer.innerHTML = `
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 border text-left">表示順</th>
+              <th class="px-4 py-2 border text-left">購入時間</th>
+              <th class="px-4 py-2 border text-left">表示ラベル</th>
+              <th class="px-4 py-2 border text-center">ステータス</th>
+              <th class="px-4 py-2 border text-center">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${this.pickupTimeSlots.map(slot => `
+              <tr class="${slot.is_active === 0 ? 'bg-gray-100 opacity-50' : ''}">
+                <td class="px-4 py-2 border">${slot.display_order}</td>
+                <td class="px-4 py-2 border">${slot.time_slot}</td>
+                <td class="px-4 py-2 border">${slot.display_label}</td>
+                <td class="px-4 py-2 border text-center">
+                  <button onclick="adminApp.toggleTimeSlotStatus(${slot.id})"
+                          class="px-3 py-1 rounded text-white transition ${
+                            slot.is_active === 1 
+                              ? 'bg-green-500 hover:bg-green-600' 
+                              : 'bg-gray-400 hover:bg-gray-500'
+                          }">
+                    <i class="fas ${slot.is_active === 1 ? 'fa-check-circle' : 'fa-ban'} mr-1"></i>
+                    ${slot.is_active === 1 ? '有効' : '無効'}
+                  </button>
+                </td>
+                <td class="px-4 py-2 border text-center">
+                  <button onclick="adminApp.showEditTimeSlotModal(${slot.id})"
+                          class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2">
+                    <i class="fas fa-edit mr-1"></i>
+                    編集
+                  </button>
+                  <button onclick="adminApp.deleteTimeSlot(${slot.id})"
+                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                    <i class="fas fa-trash mr-1"></i>
+                    削除
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  }
+
+  showAddTimeSlotModal() {
+    const modalHtml = `
+      <div id="time-slot-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+          <h3 class="text-xl font-bold mb-4">
+            <i class="fas fa-clock mr-2"></i>
+            購入時間を追加
+          </h3>
+          <form onsubmit="event.preventDefault(); adminApp.saveTimeSlot()">
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                購入時間 <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="time-slot-input" required
+                     placeholder="例: 10:00～11:00"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <p class="text-sm text-gray-500 mt-1">形式: HH:MM～HH:MM</p>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                表示ラベル <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="time-label-input" required
+                     placeholder="例: 10:00～11:00"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                表示順序
+              </label>
+              <input type="number" id="time-order-input" min="0"
+                     placeholder="0"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+              <label class="inline-flex items-center">
+                <input type="checkbox" id="time-active-input" checked
+                       class="mr-2 h-4 w-4">
+                <span class="text-sm text-gray-700">有効にする</span>
+              </label>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <i class="fas fa-save mr-2"></i>
+                登録
+              </button>
+              <button type="button" onclick="adminApp.closeTimeSlotModal()"
+                      class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                <i class="fas fa-times mr-2"></i>
+                キャンセル
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml)
+  }
+
+  showEditTimeSlotModal(id) {
+    const slot = this.pickupTimeSlots.find(s => s.id === id)
+    if (!slot) {
+      alert('購入時間が見つかりません')
+      return
+    }
+
+    const modalHtml = `
+      <div id="time-slot-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+          <h3 class="text-xl font-bold mb-4">
+            <i class="fas fa-edit mr-2"></i>
+            購入時間を編集
+          </h3>
+          <form onsubmit="event.preventDefault(); adminApp.updateTimeSlot(${id})">
+            <input type="hidden" id="time-slot-id" value="${id}">
+
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                購入時間 <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="time-slot-input" required
+                     value="${slot.time_slot}"
+                     placeholder="例: 10:00～11:00"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                表示ラベル <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="time-label-input" required
+                     value="${slot.display_label}"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">
+                表示順序
+              </label>
+              <input type="number" id="time-order-input" min="0"
+                     value="${slot.display_order}"
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+              <label class="inline-flex items-center">
+                <input type="checkbox" id="time-active-input" ${slot.is_active === 1 ? 'checked' : ''}
+                       class="mr-2 h-4 w-4">
+                <span class="text-sm text-gray-700">有効にする</span>
+              </label>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <i class="fas fa-save mr-2"></i>
+                更新
+              </button>
+              <button type="button" onclick="adminApp.closeTimeSlotModal()"
+                      class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                <i class="fas fa-times mr-2"></i>
+                キャンセル
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml)
+  }
+
+  async saveTimeSlot() {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    const timeSlot = document.getElementById('time-slot-input').value
+    const displayLabel = document.getElementById('time-label-input').value
+    const displayOrder = parseInt(document.getElementById('time-order-input').value) || 0
+    const isActive = document.getElementById('time-active-input').checked ? 1 : 0
+    const phase = this.currentTimeSlotPhase || 1
+
+    if (!timeSlot || !displayLabel) {
+      alert('購入時間と表示ラベルは必須です')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/pickup-time-slots', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          time_slot: timeSlot,
+          display_label: displayLabel,
+          phase: phase,
+          is_active: isActive,
+          display_order: displayOrder
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        this.closeTimeSlotModal()
+        await this.loadPickupTimeSlots()
+        alert('購入時間を登録しました')
+      } else {
+        alert('登録に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Save time slot error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async updateTimeSlot(id) {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    const timeSlot = document.getElementById('time-slot-input').value
+    const displayLabel = document.getElementById('time-label-input').value
+    const displayOrder = parseInt(document.getElementById('time-order-input').value) || 0
+    const isActive = document.getElementById('time-active-input').checked ? 1 : 0
+    const phase = this.currentTimeSlotPhase || 1
+
+    if (!timeSlot || !displayLabel) {
+      alert('購入時間と表示ラベルは必須です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-time-slots/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          time_slot: timeSlot,
+          display_label: displayLabel,
+          phase: phase,
+          is_active: isActive,
+          display_order: displayOrder
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        this.closeTimeSlotModal()
+        await this.loadPickupTimeSlots()
+        alert('購入時間を更新しました')
+      } else {
+        alert('更新に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Update time slot error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async deleteTimeSlot(id) {
+    if (!confirm('この購入時間を削除してもよろしいですか？\n\n※この時間帯を使用している応募データには影響しません')) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-time-slots/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        await this.loadPickupTimeSlots()
+        alert('購入時間を削除しました')
+      } else {
+        alert('削除に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Delete time slot error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async toggleTimeSlotStatus(id) {
+    const slot = this.pickupTimeSlots.find(s => s.id === id)
+    if (!slot) {
+      alert('購入時間が見つかりません')
+      return
+    }
+
+    const newStatus = slot.is_active === 1 ? 0 : 1
+    const action = newStatus === 1 ? '有効' : '無効'
+
+    if (!confirm(`「${slot.display_label}」を${action}にしますか？`)) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-time-slots/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          time_slot: slot.time_slot,
+          display_label: slot.display_label,
+          phase: slot.phase,
+          is_active: newStatus,
+          display_order: slot.display_order
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        await this.loadPickupTimeSlots()
+      } else {
+        alert('ステータス変更に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Toggle time slot status error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  closeTimeSlotModal() {
+    const modal = document.getElementById('time-slot-modal')
+    if (modal) {
+      modal.remove()
+    }
+  }
+
 
   logout() {
     if (confirm('ログアウトしますか？')) {
