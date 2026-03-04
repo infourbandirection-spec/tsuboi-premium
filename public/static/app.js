@@ -17,6 +17,7 @@ class ReservationApp {
     }
     this.systemStatus = null
     this.stores = []
+    this.availablePickupDates = []
     this.init()
   }
 
@@ -36,6 +37,7 @@ class ReservationApp {
   async init() {
     await this.loadSystemStatus()
     await this.loadStores()
+    await this.loadPickupDates()
     this.render()
   }
 
@@ -61,6 +63,21 @@ class ReservationApp {
       }
     } catch (error) {
       console.error('Stores load error:', error)
+    }
+  }
+
+  async loadPickupDates() {
+    try {
+      const phase = this.currentPhase || 1
+      const response = await fetch(`/api/pickup-dates?phase=${phase}`)
+      const data = await response.json()
+      if (data.success) {
+        this.availablePickupDates = data.data || []
+        console.log(`[App] Loaded ${this.availablePickupDates.length} pickup dates for phase ${phase}`)
+      }
+    } catch (error) {
+      console.error('Pickup dates load error:', error)
+      this.availablePickupDates = []
     }
   }
 
@@ -345,11 +362,8 @@ class ReservationApp {
   }
 
   renderPhase1PickupSection() {
-    const pickupDates = [
-      { value: '2026-03-16', label: '3月16日（月）' },
-      { value: '2026-03-17', label: '3月17日（火）' },
-      { value: '2026-03-18', label: '3月18日（水）' }
-    ]
+    // 購入日はAPIから動的に取得されるため、プレースホルダーを表示
+    const pickupDates = this.availablePickupDates || []
 
     const timeSlots = [
       '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
@@ -366,9 +380,12 @@ class ReservationApp {
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   required>
             <option value="">選択してください</option>
-            ${pickupDates.map(date => 
-              `<option value="${date.value}" ${this.formData.pickupDate === date.value ? 'selected' : ''}>${date.label}</option>`
-            ).join('')}
+            ${pickupDates.length === 0 ? 
+              '<option value="" disabled>読み込み中...</option>' :
+              pickupDates.map(date => 
+                `<option value="${date.pickup_date}" ${this.formData.pickupDate === date.pickup_date ? 'selected' : ''}>${date.display_label}</option>`
+              ).join('')
+            }
           </select>
         </div>
         <div>
@@ -390,11 +407,8 @@ class ReservationApp {
   }
 
   renderPhase2PickupSection() {
-    const today = new Date()
-    const minDate = today.toISOString().split('T')[0]
-    const maxDateObj = new Date(today)
-    maxDateObj.setDate(maxDateObj.getDate() + 7)
-    const maxDate = maxDateObj.toISOString().split('T')[0]
+    // Phase 2では管理者が設定した購入日を選択
+    const pickupDates = this.availablePickupDates || []
 
     const timeSlots = [
       '12:00～13:00', '13:00～14:00', '15:00～16:00', '16:00～17:00',
@@ -406,21 +420,25 @@ class ReservationApp {
         <div class="bg-green-50 border border-green-200 p-4 mb-4">
           <p class="text-sm text-green-800">
             <i class="fas fa-info-circle mr-2"></i>
-            <strong>Phase 2: 自由日選択期間（先着順）</strong><br>
-            応募日から1週間以内の任意の日付を選択できます
+            <strong>Phase 2: 指定購入日選択期間（先着順）</strong><br>
+            管理者が設定した購入日から選択できます
           </p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             購入日 <span class="text-red-500">*</span>
           </label>
-          <input type="date" 
-                 id="pickupDate"
-                 value="${this.formData.pickupDate}"
-                 min="${minDate}"
-                 max="${maxDate}"
-                 class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                 required>
+          <select id="pickupDate"
+                  class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  required>
+            <option value="">選択してください</option>
+            ${pickupDates.length === 0 ? 
+              '<option value="" disabled>読み込み中...</option>' :
+              pickupDates.map(date => 
+                `<option value="${date.pickup_date}" ${this.formData.pickupDate === date.pickup_date ? 'selected' : ''}>${date.display_label}</option>`
+              ).join('')
+            }
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">

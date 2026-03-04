@@ -3113,4 +3113,246 @@ app.get('/api/admin/email-logs/:reservationId', async (c) => {
   }
 })
 
+// ============================================
+// 購入日管理API（管理者専用）
+// ============================================
+
+// 購入日一覧取得（フェーズ指定可能）
+app.get('/api/admin/pickup-dates', async (c) => {
+  try {
+    const db = c.env.DB
+    const phase = c.req.query('phase')
+    
+    let query = 'SELECT * FROM pickup_dates'
+    const params: any[] = []
+    
+    if (phase) {
+      query += ' WHERE phase = ?'
+      params.push(parseInt(phase))
+    }
+    
+    query += ' ORDER BY display_order ASC, pickup_date ASC'
+    
+    const result = await db.prepare(query).bind(...params).all()
+    
+    return c.json({
+      success: true,
+      data: result.results
+    })
+  } catch (error) {
+    logSecureError('GetPickupDates', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 有効な購入日一覧取得（一般ユーザー向け・応募フォーム用）
+app.get('/api/pickup-dates', async (c) => {
+  try {
+    const db = c.env.DB
+    const phase = c.req.query('phase') || '1'
+    
+    const result = await db.prepare(`
+      SELECT id, pickup_date, display_label, phase, display_order
+      FROM pickup_dates
+      WHERE phase = ? AND is_active = 1
+      ORDER BY display_order ASC, pickup_date ASC
+    `).bind(parseInt(phase)).all()
+    
+    return c.json({
+      success: true,
+      data: result.results
+    })
+  } catch (error) {
+    logSecureError('GetActivePickupDates', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入日登録
+app.post('/api/admin/pickup-dates', async (c) => {
+  try {
+    const db = c.env.DB
+    const { pickup_date, display_label, phase, is_active, display_order } = await c.req.json()
+    
+    if (!pickup_date || !display_label) {
+      return c.json({
+        success: false,
+        error: '購入日と表示ラベルは必須です'
+      }, 400)
+    }
+    
+    // 日付フォーマット検証（YYYY-MM-DD）
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dateRegex.test(pickup_date)) {
+      return c.json({
+        success: false,
+        error: '購入日はYYYY-MM-DD形式で入力してください'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      INSERT INTO pickup_dates (pickup_date, display_label, phase, is_active, display_order)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      pickup_date,
+      display_label,
+      phase || 1,
+      is_active !== undefined ? is_active : 1,
+      display_order || 0
+    ).run()
+    
+    return c.json({
+      success: true,
+      data: {
+        id: result.meta.last_row_id,
+        pickup_date,
+        display_label,
+        phase: phase || 1,
+        is_active: is_active !== undefined ? is_active : 1,
+        display_order: display_order || 0
+      }
+    })
+  } catch (error: any) {
+    logSecureError('CreatePickupDate', error)
+    
+    // UNIQUE制約違反の場合
+    if (error.message && error.message.includes('UNIQUE constraint failed')) {
+      return c.json({
+        success: false,
+        error: 'この購入日は既に登録されています'
+      }, 400)
+    }
+    
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入日更新
+app.put('/api/admin/pickup-dates/:id', async (c) => {
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+    const { pickup_date, display_label, phase, is_active, display_order } = await c.req.json()
+    
+    if (!pickup_date || !display_label) {
+      return c.json({
+        success: false,
+        error: '購入日と表示ラベルは必須です'
+      }, 400)
+    }
+    
+    // 日付フォーマット検証
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dateRegex.test(pickup_date)) {
+      return c.json({
+        success: false,
+        error: '購入日はYYYY-MM-DD形式で入力してください'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      UPDATE pickup_dates
+      SET pickup_date = ?,
+          display_label = ?,
+          phase = ?,
+          is_active = ?,
+          display_order = ?,
+          updated_at = datetime('now', 'localtime')
+      WHERE id = ?
+    `).bind(
+      pickup_date,
+      display_label,
+      phase || 1,
+      is_active !== undefined ? is_active : 1,
+      display_order || 0,
+      id
+    ).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({
+        success: false,
+        error: '購入日が見つかりません'
+      }, 404)
+    }
+    
+    return c.json({
+      success: true,
+      data: {
+        id,
+        pickup_date,
+        display_label,
+        phase: phase || 1,
+        is_active: is_active !== undefined ? is_active : 1,
+        display_order: display_order || 0
+      }
+    })
+  } catch (error: any) {
+    logSecureError('UpdatePickupDate', error)
+    
+    if (error.message && error.message.includes('UNIQUE constraint failed')) {
+      return c.json({
+        success: false,
+        error: 'この購入日は既に登録されています'
+      }, 400)
+    }
+    
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 購入日削除
+app.delete('/api/admin/pickup-dates/:id', async (c) => {
+  try {
+    const db = c.env.DB
+    const id = c.req.param('id')
+    
+    // この購入日を使用している応募があるかチェック
+    const usageCheck = await db.prepare(`
+      SELECT COUNT(*) as count FROM reservations WHERE pickup_date = (
+        SELECT pickup_date FROM pickup_dates WHERE id = ?
+      )
+    `).bind(id).first()
+    
+    if (usageCheck && (usageCheck as any).count > 0) {
+      return c.json({
+        success: false,
+        error: 'この購入日を使用している応募が存在するため削除できません'
+      }, 400)
+    }
+    
+    const result = await db.prepare(`
+      DELETE FROM pickup_dates WHERE id = ?
+    `).bind(id).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({
+        success: false,
+        error: '購入日が見つかりません'
+      }, 404)
+    }
+    
+    return c.json({
+      success: true
+    })
+  } catch (error) {
+    logSecureError('DeletePickupDate', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 export default app

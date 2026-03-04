@@ -8,6 +8,8 @@ class AdminApp {
     this.settings = null
     this.lotteryResults = null
     this.duplicates = null
+    this.pickupDates = []
+    this.currentPickupPhase = 1
     this.filters = {
       status: '',
       store: '',
@@ -237,6 +239,11 @@ class AdminApp {
           phoneDuplicates: phoneData.duplicates || []
         }
       }
+
+      // 購入日データ取得（購入日管理ビューの場合のみ）
+      if (this.currentView === 'pickup-dates') {
+        await this.loadPickupDates()
+      }
     } catch (error) {
       console.error('Data load error:', error)
     }
@@ -336,6 +343,7 @@ class AdminApp {
     const tabs = [
       { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
       { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
+      { id: 'pickup-dates', icon: 'fa-calendar-alt', label: '購入日管理' },
       { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
       { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
       { id: 'search', icon: 'fa-search', label: '応募検索' },
@@ -364,6 +372,7 @@ class AdminApp {
     switch (this.currentView) {
       case 'dashboard': return this.renderDashboard()
       case 'lottery': return this.renderLottery()
+      case 'pickup-dates': return this.renderPickupDates()
       case 'heatmap': return this.renderHeatmap()
       case 'reservations': return this.renderReservationsList()
       case 'search': return this.renderSearch()
@@ -2274,6 +2283,388 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Exclude error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  // ============================================
+  // 購入日管理
+  // ============================================
+
+  renderPickupDates() {
+    return `
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+            購入日管理
+          </h2>
+          <button onclick="adminApp.showAddPickupDateModal()" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <i class="fas fa-plus mr-2"></i> 新規追加
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <label class="inline-flex items-center mr-4">
+            <input type="radio" name="pickup-phase-filter" value="1" checked 
+                   onchange="adminApp.filterPickupDatesByPhase(1)" class="mr-2">
+            Phase 1
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="pickup-phase-filter" value="2" 
+                   onchange="adminApp.filterPickupDatesByPhase(2)" class="mr-2">
+            Phase 2
+          </label>
+        </div>
+
+        <div id="pickup-dates-list">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  async filterPickupDatesByPhase(phase) {
+    this.currentPickupPhase = phase
+    await this.loadPickupDates()
+  }
+
+  async loadPickupDates() {
+    const token = localStorage.getItem('adminToken')
+    if (!token) return
+
+    try {
+      const phase = this.currentPickupPhase || 1
+      const response = await fetch(`/api/admin/pickup-dates?phase=${phase}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) throw new Error('Failed to load pickup dates')
+
+      const data = await response.json()
+      this.pickupDates = data.data || []
+      this.renderPickupDatesList()
+    } catch (error) {
+      console.error('Load pickup dates error:', error)
+      document.getElementById('pickup-dates-list').innerHTML = `
+        <div class="text-center py-8 text-red-600">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          データの読み込みに失敗しました
+        </div>
+      `
+    }
+  }
+
+  renderPickupDatesList() {
+    const listContainer = document.getElementById('pickup-dates-list')
+    if (!listContainer) return
+
+    if (!this.pickupDates || this.pickupDates.length === 0) {
+      listContainer.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-calendar-times text-4xl mb-3"></i>
+          <p>登録されている購入日はありません</p>
+        </div>
+      `
+      return
+    }
+
+    listContainer.innerHTML = `
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">表示順</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">購入日</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">表示ラベル</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">ステータス</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            ${this.pickupDates.map(date => `
+              <tr class="${date.is_active ? '' : 'bg-gray-50 opacity-60'}">
+                <td class="px-4 py-3 text-sm text-gray-900">${date.display_order}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">${date.pickup_date}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">${date.display_label}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-3 py-1 text-xs font-semibold rounded-full 
+                               ${date.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                    ${date.is_active ? '有効' : '無効'}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <button onclick="adminApp.showEditPickupDateModal(${date.id})" 
+                          class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 mr-2">
+                    <i class="fas fa-edit"></i> 編集
+                  </button>
+                  <button onclick="adminApp.deletePickupDate(${date.id})" 
+                          class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+                    <i class="fas fa-trash"></i> 削除
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  }
+
+  showAddPickupDateModal() {
+    const modal = document.createElement('div')
+    modal.id = 'pickup-date-modal'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">
+          <i class="fas fa-calendar-plus mr-2 text-blue-500"></i>
+          購入日を追加
+        </h3>
+        <form id="add-pickup-date-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">購入日 *</label>
+            <input type="date" id="pickup-date-input" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">表示ラベル *</label>
+            <input type="text" id="pickup-label-input" required
+                   placeholder="例: 3月16日（月）"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">表示順序</label>
+            <input type="number" id="pickup-order-input" value="0" min="0"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="inline-flex items-center">
+              <input type="checkbox" id="pickup-active-input" checked class="mr-2">
+              <span class="text-sm text-gray-700">有効にする</span>
+            </label>
+          </div>
+
+          <div class="flex space-x-3 mt-6">
+            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <i class="fas fa-save mr-2"></i> 登録
+            </button>
+            <button type="button" onclick="document.getElementById('pickup-date-modal').remove()"
+                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+              <i class="fas fa-times mr-2"></i> キャンセル
+            </button>
+          </div>
+        </form>
+      </div>
+    `
+    document.body.appendChild(modal)
+
+    document.getElementById('add-pickup-date-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      await this.savePickupDate()
+    })
+  }
+
+  showEditPickupDateModal(id) {
+    const date = this.pickupDates.find(d => d.id === id)
+    if (!date) return
+
+    const modal = document.createElement('div')
+    modal.id = 'pickup-date-modal'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">
+          <i class="fas fa-edit mr-2 text-blue-500"></i>
+          購入日を編集
+        </h3>
+        <form id="edit-pickup-date-form" class="space-y-4">
+          <input type="hidden" id="pickup-id-input" value="${date.id}">
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">購入日 *</label>
+            <input type="date" id="pickup-date-input" required value="${date.pickup_date}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">表示ラベル *</label>
+            <input type="text" id="pickup-label-input" required value="${date.display_label}"
+                   placeholder="例: 3月16日（月）"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">表示順序</label>
+            <input type="number" id="pickup-order-input" value="${date.display_order}" min="0"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label class="inline-flex items-center">
+              <input type="checkbox" id="pickup-active-input" ${date.is_active ? 'checked' : ''} class="mr-2">
+              <span class="text-sm text-gray-700">有効にする</span>
+            </label>
+          </div>
+
+          <div class="flex space-x-3 mt-6">
+            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <i class="fas fa-save mr-2"></i> 更新
+            </button>
+            <button type="button" onclick="document.getElementById('pickup-date-modal').remove()"
+                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+              <i class="fas fa-times mr-2"></i> キャンセル
+            </button>
+          </div>
+        </form>
+      </div>
+    `
+    document.body.appendChild(modal)
+
+    document.getElementById('edit-pickup-date-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      await this.updatePickupDate(id)
+    })
+  }
+
+  async savePickupDate() {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    const pickupDate = document.getElementById('pickup-date-input').value
+    const displayLabel = document.getElementById('pickup-label-input').value
+    const displayOrder = parseInt(document.getElementById('pickup-order-input').value) || 0
+    const isActive = document.getElementById('pickup-active-input').checked ? 1 : 0
+    const phase = this.currentPickupPhase || 1
+
+    if (!pickupDate || !displayLabel) {
+      alert('購入日と表示ラベルは必須です')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/pickup-dates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          pickup_date: pickupDate,
+          display_label: displayLabel,
+          phase: phase,
+          is_active: isActive,
+          display_order: displayOrder
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('購入日を登録しました')
+        document.getElementById('pickup-date-modal').remove()
+        await this.loadPickupDates()
+      } else {
+        alert('登録に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Save pickup date error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async updatePickupDate(id) {
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    const pickupDate = document.getElementById('pickup-date-input').value
+    const displayLabel = document.getElementById('pickup-label-input').value
+    const displayOrder = parseInt(document.getElementById('pickup-order-input').value) || 0
+    const isActive = document.getElementById('pickup-active-input').checked ? 1 : 0
+    const phase = this.currentPickupPhase || 1
+
+    if (!pickupDate || !displayLabel) {
+      alert('購入日と表示ラベルは必須です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-dates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          pickup_date: pickupDate,
+          display_label: displayLabel,
+          phase: phase,
+          is_active: isActive,
+          display_order: displayOrder
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('購入日を更新しました')
+        document.getElementById('pickup-date-modal').remove()
+        await this.loadPickupDates()
+      } else {
+        alert('更新に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Update pickup date error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  async deletePickupDate(id) {
+    const date = this.pickupDates.find(d => d.id === id)
+    if (!date) return
+
+    if (!confirm(`「${date.display_label}」を削除しますか？\n\n※この購入日を使用している応募がある場合は削除できません`)) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/pickup-dates/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('購入日を削除しました')
+        await this.loadPickupDates()
+      } else {
+        alert('削除に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Delete pickup date error:', error)
       alert('システムエラーが発生しました')
     }
   }
