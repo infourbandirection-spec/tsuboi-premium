@@ -3365,7 +3365,7 @@ class AdminApp {
         document.querySelector('.fixed.inset-0').remove()
         
         // データを再読み込み
-        await this.loadStatistics()
+        await this.loadData()
         await this.render()
         
         alert(`上限冊数を ${newMaxTotal}冊 に更新しました`)
