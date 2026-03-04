@@ -32,6 +32,9 @@ lerna-debug.log*
 # misc
 .DS_Store
 
+# archived docs
+docs/archive/
+
 # test files
 test_*.sql
 clean_*.sql

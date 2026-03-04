@@ -41,6 +41,14 @@ class AdminApp {
     this.render()
   }
 
+  // HTMLエスケープ関数（XSS対策）
+  escapeHtml(text) {
+    if (!text) return ''
+    const div = document.createElement('div')
+    div.textContent = text
+    return div.innerHTML
+  }
+
   async checkAuthentication() {
     const token = localStorage.getItem('adminToken')
     
@@ -604,16 +612,16 @@ class AdminApp {
                     ${reservation.reservation_id}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${reservation.full_name}
+                    ${this.escapeHtml(reservation.full_name)}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    ${reservation.kana || '-'}
+                    ${this.escapeHtml(reservation.kana || '-')}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    ${reservation.email || '-'}
+                    ${this.escapeHtml(reservation.email || '-')}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${reservation.phone_number}
+                    ${this.escapeHtml(reservation.phone_number)}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${reservation.quantity} 冊

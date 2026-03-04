@@ -1,3 +1,0 @@
-    'reserved', 1, 'pending', datetime('now', '-6 hours')
-  );
-

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
-import { rateLimiter, getCSRFTokenAPI } from './middleware/security'
+import { rateLimiter } from './middleware/security'
 
 type Bindings = {
   DB: D1Database
@@ -889,9 +889,6 @@ app.get('/api/csrf-token', async (c) => {
     }, 500)
   }
 })
-
-// CSRFトークン取得API（KV利用可能時のみ動作）
-app.get('/api/csrf-token', getCSRFTokenAPI)
 
 // システム状態取得
 app.get('/api/status', async (c) => {
