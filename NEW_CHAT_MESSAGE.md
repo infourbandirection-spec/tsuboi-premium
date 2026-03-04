@@ -67,8 +67,8 @@ chmod +x deploy.sh
 ## 🔑 デフォルト認証情報
 
 管理画面ログイン:
-- ユーザー名: `admin`
-- パスワード: `admin123`
+- ユーザー名: `urbandirection`
+- パスワード: `urbandirection`
 
 （本番運用前に必ず変更してください）
 

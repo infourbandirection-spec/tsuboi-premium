@@ -114,9 +114,9 @@ npx wrangler d1 execute passport24-voucher-production --remote --file=./seed_adm
 
 **seed_admin.sql の内容:**
 ```sql
--- 管理者アカウント（username: admin, password: admin123）
+-- 管理者アカウント（username: urbandirection, password: urbandirection）
 INSERT OR IGNORE INTO admin_users (username, password_hash, created_at) 
-VALUES ('admin', '$2a$10$rW3qW5YxN0KjH5YxN0KjH5YxN0KjH5YxN0KjH5YxN0KjH5YxN0K', datetime('now'));
+VALUES ('urbandirection', 'urbandirection', datetime('now'));
 
 -- システム設定
 INSERT OR IGNORE INTO system_settings (setting_key, setting_value, description) VALUES 
@@ -221,7 +221,7 @@ webapp/
 ## 🔐 セキュリティ設定
 
 ### 必須設定
-1. **管理者パスワード変更**: デフォルト（admin/admin123）から変更
+1. **管理者認証情報**: デフォルト（urbandirection / urbandirection）が設定済み
 2. **APIトークン管理**: `.dev.vars` は `.gitignore` に含まれている
 3. **CSRF対策**: KV namespace設定済み
 4. **Rate Limiting**: KV namespace設定済み
