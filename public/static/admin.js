@@ -1998,7 +1998,8 @@ class AdminApp {
       const response = await fetch('/api/admin/change-password', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           token,
