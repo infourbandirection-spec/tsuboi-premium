@@ -2349,11 +2349,11 @@ app.post('/api/admin/lottery/execute', async (c) => {
       `).run()
 
       // 当選メールを送信（メールアドレスが登録されている場合のみ）
-      // Resend Pro プラン最適化: 100ms遅延（毎秒最大10通）
+      // Resend レート制限回避: 500ms遅延（毎秒2通、デフォルト制限対応）
       console.log('Sending winner notification emails (all won scenario)...')
+      const allReservations = reservations.results as any[]
       console.log(`Total emails to send: ${allReservations.length}`)
       let emailsSent = 0
-      const allReservations = reservations.results as any[]
       
       for (let i = 0; i < allReservations.length; i++) {
         const res = allReservations[i]
