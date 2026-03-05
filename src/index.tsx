@@ -3597,4 +3597,39 @@ app.get('/api/debug/env-check', async (c) => {
   })
 })
 
+// メールログ確認エンドポイント（デバッグ用、本番では削除推奨）
+app.get('/api/debug/email-logs', async (c) => {
+  try {
+    const db = c.env.DB
+    const limit = parseInt(c.req.query('limit') || '10')
+    const reservationId = c.req.query('reservation_id')
+    
+    let query = 'SELECT * FROM email_logs'
+    const params: any[] = []
+    
+    if (reservationId) {
+      query += ' WHERE reservation_id = ?'
+      params.push(reservationId)
+    }
+    
+    query += ' ORDER BY sent_at DESC LIMIT ?'
+    params.push(limit)
+    
+    const result = await db.prepare(query).bind(...params).all()
+    
+    return c.json({
+      success: true,
+      data: result.results,
+      count: result.results.length,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    }, 500)
+  }
+})
+
 export default app
