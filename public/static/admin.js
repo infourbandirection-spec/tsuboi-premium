@@ -1220,22 +1220,14 @@ class AdminApp {
     }
 
     // 選択された日付を取得
-    // デフォルトは実際の購入予定日の最小値（リアルな日程）
+    // デフォルトは今日の日付
     let selectedDate = this.selectedHeatmapDate
     
     if (!selectedDate) {
-      // 実際の購入予定日から最小値を自動選定
-      const allPickupDates = reservationsForHeatmap
-        .filter(r => r.pickup_date && (r.status === 'reserved' || r.status === 'picked_up'))
-        .map(r => r.pickup_date)
-        .sort()
-      
-      if (allPickupDates.length > 0) {
-        selectedDate = allPickupDates[0]  // 最も早い購入日
-        this.selectedHeatmapDate = selectedDate  // 保存
-      } else {
-        selectedDate = '2026-03-16'  // フォールバック
-      }
+      // 今日の日付を自動選定（YYYY-MM-DD形式）
+      const today = new Date()
+      selectedDate = today.toISOString().split('T')[0]
+      this.selectedHeatmapDate = selectedDate  // 保存
     }
 
     // 日別データ集計
@@ -1260,9 +1252,12 @@ class AdminApp {
     
     const stores = Array.from(storesSet).sort()
     
-    // カレンダーのmin値を計算（実際の購入日の最小値）
+    // カレンダーのmin値を計算（実際の購入日の最小値、または今日の日付）
     const allPickupDates = Array.from(allPickupDatesSet).sort()
-    const minPickupDate = allPickupDates.length > 0 ? allPickupDates[0] : '2026-03-16'
+    const today = new Date().toISOString().split('T')[0]
+    const minPickupDate = allPickupDates.length > 0 
+      ? (allPickupDates[0] < today ? allPickupDates[0] : today)
+      : today
     
     // 時間帯は常に固定の7つを使用
     const timeSlots = [
