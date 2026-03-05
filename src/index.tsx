@@ -27,6 +27,13 @@ type Reservation = {
 const app = new Hono<{ Bindings: Bindings }>()
 
 // ============================================
+// ユーティリティ関数
+// ============================================
+
+// レート制限回避のための待機関数
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// ============================================
 // メール送信関連の関数
 // ============================================
 
@@ -2337,10 +2344,13 @@ app.post('/api/admin/lottery/execute', async (c) => {
       `).run()
 
       // 当選メールを送信（メールアドレスが登録されている場合のみ）
+      // レート制限回避のため遅延を追加
       console.log('Sending winner notification emails (all won scenario)...')
       let emailsSent = 0
-      for (const reservation of reservations.results) {
-        const res = reservation as any
+      const allReservations = reservations.results as any[]
+      
+      for (let i = 0; i < allReservations.length; i++) {
+        const res = allReservations[i]
         if (res.email) {
           const emailHTML = getLotteryWinnerEmailHTML({
             fullName: res.full_name,
@@ -2362,8 +2372,14 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
           if (emailResult.success) {
             emailsSent++
+            console.log(`Winner email sent (${i + 1}/${allReservations.length}): ${res.email}`)
           } else {
             console.warn(`Failed to send winner email to ${res.email}:`, emailResult.error)
+          }
+          
+          // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+          if (i < allReservations.length - 1) {
+            await delay(600)
           }
         }
       }
@@ -2450,8 +2466,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
     let winnerEmailsSent = 0
     let loserEmailsSent = 0
 
-    // 当選者にメール送信
-    for (const winner of winners) {
+    // 当選者にメール送信（レート制限回避のため遅延を追加）
+    for (let i = 0; i < winners.length; i++) {
+      const winner = winners[i]
       if (winner.email) {
         const emailHTML = getLotteryWinnerEmailHTML({
           fullName: winner.full_name,
@@ -2473,14 +2490,21 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         if (emailResult.success) {
           winnerEmailsSent++
+          console.log(`Winner email sent (${i + 1}/${winners.length}): ${winner.email}`)
         } else {
           console.warn(`Failed to send winner email to ${winner.email}:`, emailResult.error)
+        }
+        
+        // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+        if (i < winners.length - 1) {
+          await delay(600)
         }
       }
     }
 
-    // 落選者にメール送信
-    for (const loser of losers) {
+    // 落選者にメール送信（レート制限回避のため遅延を追加）
+    for (let i = 0; i < losers.length; i++) {
+      const loser = losers[i]
       if (loser.email) {
         const emailHTML = getLotteryLoserEmailHTML({
           fullName: loser.full_name,
@@ -2499,8 +2523,14 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         if (emailResult.success) {
           loserEmailsSent++
+          console.log(`Loser email sent (${i + 1}/${losers.length}): ${loser.email}`)
         } else {
           console.warn(`Failed to send loser email to ${loser.email}:`, emailResult.error)
+        }
+        
+        // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+        if (i < losers.length - 1) {
+          await delay(600)
         }
       }
     }
