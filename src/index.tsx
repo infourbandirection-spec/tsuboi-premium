@@ -3581,8 +3581,12 @@ app.get('/api/debug/env-check', async (c) => {
   return c.json({
     hasResendApiKey: !!env.RESEND_API_KEY,
     resendApiKeyPrefix: env.RESEND_API_KEY ? env.RESEND_API_KEY.substring(0, 8) + '...' : 'NOT_SET',
+    resendApiKeyType: typeof env.RESEND_API_KEY,
+    resendApiKeyLength: env.RESEND_API_KEY ? env.RESEND_API_KEY.length : 0,
     hasResendFromEmail: !!env.RESEND_FROM_EMAIL,
     resendFromEmail: env.RESEND_FROM_EMAIL || 'NOT_SET',
+    resendFromEmailType: typeof env.RESEND_FROM_EMAIL,
+    allEnvKeys: Object.keys(env),
     timestamp: new Date().toISOString()
   })
 })
