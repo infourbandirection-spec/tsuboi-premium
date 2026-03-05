@@ -134,7 +134,7 @@ function showReservation(reservation) {
           <div class="w-32 text-sm font-medium text-gray-500">
             <i class="fas fa-id-card mr-2"></i>応募ID
           </div>
-          <div class="flex-1 text-gray-900 font-mono">${reservation.reservation_id}</div>
+          <div class="flex-1 text-gray-900 font-mono">${reservation.id || reservation.reservation_id || 'undefined'}</div>
         </div>
         
         <div class="flex items-start">
@@ -149,8 +149,8 @@ function showReservation(reservation) {
             <i class="fas fa-calendar mr-2"></i>購入日時
           </div>
           <div class="flex-1 text-gray-900">
-            ${reservation.pickupDate}<br>
-            ${reservation.pickupTimeSlot}
+            ${reservation.pickupDate || reservation.pickup_date}<br>
+            ${reservation.pickupTimeSlot || reservation.pickup_time_slot}
           </div>
         </div>
         
@@ -158,7 +158,7 @@ function showReservation(reservation) {
           <div class="w-32 text-sm font-medium text-gray-500">
             <i class="fas fa-clock mr-2"></i>応募日時
           </div>
-          <div class="flex-1 text-gray-900">${new Date(reservation.created_at).toLocaleString('ja-JP')}</div>
+          <div class="flex-1 text-gray-900">${reservation.createdAt || reservation.created_at ? new Date(reservation.createdAt || reservation.created_at).toLocaleString('ja-JP') : '不明'}</div>
         </div>
       </div>
       
@@ -215,7 +215,7 @@ function showMultipleReservations(reservations) {
     return `
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition">
         <div class="flex justify-between items-start mb-2">
-          <div class="font-mono text-sm text-gray-900">${r.id}</div>
+          <div class="font-mono text-sm text-gray-900">${r.id || r.reservation_id || 'N/A'}</div>
           <div class="flex gap-1">
             ${statusBadge}
             ${lotteryBadge}
@@ -223,10 +223,13 @@ function showMultipleReservations(reservations) {
         </div>
         <div class="text-sm text-gray-600">
           <i class="fas fa-book mr-1"></i> ${r.quantity}冊 | 
-          <i class="fas fa-calendar mr-1"></i> ${r.pickupDate} ${r.pickupTimeSlot}
+          <i class="fas fa-calendar mr-1"></i> ${r.pickupDate || r.pickup_date} ${r.pickupTimeSlot || r.pickup_time_slot}
         </div>
         <div class="text-sm text-gray-600">
-          <i class="fas fa-map-marker-alt mr-1"></i> ${r.storeLocation}
+          <i class="fas fa-map-marker-alt mr-1"></i> ${r.storeLocation || r.store_location}
+        </div>
+        <div class="text-xs text-gray-500 mt-1">
+          <i class="fas fa-clock mr-1"></i> 応募: ${r.createdAt || r.created_at ? new Date(r.createdAt || r.created_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '不明'}
         </div>
       </div>
     `
