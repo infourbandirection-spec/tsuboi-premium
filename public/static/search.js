@@ -154,6 +154,12 @@ class SearchApp {
       const data = await response.json()
 
       if (data.success && data.data) {
+        // デバッグ: APIレスポンスの最初のレコードを確認
+        if (data.data.length > 0) {
+          console.log('API Response Sample:', data.data[0])
+          console.log('Available keys:', Object.keys(data.data[0]))
+        }
+        
         // 生年月日でフィルタリング
         const filtered = data.data.filter(r => r.birth_date === birthDate)
         
