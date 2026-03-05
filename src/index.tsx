@@ -2348,57 +2348,14 @@ app.post('/api/admin/lottery/execute', async (c) => {
         WHERE setting_key = 'lottery_executed_at'
       `).run()
 
-      // 当選メールを送信（メールアドレスが登録されている場合のみ）
-      // Resend レート制限回避: 500ms遅延（毎秒2通、デフォルト制限対応）
-      console.log('Sending winner notification emails (all won scenario)...')
-      const allReservations = reservations.results as any[]
-      console.log(`Total emails to send: ${allReservations.length}`)
-      let emailsSent = 0
-      
-      for (let i = 0; i < allReservations.length; i++) {
-        const res = allReservations[i]
-        if (res.email) {
-          console.log(`[${i + 1}/${allReservations.length}] Sending to: ${res.email}`)
-          
-          const emailHTML = getLotteryWinnerEmailHTML({
-            fullName: res.full_name,
-            reservationId: res.reservation_id,
-            quantity: res.quantity,
-            storeLocation: res.store_location,
-            pickupDate: res.pickup_date,
-            pickupTime: res.pickup_time_slot
-          })
-
-          const emailResult = await sendEmail(
-            res.email,
-            '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
-            emailHTML,
-            c.env,
-            res.reservation_id,
-            'winner'
-          )
-
-          if (emailResult.success) {
-            emailsSent++
-            console.log(`✓ Success (${emailsSent}/${allReservations.length}): ${res.email} - Message ID: ${emailResult.messageId}`)
-          } else {
-            console.error(`✗ FAILED (${i + 1}/${allReservations.length}): ${res.email} - Error: ${emailResult.error}`)
-          }
-          
-          // Resend レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
-          if (i < allReservations.length - 1) {
-            await delay(500)
-          }
-        }
-      }
-      
       const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2)
-      console.log(`Winner notification emails completed: ${emailsSent}/${totalApplications} in ${elapsedTime}s`)
+      console.log(`Winner notification DB update completed in ${elapsedTime}s`)
       console.log('=== LOTTERY EXECUTION COMPLETED (ALL WON) ===')
+      console.log('ℹ️ メール送信は管理画面の「メール一括送信」ボタンから実行してください')
 
       return c.json({
         success: true,
-        message: '抽選が完了しました（全員当選）',
+        message: '抽選が完了しました（全員当選）\n\n✉️ メール送信は「メール一括送信」ボタンをクリックしてください。',
         result: {
           totalApplications,
           totalQuantity,
@@ -2472,97 +2429,15 @@ app.post('/api/admin/lottery/execute', async (c) => {
       WHERE setting_key = 'lottery_executed_at'
     `).run()
 
-    // 抽選結果メールを送信（当選者・落選者両方）
-    console.log('=== SENDING LOTTERY RESULT EMAILS ===')
-    console.log(`Winners: ${winners.length}, Losers: ${losers.length}`)
-    let winnerEmailsSent = 0
-    let loserEmailsSent = 0
-
-    // 当選者にメール送信（レート制限回避のため遅延を追加）
-    console.log('--- Sending winner emails ---')
-    for (let i = 0; i < winners.length; i++) {
-      const winner = winners[i]
-      if (winner.email) {
-        console.log(`[${i + 1}/${winners.length}] Sending to: ${winner.email}`)
-        
-        const emailHTML = getLotteryWinnerEmailHTML({
-          fullName: winner.full_name,
-          reservationId: winner.reservation_id,
-          quantity: winner.quantity,
-          storeLocation: winner.store_location,
-          pickupDate: winner.pickup_date,
-          pickupTime: winner.pickup_time_slot
-        })
-
-        const emailResult = await sendEmail(
-          winner.email,
-          '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
-          emailHTML,
-          c.env,
-          winner.reservation_id,
-          'winner'
-        )
-
-        if (emailResult.success) {
-          winnerEmailsSent++
-          console.log(`✓ Winner email success (${winnerEmailsSent}/${winners.length}): ${winner.email} - ID: ${emailResult.messageId}`)
-        } else {
-          console.error(`✗ Winner email FAILED (${i + 1}/${winners.length}): ${winner.email} - Error: ${emailResult.error}`)
-        }
-        
-        // レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
-        if (i < winners.length - 1) {
-          await delay(500)
-        }
-      }
-    }
-
-    // 落選者にメール送信（レート制限回避のため遅延を追加）
-    console.log('--- Sending loser emails ---')
-    for (let i = 0; i < losers.length; i++) {
-      const loser = losers[i]
-      if (loser.email) {
-        console.log(`[${i + 1}/${losers.length}] Sending to: ${loser.email}`)
-        
-        const emailHTML = getLotteryLoserEmailHTML({
-          fullName: loser.full_name,
-          reservationId: loser.reservation_id,
-          quantity: loser.quantity
-        })
-
-        const emailResult = await sendEmail(
-          loser.email,
-          '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ',
-          emailHTML,
-          c.env,
-          loser.reservation_id,
-          'loser'
-        )
-
-        if (emailResult.success) {
-          loserEmailsSent++
-          console.log(`✓ Loser email success (${loserEmailsSent}/${losers.length}): ${loser.email} - ID: ${emailResult.messageId}`)
-        } else {
-          console.error(`✗ Loser email FAILED (${i + 1}/${losers.length}): ${loser.email} - Error: ${emailResult.error}`)
-        }
-        
-        // レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
-        if (i < losers.length - 1) {
-          await delay(500)
-        }
-      }
-    }
-
     const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2)
-    console.log(`=== EMAIL SENDING COMPLETED ===`)
-    console.log(`Winner emails: ${winnerEmailsSent}/${winners.length}`)
-    console.log(`Loser emails: ${loserEmailsSent}/${losers.length}`)
+    console.log(`=== LOTTERY EXECUTION COMPLETED ===`)
+    console.log(`Winners: ${winners.length}, Losers: ${losers.length}`)
     console.log(`Total time: ${elapsedTime}s`)
-    console.log('=== LOTTERY EXECUTION COMPLETED ===')
+    console.log('ℹ️ メール送信は管理画面の「メール一括送信」ボタンから実行してください')
 
     return c.json({
       success: true,
-      message: '抽選が完了しました',
+      message: '抽選が完了しました\n\n✉️ メール送信は「メール一括送信」ボタンをクリックしてください。',
       result: {
         totalApplications,
         totalQuantity,
@@ -2685,6 +2560,172 @@ app.get('/api/lottery/winners', async (c) => {
     return c.json({
       success: false,
       error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
+// 抽選結果メール一括送信（管理者用）
+app.post('/api/admin/lottery/send-emails', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const startTime = Date.now()
+    console.log('=== LOTTERY EMAIL BATCH SENDING STARTED ===')
+    
+    const db = c.env.DB
+
+    // 抽選実行済みかチェック
+    const lotteryCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'lottery_executed'"
+    ).first()
+
+    if (lotteryCheck?.setting_value !== 'true') {
+      return c.json({
+        success: false,
+        error: '抽選が実行されていません。先に抽選を実行してください。'
+      }, 400)
+    }
+
+    // 当選者を取得（メール未送信またはメール送信失敗したもの）
+    const winners = await db.prepare(`
+      SELECT r.* 
+      FROM reservations r
+      LEFT JOIN email_logs e ON r.reservation_id = e.reservation_id AND e.email_type = 'winner' AND e.status = 'success'
+      WHERE r.lottery_status = 'won' 
+        AND r.email IS NOT NULL
+        AND r.email != ''
+        AND e.id IS NULL
+      ORDER BY r.created_at ASC
+    `).all()
+
+    // 落選者を取得（メール未送信またはメール送信失敗したもの）
+    const losers = await db.prepare(`
+      SELECT r.* 
+      FROM reservations r
+      LEFT JOIN email_logs e ON r.reservation_id = e.reservation_id AND e.email_type = 'loser' AND e.status = 'success'
+      WHERE r.lottery_status = 'lost' 
+        AND r.email IS NOT NULL
+        AND r.email != ''
+        AND e.id IS NULL
+      ORDER BY r.created_at ASC
+    `).all()
+
+    const totalWinners = (winners.results as any[]).length
+    const totalLosers = (losers.results as any[]).length
+    const totalEmails = totalWinners + totalLosers
+
+    if (totalEmails === 0) {
+      return c.json({
+        success: false,
+        error: '送信対象のメールがありません。全てのメールは既に送信済みです。'
+      }, 400)
+    }
+
+    console.log(`Total emails to send: ${totalEmails} (Winners: ${totalWinners}, Losers: ${totalLosers})`)
+
+    let winnerEmailsSent = 0
+    let loserEmailsSent = 0
+    let failedEmails: string[] = []
+
+    // 当選者にメール送信
+    console.log('--- Sending winner emails ---')
+    for (let i = 0; i < totalWinners; i++) {
+      const winner = (winners.results as any[])[i]
+      console.log(`[${i + 1}/${totalWinners}] Sending winner email to: ${winner.email}`)
+      
+      const emailHTML = getLotteryWinnerEmailHTML({
+        fullName: winner.full_name,
+        reservationId: winner.reservation_id,
+        quantity: winner.quantity,
+        storeLocation: winner.store_location,
+        pickupDate: winner.pickup_date,
+        pickupTime: winner.pickup_time_slot
+      })
+
+      const emailResult = await sendEmail(
+        winner.email,
+        '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
+        emailHTML,
+        c.env,
+        winner.reservation_id,
+        'winner'
+      )
+
+      if (emailResult.success) {
+        winnerEmailsSent++
+        console.log(`✓ Success (${winnerEmailsSent}/${totalWinners}): ${winner.email} - ID: ${emailResult.messageId}`)
+      } else {
+        console.error(`✗ FAILED (${i + 1}/${totalWinners}): ${winner.email} - Error: ${emailResult.error}`)
+        failedEmails.push(`${winner.email} (当選)`)
+      }
+      
+      // レート制限回避: 500ms待機（毎秒2通）
+      if (i < totalWinners - 1) {
+        await delay(500)
+      }
+    }
+
+    // 落選者にメール送信
+    console.log('--- Sending loser emails ---')
+    for (let i = 0; i < totalLosers; i++) {
+      const loser = (losers.results as any[])[i]
+      console.log(`[${i + 1}/${totalLosers}] Sending loser email to: ${loser.email}`)
+      
+      const emailHTML = getLotteryLoserEmailHTML({
+        fullName: loser.full_name,
+        reservationId: loser.reservation_id,
+        quantity: loser.quantity
+      })
+
+      const emailResult = await sendEmail(
+        loser.email,
+        '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ',
+        emailHTML,
+        c.env,
+        loser.reservation_id,
+        'loser'
+      )
+
+      if (emailResult.success) {
+        loserEmailsSent++
+        console.log(`✓ Success (${loserEmailsSent}/${totalLosers}): ${loser.email} - ID: ${emailResult.messageId}`)
+      } else {
+        console.error(`✗ FAILED (${i + 1}/${totalLosers}): ${loser.email} - Error: ${emailResult.error}`)
+        failedEmails.push(`${loser.email} (落選)`)
+      }
+      
+      // レート制限回避: 500ms待機（毎秒2通）
+      if (i < totalLosers - 1) {
+        await delay(500)
+      }
+    }
+
+    const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2)
+    console.log(`=== EMAIL BATCH SENDING COMPLETED ===`)
+    console.log(`Winner emails: ${winnerEmailsSent}/${totalWinners}`)
+    console.log(`Loser emails: ${loserEmailsSent}/${totalLosers}`)
+    console.log(`Total time: ${elapsedTime}s`)
+    console.log(`Failed: ${failedEmails.length}`)
+
+    return c.json({
+      success: true,
+      message: `メール送信が完了しました`,
+      result: {
+        totalSent: winnerEmailsSent + loserEmailsSent,
+        winnerEmailsSent,
+        loserEmailsSent,
+        totalFailed: failedEmails.length,
+        failedEmails,
+        elapsedTime: `${elapsedTime}秒`
+      }
+    })
+
+  } catch (error) {
+    logSecureError('SendLotteryEmails', error)
+    return c.json({
+      success: false,
+      error: 'メール送信中にエラーが発生しました'
     }, 500)
   }
 })

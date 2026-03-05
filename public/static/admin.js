@@ -1701,6 +1701,11 @@ class AdminApp {
               抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
             </button>
             ${lotteryExecuted ? `
+              <button id="send-lottery-emails-btn" onclick="adminApp.sendLotteryEmails()" 
+                      class="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 font-bold text-lg shadow-lg transition">
+                <i class="fas fa-envelope-open-text mr-2"></i>
+                メール一括送信
+              </button>
               <button onclick="adminApp.resetLottery()" 
                       class="w-full px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-lg transition">
                 <i class="fas fa-undo mr-2"></i>
@@ -1873,6 +1878,63 @@ class AdminApp {
         this.applyFilters()
       }
     }, 100)
+  }
+
+  // 抽選結果メール一括送信
+  async sendLotteryEmails() {
+    if (!confirm('抽選結果メールを一括送信しますか？\n\n未送信のメールのみが送信されます。\n処理には時間がかかる場合があります。')) {
+      return
+    }
+
+    try {
+      const sendButton = document.getElementById('send-lottery-emails-btn')
+      if (sendButton) {
+        sendButton.disabled = true
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>送信中...'
+      }
+
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/lottery/send-emails', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        const result = data.result
+        let message = `メール送信が完了しました！\n\n`
+        message += `当選メール送信: ${result.winnerEmailsSent}件\n`
+        message += `落選メール送信: ${result.loserEmailsSent}件\n`
+        message += `合計送信: ${result.totalSent}件\n`
+        message += `処理時間: ${result.elapsedTime}\n\n`
+        
+        if (result.totalFailed > 0) {
+          message += `⚠️ 失敗: ${result.totalFailed}件\n`
+          message += result.failedEmails.join('\n')
+        } else {
+          message += `✅ 全てのメールが正常に送信されました`
+        }
+
+        alert(message)
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Send lottery emails error:', error)
+      alert('システムエラーが発生しました')
+    } finally {
+      const sendButton = document.getElementById('send-lottery-emails-btn')
+      if (sendButton) {
+        sendButton.disabled = false
+        sendButton.innerHTML = '<i class="fas fa-envelope-open-text mr-2"></i>メール一括送信'
+      }
+    }
   }
 
   async resetLottery() {
