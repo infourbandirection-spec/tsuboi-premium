@@ -166,13 +166,13 @@ function getReservationConfirmationEmailHTML(data: {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(to right, #10b981, #3b82f6); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-    <h1 style="margin: 0; font-size: 24px;">🎫 プレミアム商品券 応募完了</h1>
+    <h1 style="margin: 0; font-size: 24px;">🎫 坪井繁栄会プレミアム商品券 応募完了</h1>
   </div>
   
   <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
     <p><strong>${data.fullName}</strong> 様</p>
     
-    <p>プレミアム商品券の応募が完了しました。</p>
+    <p><strong>坪井繁栄会プレミアム商品券</strong>の応募が完了しました。</p>
     
     ${lotteryNote}
     
@@ -256,7 +256,7 @@ function getLotteryWinnerEmailHTML(data: {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(to right, #10b981, #059669); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-    <h1 style="margin: 0; font-size: 24px;">🎉 抽選結果のお知らせ</h1>
+    <h1 style="margin: 0; font-size: 24px;">🎉 坪井繁栄会プレミアム商品券 抽選結果</h1>
   </div>
   
   <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
@@ -264,10 +264,11 @@ function getLotteryWinnerEmailHTML(data: {
     
     <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
       <h2 style="color: #065f46; font-size: 28px; margin: 0;">✅ おめでとうございます！</h2>
-      <p style="color: #047857; font-size: 18px; font-weight: bold; margin: 10px 0;">当選されました</p>
+      <p style="color: #047857; font-size: 20px; font-weight: bold; margin: 10px 0;">坪井繁栄会プレミアム商品券</p>
+      <p style="color: #047857; font-size: 18px; font-weight: bold; margin: 10px 0;">抽選に当選されました</p>
     </div>
     
-    <p>プレミアム商品券の抽選に当選いたしました。<br>
+    <p><strong>坪井繁栄会プレミアム商品券</strong>の抽選に当選いたしました。<br>
     以下の日時にご来店いただき、商品券をお購入ください。</p>
     
     <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
@@ -343,13 +344,16 @@ function getLotteryLoserEmailHTML(data: {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(to right, #6b7280, #4b5563); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-    <h1 style="margin: 0; font-size: 24px;">抽選結果のお知らせ</h1>
+    <h1 style="margin: 0; font-size: 24px;">坪井繁栄会プレミアム商品券 抽選結果</h1>
   </div>
   
   <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
     <p><strong>${data.fullName}</strong> 様</p>
     
     <div style="background: #f3f4f6; border-left: 4px solid #6b7280; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <p style="color: #374151; font-size: 18px; font-weight: bold; margin: 0 0 10px 0;">
+        坪井繁栄会プレミアム商品券
+      </p>
       <p style="color: #374151; font-size: 16px; margin: 0;">
         誠に申し訳ございませんが、今回の抽選では残念ながら落選となりました。
       </p>
@@ -1098,7 +1102,7 @@ app.post('/api/reserve',
       console.log('Attempting to send email to:', data.email)
       const emailResult = await sendEmail(
         data.email,
-        '坪井繁栄会 プレミアム商品券 応募完了',
+        '【応募完了】坪井繁栄会プレミアム商品券',
         emailHTML,
         c.env,
         reservationId,
@@ -2645,7 +2649,7 @@ app.post('/api/admin/lottery/send-emails', async (c) => {
 
       const emailResult = await sendEmail(
         winner.email,
-        '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ（当選）',
+        '【当選】坪井繁栄会プレミアム商品券 抽選結果のお知らせ',
         emailHTML,
         c.env,
         winner.reservation_id,
@@ -2680,7 +2684,7 @@ app.post('/api/admin/lottery/send-emails', async (c) => {
 
       const emailResult = await sendEmail(
         loser.email,
-        '坪井繁栄会 プレミアム商品券 抽選結果のお知らせ',
+        '【落選】坪井繁栄会プレミアム商品券 抽選結果のお知らせ',
         emailHTML,
         c.env,
         loser.reservation_id,
@@ -2986,7 +2990,7 @@ app.post('/api/test/email/reservation', async (c) => {
     
     const emailResult = await sendEmail(
       data.email,
-      'パスート24 プレミアム商品券 応募完了',
+      '【テスト・応募完了】坪井繁栄会プレミアム商品券',
       emailHTML,
       c.env,
       data.reservationId || 'TEST-20260302-ABCD12',
@@ -3037,7 +3041,7 @@ app.post('/api/test/email/winner', async (c) => {
     
     const emailResult = await sendEmail(
       data.email,
-      'パスート24 プレミアム商品券 抽選結果のお知らせ（当選）',
+      '【テスト・当選】坪井繁栄会プレミアム商品券 抽選結果',
       emailHTML,
       c.env,
       data.reservationId || 'TEST-20260302-WINNER',
@@ -3085,7 +3089,7 @@ app.post('/api/test/email/loser', async (c) => {
     
     const emailResult = await sendEmail(
       data.email,
-      'パスート24 プレミアム商品券 抽選結果のお知らせ',
+      '【テスト・落選】坪井繁栄会プレミアム商品券 抽選結果',
       emailHTML,
       c.env,
       data.reservationId || 'TEST-20260302-LOSER',
