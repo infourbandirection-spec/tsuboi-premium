@@ -1261,13 +1261,9 @@ class AdminApp {
     
     // 時間帯は常に固定の7つを使用
     const timeSlots = [
-      '12:00-13:00',
-      '13:00-14:00',
-      '15:00-16:00',
-      '16:00-17:00',
-      '17:00-18:00',
-      '18:00-19:00',
-      '19:00-20:00'
+      '10:00-12:00',
+      '13:00-15:00',
+      '16:00-18:00'
     ]
 
     reservationsForHeatmap.forEach(r => {
@@ -1415,19 +1411,19 @@ class AdminApp {
           <div class="flex items-center gap-4 text-sm mb-4 flex-wrap">
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-emerald-100 border border-emerald-300 rounded"></div>
-              <span>空き（1～10件）</span>
+              <span>空き（1～20件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-yellow-200 border border-amber-400 rounded"></div>
-              <span>やや混雑（11～20件）</span>
+              <span>やや混雑（21～50件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-orange-300 border border-orange-500 rounded"></div>
-              <span>混雑（21～50件）</span>
+              <span>混雑（51～100件）</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-4 h-4 bg-red-400 border border-red-600 rounded"></div>
-              <span>非常に混雑（50件以上）</span>
+              <span>非常に混雑（100件以上）</span>
             </div>
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4">
@@ -1441,7 +1437,7 @@ class AdminApp {
           </div>
           <p class="text-sm text-gray-600 mb-4">
             <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
-            赤く表示されている時間帯は応募が集中しています（50件以上）。ヘルプ要員の配置を検討してください。
+            赤く表示されている時間帯は応募が集中しています（100件以上）。ヘルプ要員の配置を検討してください。
           </p>
           <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
@@ -1452,7 +1448,7 @@ class AdminApp {
                   </th>
                   ${timeSlots.map(time => `
                     <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
-                      ${time.replace(/(\d+):00/g, '$1時')}
+                      ${time.replace(/(\d+):00-(\d+):00/, '$1時～$2時')}
                     </th>
                   `).join('')}
                   <th class="px-3 py-2 text-center text-xs font-bold text-gray-700 bg-gray-100 border whitespace-nowrap">
@@ -1531,21 +1527,21 @@ class AdminApp {
                           const quantity = data ? data.quantity : 0
                           const count = data ? data.count : 0
                           
-                          // 応募件数に基づく混雑度判定
-                          // 空き: 1-10件、やや混雑: 11-20件、混雑: 21-50件、非常に混雑: 50件以上
+                          // 応募件数に基づく混雑度判定（2時間枠に調整）
+                          // 空き: 1-20件、やや混雑: 21-50件、混雑: 51-100件、非常に混雑: 100件以上
                           let bgColor = 'bg-gray-50'
                           let textColor = 'text-gray-400'
                           let alertIcon = ''
                           
-                          if (count >= 50) {
+                          if (count >= 100) {
                             bgColor = 'bg-red-400'
                             textColor = 'text-white font-bold'
                             alertIcon = '<i class="fas fa-exclamation-triangle text-white mr-1"></i>'
-                          } else if (count >= 21) {
+                          } else if (count >= 51) {
                             bgColor = 'bg-orange-300'
                             textColor = 'text-gray-900 font-semibold'
                             alertIcon = '<i class="fas fa-exclamation-circle text-orange-800 mr-1"></i>'
-                          } else if (count >= 11) {
+                          } else if (count >= 21) {
                             bgColor = 'bg-yellow-200'
                             textColor = 'text-gray-800'
                           } else if (count >= 1) {
