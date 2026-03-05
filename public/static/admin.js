@@ -3396,4 +3396,3 @@ document.addEventListener('DOMContentLoaded', () => {
   adminApp = new AdminApp()
   window.adminApp = adminApp // グローバルに公開
 })
-})
