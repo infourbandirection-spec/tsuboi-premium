@@ -1693,12 +1693,21 @@ class AdminApp {
               </p>
             </div>
           `}
-          <button onclick="adminApp.executeLottery()" 
-                  class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transition"
-                  ${phase1Count === 0 ? 'disabled' : ''}>
-            <i class="fas fa-trophy mr-2"></i>
-            抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
-          </button>
+          <div class="space-y-3">
+            <button onclick="adminApp.executeLottery()" 
+                    class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transition"
+                    ${phase1Count === 0 ? 'disabled' : ''}>
+              <i class="fas fa-trophy mr-2"></i>
+              抽選を実行する（${phase1Count}名 / ${phase1Total}冊）
+            </button>
+            ${lotteryExecuted ? `
+              <button onclick="adminApp.resetLottery()" 
+                      class="w-full px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-lg transition">
+                <i class="fas fa-undo mr-2"></i>
+                抽選状態をリセット（未実行に戻す）
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <!-- 抽選結果履歴 -->
@@ -1864,6 +1873,36 @@ class AdminApp {
         this.applyFilters()
       }
     }, 100)
+  }
+
+  async resetLottery() {
+    if (!confirm('抽選状態をリセットしますか？\n\n以下の操作が実行されます：\n- 抽選実行フラグを「未実行」に変更\n- 全ての当選/落選ステータスをリセット\n- 抽選結果履歴を削除\n\nこの操作は取り消せません。')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/lottery/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('抽選状態をリセットしました')
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Reset lottery error:', error)
+      alert('システムエラーが発生しました')
+    }
   }
 
   showPasswordChangeModal() {

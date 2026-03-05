@@ -2553,6 +2553,47 @@ app.get('/api/admin/lottery/results', async (c) => {
   }
 })
 
+// 抽選リセット（管理者専用）
+app.post('/api/admin/lottery/reset', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+
+    // トランザクション開始（複数のクエリを実行）
+    // 1. lottery_executed を false に設定
+    await db.prepare(`
+      UPDATE system_settings 
+      SET setting_value = 'false' 
+      WHERE setting_key = 'lottery_executed'
+    `).run()
+
+    // 2. 全ての応募のlottery_statusをNULLにリセット
+    await db.prepare(`
+      UPDATE reservations 
+      SET lottery_status = NULL 
+      WHERE lottery_status IN ('won', 'lost')
+    `).run()
+
+    // 3. lottery_resultsテーブルから全データを削除
+    await db.prepare(`
+      DELETE FROM lottery_results
+    `).run()
+
+    return c.json({
+      success: true,
+      message: '抽選状態をリセットしました'
+    })
+  } catch (error) {
+    logSecureError('ResetLottery', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // 当選者リスト取得（公開API）
 app.get('/api/lottery/winners', async (c) => {
   try {
