@@ -42,8 +42,10 @@ async function sendEmail(
   emailType: 'confirmation' | 'winner' | 'loser' = 'confirmation'
 ): Promise<{ success: boolean; error?: string; messageId?: string }> {
   try {
-    // APIキーの確認
-    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === 're_YOUR_API_KEY_HERE') {
+    // APIキーの確認（スペース付きキー名にも対応）
+    const apiKey = env.RESEND_API_KEY || (env as any)['RESEND_API_KEY ']
+    
+    if (!apiKey || apiKey === 're_YOUR_API_KEY_HERE') {
       console.error('Resend API key not configured. Email not sent.')
       return { success: false, error: 'Email service not configured' }
     }
@@ -58,7 +60,7 @@ async function sendEmail(
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -3578,15 +3580,19 @@ app.delete('/api/admin/pickup-time-slots/:id', async (c) => {
 app.get('/api/debug/env-check', async (c) => {
   const { env } = c
   
+  // スペース付きキー名もチェック
+  const apiKey = env.RESEND_API_KEY || (env as any)['RESEND_API_KEY ']
+  
   return c.json({
-    hasResendApiKey: !!env.RESEND_API_KEY,
-    resendApiKeyPrefix: env.RESEND_API_KEY ? env.RESEND_API_KEY.substring(0, 8) + '...' : 'NOT_SET',
-    resendApiKeyType: typeof env.RESEND_API_KEY,
-    resendApiKeyLength: env.RESEND_API_KEY ? env.RESEND_API_KEY.length : 0,
+    hasResendApiKey: !!apiKey,
+    resendApiKeyPrefix: apiKey ? apiKey.substring(0, 8) + '...' : 'NOT_SET',
+    resendApiKeyType: typeof apiKey,
+    resendApiKeyLength: apiKey ? apiKey.length : 0,
     hasResendFromEmail: !!env.RESEND_FROM_EMAIL,
     resendFromEmail: env.RESEND_FROM_EMAIL || 'NOT_SET',
     resendFromEmailType: typeof env.RESEND_FROM_EMAIL,
     allEnvKeys: Object.keys(env),
+    hasSpaceInKey: !!(env as any)['RESEND_API_KEY '],
     timestamp: new Date().toISOString()
   })
 })
