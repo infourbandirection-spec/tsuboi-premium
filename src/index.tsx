@@ -3771,60 +3771,6 @@ app.post('/api/debug/init-phase2-timeslots', async (c) => {
   }
 })
 
-// デバッグ用: 環境変数確認エンドポイント
-app.get('/api/debug/env-check', async (c) => {
-  const { env } = c
-  
-  // スペース付きキー名もチェック
-  const apiKey = env.RESEND_API_KEY || (env as any)['RESEND_API_KEY ']
-  
-  return c.json({
-    hasResendApiKey: !!apiKey,
-    resendApiKeyPrefix: apiKey ? apiKey.substring(0, 8) + '...' : 'NOT_SET',
-    resendApiKeyType: typeof apiKey,
-    resendApiKeyLength: apiKey ? apiKey.length : 0,
-    hasResendFromEmail: !!env.RESEND_FROM_EMAIL,
-    resendFromEmail: env.RESEND_FROM_EMAIL || 'NOT_SET',
-    resendFromEmailType: typeof env.RESEND_FROM_EMAIL,
-    allEnvKeys: Object.keys(env),
-    hasSpaceInKey: !!(env as any)['RESEND_API_KEY '],
-    timestamp: new Date().toISOString()
-  })
-})
-
-// メールログ確認エンドポイント（デバッグ用、本番では削除推奨）
-app.get('/api/debug/email-logs', async (c) => {
-  try {
-    const db = c.env.DB
-    const limit = parseInt(c.req.query('limit') || '10')
-    const reservationId = c.req.query('reservation_id')
-    
-    let query = 'SELECT * FROM email_logs'
-    const params: any[] = []
-    
-    if (reservationId) {
-      query += ' WHERE reservation_id = ?'
-      params.push(reservationId)
-    }
-    
-    query += ' ORDER BY sent_at DESC LIMIT ?'
-    params.push(limit)
-    
-    const result = await db.prepare(query).bind(...params).all()
-    
-    return c.json({
-      success: true,
-      data: result.results,
-      count: result.results.length,
-      timestamp: new Date().toISOString()
-    })
-  } catch (error) {
-    return c.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, 500)
-  }
-})
+// デバッグエンドポイントは本番環境では削除されました（セキュリティ対策）
 
 export default app
