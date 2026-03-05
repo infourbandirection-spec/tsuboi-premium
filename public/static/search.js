@@ -263,6 +263,13 @@ class SearchApp {
             </p>
             <p class="text-lg font-bold">${this.escapeHtml(reservation.store_location)}</p>
           </div>
+          
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">
+              <i class="fas fa-calendar mr-2"></i>応募日時
+            </p>
+            <p class="text-lg font-bold">${reservation.created_at ? new Date(reservation.created_at).toLocaleString('ja-JP') : '不明'}</p>
+          </div>
 
           <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
             <p class="text-sm text-gray-600 mb-1">
