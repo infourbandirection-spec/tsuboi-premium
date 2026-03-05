@@ -167,7 +167,7 @@ class ReservationApp {
                   <i class="fas fa-search mr-1 sm:mr-2"></i><span>応募照会</span>
                 </button>
                 ${this.systemStatus?.lotteryExecuted && this.systemStatus?.winnersCount > 0 ? `
-                <button onclick="location.href='/winners'" 
+                <button onclick="location.href='/lottery-results'" 
                         class="flex-shrink-0 px-3 sm:px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition text-xs sm:text-sm whitespace-nowrap rounded">
                   <i class="fas fa-trophy mr-1 sm:mr-2"></i><span>当選者照会</span>
                 </button>
