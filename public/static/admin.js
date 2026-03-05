@@ -1659,6 +1659,20 @@ class AdminApp {
             <p class="text-xs text-gray-500 mt-2">
               ${currentPhase === 1 ? '固定日応募期間' : '自由日選択期間'}
             </p>
+            <div class="mt-4 space-y-2">
+              <button onclick="adminApp.switchPhase(1)" 
+                      class="w-full px-4 py-2 ${currentPhase === 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded font-semibold transition"
+                      ${currentPhase === 1 ? 'disabled' : ''}>
+                <i class="fas fa-calendar-check mr-2"></i>
+                Phase 1（固定日）
+              </button>
+              <button onclick="adminApp.switchPhase(2)" 
+                      class="w-full px-4 py-2 ${currentPhase === 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded font-semibold transition"
+                      ${currentPhase === 2 ? 'disabled' : ''}>
+                <i class="fas fa-calendar-alt mr-2"></i>
+                Phase 2（自由日）
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1810,6 +1824,47 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Toggle reservation error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  // フェーズ切替
+  async switchPhase(newPhase) {
+    const currentPhase = parseInt(this.settings?.current_phase || '1')
+    
+    if (currentPhase === newPhase) {
+      return  // 既に選択されているフェーズ
+    }
+
+    if (!confirm(`Phase ${newPhase}に切り替えますか？\n\n${newPhase === 1 ? '固定日応募期間' : '自由日選択期間'}に変更されます。`)) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: 'current_phase',
+          value: newPhase.toString()
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`Phase ${newPhase}に切り替えました`)
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Switch phase error:', error)
       alert('システムエラーが発生しました')
     }
   }
