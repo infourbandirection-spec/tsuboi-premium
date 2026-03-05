@@ -1841,7 +1841,7 @@ app.get('/success', (c) => {
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
-                        <span>購入時に<strong>身分証明書</strong>をご提示ください</span>
+                        <span>購入時に<strong>本人確認書類</strong>をご提示ください</span>
                     </li>
                 </ul>
             </div>
