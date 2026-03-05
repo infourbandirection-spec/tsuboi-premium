@@ -31,6 +31,8 @@ const app = new Hono<{ Bindings: Bindings }>()
 // ============================================
 
 // レート制限回避のための待機関数
+// Resend デフォルトレート制限: 2 requests/秒
+// 安全マージン考慮: 500ms待機 = 毎秒2通（制限ギリギリ）
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // ============================================
@@ -2383,9 +2385,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
             console.error(`✗ FAILED (${i + 1}/${allReservations.length}): ${res.email} - Error: ${emailResult.error}`)
           }
           
-          // Resend Pro プラン最適化: 100ms待機（毎秒最大10通、余裕を持たせて制限の5倍速）
+          // Resend レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
           if (i < allReservations.length - 1) {
-            await delay(100)
+            await delay(500)
           }
         }
       }
@@ -2508,9 +2510,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
           console.error(`✗ Winner email FAILED (${i + 1}/${winners.length}): ${winner.email} - Error: ${emailResult.error}`)
         }
         
-        // レート制限回避: 1通ごとに100ms待機（毎秒最大10通）
+        // レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
         if (i < winners.length - 1) {
-          await delay(100)
+          await delay(500)
         }
       }
     }
@@ -2544,9 +2546,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
           console.error(`✗ Loser email FAILED (${i + 1}/${losers.length}): ${loser.email} - Error: ${emailResult.error}`)
         }
         
-        // レート制限回避: 1通ごとに100ms待機（毎秒最大10通）
+        // レート制限回避: 500ms待機（毎秒2通、デフォルト制限対応）
         if (i < losers.length - 1) {
-          await delay(100)
+          await delay(500)
         }
       }
     }
