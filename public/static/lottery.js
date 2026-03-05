@@ -100,10 +100,10 @@ class LotteryResultsApp {
           <div class="bg-white rounded-lg shadow-2xl p-8 mb-8">
             <div class="text-center mb-6">
               <h1 class="text-4xl font-bold text-gray-800 mb-3">
-                当選者発表
+                当選者照会
               </h1>
               <p class="text-xl text-gray-600 mb-2">
-                プレミアム商品券応募抽選
+                坪井繁栄会プレミアム商品券
               </p>
               <p class="text-gray-500">
                 おめでとうございます！以下の応募IDの方が当選されました
