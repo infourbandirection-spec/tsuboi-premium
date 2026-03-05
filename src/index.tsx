@@ -2278,6 +2278,9 @@ app.post('/api/admin/lottery/execute', async (c) => {
   if (authResponse) return authResponse
 
   try {
+    const startTime = Date.now()
+    console.log('=== LOTTERY EXECUTION STARTED ===')
+    
     const db = c.env.DB
 
     // Phase 1の応募を取得（status='reserved', lottery_status='pending'）
@@ -2344,14 +2347,17 @@ app.post('/api/admin/lottery/execute', async (c) => {
       `).run()
 
       // 当選メールを送信（メールアドレスが登録されている場合のみ）
-      // レート制限回避のため遅延を追加
+      // Resend Pro プラン最適化: 100ms遅延（毎秒最大10通）
       console.log('Sending winner notification emails (all won scenario)...')
+      console.log(`Total emails to send: ${allReservations.length}`)
       let emailsSent = 0
       const allReservations = reservations.results as any[]
       
       for (let i = 0; i < allReservations.length; i++) {
         const res = allReservations[i]
         if (res.email) {
+          console.log(`[${i + 1}/${allReservations.length}] Sending to: ${res.email}`)
+          
           const emailHTML = getLotteryWinnerEmailHTML({
             fullName: res.full_name,
             reservationId: res.reservation_id,
@@ -2372,18 +2378,21 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
           if (emailResult.success) {
             emailsSent++
-            console.log(`Winner email sent (${i + 1}/${allReservations.length}): ${res.email}`)
+            console.log(`✓ Success (${emailsSent}/${allReservations.length}): ${res.email} - Message ID: ${emailResult.messageId}`)
           } else {
-            console.warn(`Failed to send winner email to ${res.email}:`, emailResult.error)
+            console.error(`✗ FAILED (${i + 1}/${allReservations.length}): ${res.email} - Error: ${emailResult.error}`)
           }
           
-          // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+          // Resend Pro プラン最適化: 100ms待機（毎秒最大10通、余裕を持たせて制限の5倍速）
           if (i < allReservations.length - 1) {
-            await delay(600)
+            await delay(100)
           }
         }
       }
-      console.log(`Winner notification emails sent: ${emailsSent}/${totalApplications}`)
+      
+      const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2)
+      console.log(`Winner notification emails completed: ${emailsSent}/${totalApplications} in ${elapsedTime}s`)
+      console.log('=== LOTTERY EXECUTION COMPLETED (ALL WON) ===')
 
       return c.json({
         success: true,
@@ -2462,14 +2471,18 @@ app.post('/api/admin/lottery/execute', async (c) => {
     `).run()
 
     // 抽選結果メールを送信（当選者・落選者両方）
-    console.log('Sending lottery result notification emails...')
+    console.log('=== SENDING LOTTERY RESULT EMAILS ===')
+    console.log(`Winners: ${winners.length}, Losers: ${losers.length}`)
     let winnerEmailsSent = 0
     let loserEmailsSent = 0
 
     // 当選者にメール送信（レート制限回避のため遅延を追加）
+    console.log('--- Sending winner emails ---')
     for (let i = 0; i < winners.length; i++) {
       const winner = winners[i]
       if (winner.email) {
+        console.log(`[${i + 1}/${winners.length}] Sending to: ${winner.email}`)
+        
         const emailHTML = getLotteryWinnerEmailHTML({
           fullName: winner.full_name,
           reservationId: winner.reservation_id,
@@ -2490,22 +2503,25 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         if (emailResult.success) {
           winnerEmailsSent++
-          console.log(`Winner email sent (${i + 1}/${winners.length}): ${winner.email}`)
+          console.log(`✓ Winner email success (${winnerEmailsSent}/${winners.length}): ${winner.email} - ID: ${emailResult.messageId}`)
         } else {
-          console.warn(`Failed to send winner email to ${winner.email}:`, emailResult.error)
+          console.error(`✗ Winner email FAILED (${i + 1}/${winners.length}): ${winner.email} - Error: ${emailResult.error}`)
         }
         
-        // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+        // レート制限回避: 1通ごとに100ms待機（毎秒最大10通）
         if (i < winners.length - 1) {
-          await delay(600)
+          await delay(100)
         }
       }
     }
 
     // 落選者にメール送信（レート制限回避のため遅延を追加）
+    console.log('--- Sending loser emails ---')
     for (let i = 0; i < losers.length; i++) {
       const loser = losers[i]
       if (loser.email) {
+        console.log(`[${i + 1}/${losers.length}] Sending to: ${loser.email}`)
+        
         const emailHTML = getLotteryLoserEmailHTML({
           fullName: loser.full_name,
           reservationId: loser.reservation_id,
@@ -2523,20 +2539,24 @@ app.post('/api/admin/lottery/execute', async (c) => {
 
         if (emailResult.success) {
           loserEmailsSent++
-          console.log(`Loser email sent (${i + 1}/${losers.length}): ${loser.email}`)
+          console.log(`✓ Loser email success (${loserEmailsSent}/${losers.length}): ${loser.email} - ID: ${emailResult.messageId}`)
         } else {
-          console.warn(`Failed to send loser email to ${loser.email}:`, emailResult.error)
+          console.error(`✗ Loser email FAILED (${i + 1}/${losers.length}): ${loser.email} - Error: ${emailResult.error}`)
         }
         
-        // レート制限回避: 1通ごとに600ms待機（毎秒最大1.6通）
+        // レート制限回避: 1通ごとに100ms待機（毎秒最大10通）
         if (i < losers.length - 1) {
-          await delay(600)
+          await delay(100)
         }
       }
     }
 
-    console.log(`Winner emails sent: ${winnerEmailsSent}/${winners.length}`)
-    console.log(`Loser emails sent: ${loserEmailsSent}/${losers.length}`)
+    const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2)
+    console.log(`=== EMAIL SENDING COMPLETED ===`)
+    console.log(`Winner emails: ${winnerEmailsSent}/${winners.length}`)
+    console.log(`Loser emails: ${loserEmailsSent}/${losers.length}`)
+    console.log(`Total time: ${elapsedTime}s`)
+    console.log('=== LOTTERY EXECUTION COMPLETED ===')
 
     return c.json({
       success: true,
