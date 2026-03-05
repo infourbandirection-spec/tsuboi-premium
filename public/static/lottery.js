@@ -30,36 +30,6 @@ class LotteryResultsApp {
     }
   }
 
-  async checkReservationId(reservationId) {
-    try {
-      const response = await fetch('/api/lottery/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId })
-      })
-
-      const data = await response.json()
-
-      if (!data.success) {
-        return { found: false, error: data.error }
-      }
-
-      if (!data.executed) {
-        return { found: false, error: '抽選はまだ実行されていません' }
-      }
-
-      return {
-        found: data.found,
-        isWinner: data.isWinner,
-        reservationId: data.reservationId,
-        quantity: data.quantity
-      }
-    } catch (error) {
-      console.error('Check error:', error)
-      return { found: false, error: 'システムエラーが発生しました' }
-    }
-  }
-
   escapeHtml(text) {
     const map = {
       '<': '&lt;',
@@ -126,30 +96,6 @@ class LotteryResultsApp {
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- 応募ID検索 -->
-          <div class="bg-white rounded-lg shadow-xl p-6 mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">
-              <i class="fas fa-search text-gray-600 mr-2"></i>
-              応募ID検索
-            </h2>
-            <div class="flex gap-4">
-              <input 
-                type="text" 
-                id="checkReservationId" 
-                class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="例: PRE-20260227-XXXXX"
-                maxlength="30"
-              >
-              <button 
-                onclick="lotteryApp.performCheck()" 
-                class="px-8 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-bold shadow-lg transition">
-                <i class="fas fa-search mr-2"></i>
-                検索
-              </button>
-            </div>
-            <div id="checkResult" class="mt-4"></div>
           </div>
 
           <!-- 一覧フィルター -->
@@ -281,82 +227,6 @@ class LotteryResultsApp {
         </div>
       </div>
     `
-  }
-
-  async performCheck() {
-    const input = document.getElementById('checkReservationId')
-    const resultDiv = document.getElementById('checkResult')
-    const reservationId = input.value.trim()
-
-    if (!reservationId) {
-      resultDiv.innerHTML = `
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p class="text-red-700">応募IDを入力してください</p>
-        </div>
-      `
-      return
-    }
-
-    resultDiv.innerHTML = `
-      <div class="text-center py-4">
-        <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-        <p class="text-gray-600 mt-2">検索中...</p>
-      </div>
-    `
-
-    const result = await this.checkReservationId(reservationId)
-
-    if (!result.found) {
-      resultDiv.innerHTML = `
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <p class="text-red-700">
-            <i class="fas fa-times-circle mr-2"></i>
-            ${this.escapeHtml(result.error || '応募IDが見つかりませんでした')}
-          </p>
-        </div>
-      `
-      return
-    }
-
-    if (result.isWinner) {
-      resultDiv.innerHTML = `
-        <div class="bg-gray-50 border-l-4 border-gray-700 p-6 rounded">
-          <div class="flex items-center mb-3">
-            <i class="fas fa-check-circle text-4xl text-gray-700 mr-4"></i>
-            <div>
-              <p class="text-2xl font-bold text-gray-800">おめでとうございます！当選されました！</p>
-              <p class="text-sm text-gray-600 mt-1">応募ID: ${this.escapeHtml(result.reservationId)}</p>
-            </div>
-          </div>
-          <div class="bg-white rounded p-4 mt-4">
-            <p class="text-gray-700">
-              <i class="fas fa-ticket-alt mr-2 text-gray-600"></i>
-              <strong>当選冊数:</strong> ${result.quantity} 冊
-            </p>
-            <p class="text-sm text-gray-600 mt-3">
-              <i class="fas fa-info-circle mr-2"></i>
-              応募時に指定した購入日時に商品券を受け取れます。本人確認書類をご持参ください。
-            </p>
-          </div>
-        </div>
-      `
-    } else {
-      resultDiv.innerHTML = `
-        <div class="bg-gray-50 border-l-4 border-gray-500 p-6 rounded">
-          <div class="flex items-center mb-3">
-            <i class="fas fa-times-circle text-4xl text-gray-500 mr-4"></i>
-            <div>
-              <p class="text-xl font-bold text-gray-700">残念ながら今回は当選されませんでした</p>
-              <p class="text-sm text-gray-600 mt-1">応募ID: ${this.escapeHtml(result.reservationId)}</p>
-            </div>
-          </div>
-          <p class="text-sm text-gray-600 mt-3">
-            <i class="fas fa-info-circle mr-2"></i>
-            次回の募集をお待ちください。ご応募ありがとうございました。
-          </p>
-        </div>
-      `
-    }
   }
 }
 
