@@ -974,13 +974,21 @@ app.get('/api/status', async (c) => {
   }
 })
 
-// 店舗一覧取得
+// 店舗一覧取得（現在のフェーズに応じた店舗を返す）
 app.get('/api/stores', async (c) => {
   try {
     const db = c.env.DB
+    
+    // 現在のフェーズを取得
+    const phaseCheck = await db.prepare(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'current_phase'"
+    ).first<{ setting_value: string }>()
+    const currentPhase = parseInt(phaseCheck?.setting_value || '1')
+    
+    // 現在のフェーズの店舗のみを返す
     const stores = await db.prepare(`
-      SELECT * FROM stores WHERE is_active = 1 ORDER BY id
-    `).all()
+      SELECT * FROM stores WHERE is_active = 1 AND phase = ? ORDER BY id
+    `).bind(currentPhase).all()
 
     return c.json({
       success: true,

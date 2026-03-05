@@ -62,6 +62,12 @@ class ReservationApp {
       const data = await response.json()
       if (data.success) {
         this.stores = data.data
+        
+        // 現在のフェーズに応じて店舗をデフォルト設定
+        if (this.stores.length > 0) {
+          const store = this.stores[0]
+          this.formData.store = `${store.store_name}（${store.address}）`
+        }
       }
     } catch (error) {
       console.error('Stores load error:', error)
