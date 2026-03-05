@@ -3673,6 +3673,82 @@ app.delete('/api/admin/pickup-time-slots/:id', async (c) => {
   }
 })
 
+// デバッグ用: フェーズ2購入時間初期化エンドポイント（管理者用）
+app.post('/api/debug/init-phase2-timeslots', async (c) => {
+  try {
+    const db = c.env.DB
+    
+    console.log('=== Phase 2 Time Slots Migration Started ===')
+    
+    // Step 1: 新しいテーブルを作成
+    await db.prepare(`
+      CREATE TABLE pickup_time_slots_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        time_slot TEXT NOT NULL,
+        display_label TEXT NOT NULL,
+        phase INTEGER NOT NULL DEFAULT 1,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        display_order INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(time_slot, phase)
+      )
+    `).run()
+    console.log('✓ Step 1: New table created')
+    
+    // Step 2: 既存データをコピー
+    await db.prepare(`
+      INSERT INTO pickup_time_slots_new (id, time_slot, display_label, phase, is_active, display_order, created_at, updated_at)
+      SELECT id, time_slot, display_label, phase, is_active, display_order, created_at, updated_at
+      FROM pickup_time_slots
+    `).run()
+    console.log('✓ Step 2: Data copied')
+    
+    // Step 3: 旧テーブル削除
+    await db.prepare('DROP TABLE pickup_time_slots').run()
+    console.log('✓ Step 3: Old table dropped')
+    
+    // Step 4: リネーム
+    await db.prepare('ALTER TABLE pickup_time_slots_new RENAME TO pickup_time_slots').run()
+    console.log('✓ Step 4: Table renamed')
+    
+    // Step 5: インデックス再作成
+    await db.prepare('CREATE INDEX idx_pickup_time_slots_phase ON pickup_time_slots(phase)').run()
+    await db.prepare('CREATE INDEX idx_pickup_time_slots_active ON pickup_time_slots(is_active)').run()
+    await db.prepare('CREATE INDEX idx_pickup_time_slots_order ON pickup_time_slots(display_order)').run()
+    console.log('✓ Step 5: Indexes created')
+    
+    // Step 6: フェーズ1をフェーズ2にコピー
+    const result = await db.prepare(`
+      INSERT INTO pickup_time_slots (time_slot, display_label, phase, is_active, display_order)
+      SELECT time_slot, display_label, 2, is_active, display_order
+      FROM pickup_time_slots
+      WHERE phase = 1
+      ORDER BY display_order
+    `).run()
+    console.log(`✓ Step 6: Phase 1 copied to Phase 2 (${result.meta.changes} rows)`)
+    
+    // 確認
+    const phase2Count = await db.prepare('SELECT COUNT(*) as count FROM pickup_time_slots WHERE phase = 2').first() as any
+    
+    console.log('=== Phase 2 Time Slots Migration Completed ===')
+    
+    return c.json({
+      success: true,
+      message: `フェーズ2の購入時間を初期化しました（${phase2Count?.count || 0}件）`,
+      phase1Count: 10,
+      phase2Count: phase2Count?.count || 0
+    })
+  } catch (error: any) {
+    console.error('Migration error:', error)
+    logSecureError('InitPhase2TimeSlotsDebug', error)
+    return c.json({
+      success: false,
+      error: 'マイグレーション失敗: ' + (error.message || 'Unknown error')
+    }, 500)
+  }
+})
+
 // デバッグ用: 環境変数確認エンドポイント
 app.get('/api/debug/env-check', async (c) => {
   const { env } = c
