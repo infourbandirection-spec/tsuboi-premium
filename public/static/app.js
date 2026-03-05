@@ -182,6 +182,34 @@ class ReservationApp {
           <div class="bg-white shadow-lg p-8">
             <form id="reservationForm" onsubmit="event.preventDefault(); app.submitToConfirmation()">
               
+              <!-- 同意事項チェックボックス -->
+              <div class="mb-8 space-y-4 bg-slate-50 border border-slate-300 rounded-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <i class="fas fa-check-square text-gray-600 mr-2"></i>
+                  確認事項
+                </h3>
+                
+                <label class="flex items-start cursor-pointer group">
+                  <input type="checkbox" 
+                         id="residentCheck"
+                         class="mt-1 w-5 h-5 text-gray-700 border-gray-300 rounded focus:ring-gray-500 focus:ring-2 cursor-pointer"
+                         required>
+                  <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
+                    熊本市内に在住しています。
+                  </span>
+                </label>
+                
+                <label class="flex items-start cursor-pointer group">
+                  <input type="checkbox" 
+                         id="identityCheck"
+                         class="mt-1 w-5 h-5 text-gray-700 border-gray-300 rounded focus:ring-gray-500 focus:ring-2 cursor-pointer"
+                         required>
+                  <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
+                    商品券引換時に本人確認書類（運転免許証等）を提示することに同意します。
+                  </span>
+                </label>
+              </div>
+              
               <!-- 生年月日 -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
