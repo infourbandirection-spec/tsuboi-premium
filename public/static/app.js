@@ -102,7 +102,7 @@ class ReservationApp {
     const app = document.getElementById('app')
     
     if (!this.systemStatus) {
-      app.innerHTML = '<div class="p-8 text-center"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i><p class="mt-4">読み込み中...</p></div>'
+      app.innerHTML = '<div class="p-8 text-center"><i class="fas fa-spinner fa-spin text-4xl text-gray-600"></i><p class="mt-4">読み込み中...</p></div>'
       return
     }
 
@@ -124,14 +124,14 @@ class ReservationApp {
     return `
       <div class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white shadow-lg p-8 max-w-md w-full text-center">
-          <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+          <i class="fas fa-exclamation-triangle text-6xl text-rose-500 mb-4"></i>
           <h1 class="text-2xl font-bold text-gray-800 mb-6">応募受付終了</h1>
           <p class="text-gray-600 mb-8">
             申し訳ございません。<br>
             応募期間外となり、現在受付を終了しております。
           </p>
           <a href="/lottery-results" 
-             class="inline-block w-full bg-blue-600 text-white px-6 py-3 font-bold hover:bg-blue-700 transition">
+             class="inline-block w-full bg-gray-700 text-white px-6 py-3 font-bold hover:bg-gray-800 transition">
             <i class="fas fa-trophy mr-2"></i>
             当選者発表を見る
           </a>
@@ -145,14 +145,14 @@ class ReservationApp {
     const maxQuantity = Math.min(3, remaining)
     
     return `
-      <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
         <div class="max-w-4xl mx-auto">
           <!-- ヘッダー -->
           <div class="bg-white shadow-lg p-4 sm:p-6 mb-6">
             <div class="flex justify-between items-center gap-2">
               <div class="flex-1 min-w-0">
                 <h1 class="text-base sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 flex items-start">
-                  <i class="fas fa-ticket-alt text-blue-500 mr-1 sm:mr-2 mt-1 text-sm sm:text-base"></i>
+                  <i class="fas fa-ticket-alt text-gray-600 mr-1 sm:mr-2 mt-1 text-sm sm:text-base"></i>
                   <span class="leading-tight">
                     坪井繁栄会プレミアム商品券<br class="sm:hidden">
                     <span class="hidden sm:inline"> </span>
@@ -162,14 +162,14 @@ class ReservationApp {
                 <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">ご希望の商品券をご応募いただけます</p>
               </div>
               <button onclick="location.href='/lookup'" 
-                      class="flex-shrink-0 px-3 sm:px-4 py-2 bg-purple-500 text-white hover:bg-purple-600 transition text-xs sm:text-sm whitespace-nowrap rounded">
+                      class="flex-shrink-0 px-3 sm:px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition text-xs sm:text-sm whitespace-nowrap rounded">
                 <i class="fas fa-search mr-1 sm:mr-2"></i><span>応募照会</span>
               </button>
             </div>
           </div>
 
           <!-- 応募受付中ステータス -->
-          <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg p-6 mb-6">
+          <div class="bg-gray-700 text-white shadow-lg p-6 mb-6">
             <div class="text-center">
               <p class="text-lg mb-2">応募受付中</p>
               <p class="text-2xl font-bold">
@@ -185,14 +185,14 @@ class ReservationApp {
               <!-- 生年月日 -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
-                  生年月日 <span class="text-red-500">*</span>
+                  <i class="fas fa-calendar-alt text-gray-600 mr-2"></i>
+                  生年月日 <span class="text-rose-600">*</span>
                 </label>
                 <input type="date" 
                        id="birthDate"
                        value="${this.formData.birthDate}"
                        max="${new Date().toISOString().split('T')[0]}"
-                       class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 hide-calendar-icon"
+                       class="w-full p-3 border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 hide-calendar-icon"
                        required>
                 <p class="text-xs text-gray-500 mt-2">
                   <i class="fas fa-info-circle mr-1"></i>
@@ -203,40 +203,40 @@ class ReservationApp {
               <!-- 氏名・ふりがな -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <i class="fas fa-user text-blue-500 mr-2"></i>
-                  氏名（フルネーム） <span class="text-red-500">*</span>
+                  <i class="fas fa-user text-gray-600 mr-2"></i>
+                  氏名（フルネーム） <span class="text-rose-600">*</span>
                 </label>
                     <input type="text" 
                            id="fullName"
                            value="${this.escapeHtml(this.formData.fullName)}"
                            placeholder="例: 山田 太郎"
-                           class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                           class="w-full p-3 border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                            required>
               </div>
 
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  ふりがな <span class="text-red-500">*</span>
+                  ふりがな <span class="text-rose-600">*</span>
                 </label>
                     <input type="text" 
                            id="kana"
                            value="${this.escapeHtml(this.formData.kana)}"
                            placeholder="例: やまだ たろう"
-                           class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                           class="w-full p-3 border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                            required>
               </div>
 
               <!-- 連絡先 -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <i class="fas fa-phone text-blue-500 mr-2"></i>
-                  電話番号 <span class="text-red-500">*</span>
+                  <i class="fas fa-phone text-gray-600 mr-2"></i>
+                  電話番号 <span class="text-rose-600">*</span>
                 </label>
                     <input type="tel" 
                            id="phoneNumber"
                            value="${this.escapeHtml(this.formData.phoneNumber)}"
                            placeholder="例: 090-1234-5678 または 09012345678"
-                           class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                           class="w-full p-3 border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                            required>
                 <p class="text-xs text-gray-500 mt-2">
                   <i class="fas fa-info-circle mr-1"></i>
@@ -246,14 +246,14 @@ class ReservationApp {
 
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <i class="fas fa-envelope text-blue-500 mr-2"></i>
-                  メールアドレス <span class="text-red-500">*</span>
+                  <i class="fas fa-envelope text-gray-600 mr-2"></i>
+                  メールアドレス <span class="text-rose-600">*</span>
                 </label>
                     <input type="email" 
                            id="email"
                            value="${this.escapeHtml(this.formData.email)}"
                            placeholder="例: example@example.com"
-                           class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                           class="w-full p-3 border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                            required>
                 <p class="text-xs text-gray-500 mt-2">
                   <i class="fas fa-info-circle mr-1"></i>
@@ -264,8 +264,8 @@ class ReservationApp {
               <!-- 冊数 -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <i class="fas fa-list-ol text-blue-500 mr-2"></i>
-                  冊数 <span class="text-red-500">*</span>
+                  <i class="fas fa-list-ol text-gray-600 mr-2"></i>
+                  冊数 <span class="text-rose-600">*</span>
                 </label>
                 <select id="quantity"
                         class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -275,8 +275,8 @@ class ReservationApp {
                   ).join('')}
                 </select>
                 ${remaining < 3 ? `
-                  <div class="mt-3 bg-yellow-50 border-l-4 border-yellow-400 p-3">
-                    <p class="text-sm text-yellow-700">
+                  <div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3">
+                    <p class="text-sm text-amber-700">
                       <i class="fas fa-exclamation-triangle mr-2"></i>
                       残り${remaining}冊です
                     </p>
@@ -287,7 +287,7 @@ class ReservationApp {
               <!-- 購入日時 -->
               <div class="mb-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                  <i class="fas fa-clock text-blue-500 mr-2"></i>
+                  <i class="fas fa-clock text-gray-600 mr-2"></i>
                   購入日時
                 </h3>
                 ${this.renderPickupDateTimeSection()}
@@ -296,7 +296,7 @@ class ReservationApp {
               <!-- 確認画面へボタン -->
               <div class="mt-8 text-center">
                 <button type="submit"
-                        class="px-12 py-4 bg-blue-500 text-white text-lg font-bold hover:bg-blue-600 transition shadow-lg">
+                        class="px-12 py-4 bg-gray-700 text-white text-lg font-bold hover:bg-gray-800 transition shadow-lg">
                   次へ <i class="fas fa-arrow-right ml-2"></i>
                 </button>
               </div>
@@ -304,9 +304,9 @@ class ReservationApp {
           </div>
 
           <!-- 注意事項 -->
-          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6">
+          <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mt-6">
             <div class="flex">
-              <i class="fas fa-exclamation-circle text-yellow-400 mt-1 mr-3"></i>
+              <i class="fas fa-exclamation-circle text-amber-500 mt-1 mr-3"></i>
               <div class="text-sm text-gray-700">
                 <p class="font-bold mb-2">重要な注意事項</p>
                 <ul class="list-disc list-inside space-y-1">
@@ -361,7 +361,7 @@ class ReservationApp {
           </div>
 
           <div class="mt-4 text-center">
-            <a href="/privacy" class="text-sm text-gray-600 hover:text-blue-600 underline">
+            <a href="/privacy" class="text-sm text-gray-600 hover:text-gray-900 underline">
               <i class="fas fa-shield-alt mr-1"></i>プライバシーポリシー
             </a>
           </div>
@@ -387,7 +387,7 @@ class ReservationApp {
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            購入日 <span class="text-red-500">*</span>
+            購入日 <span class="text-rose-600">*</span>
           </label>
           <select id="pickupDate"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -403,7 +403,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            購入時間 <span class="text-red-500">*</span>
+            購入時間 <span class="text-rose-600">*</span>
           </label>
           <select id="pickupTime"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -438,7 +438,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            購入日 <span class="text-red-500">*</span>
+            購入日 <span class="text-rose-600">*</span>
           </label>
           <select id="pickupDate"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -454,7 +454,7 @@ class ReservationApp {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            購入時間 <span class="text-red-500">*</span>
+            購入時間 <span class="text-rose-600">*</span>
           </label>
           <select id="pickupTime"
                   class="w-full p-3 border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -499,11 +499,11 @@ class ReservationApp {
 
   renderConfirmation() {
     return `
-      <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
         <div class="max-w-4xl mx-auto">
           <div class="bg-white shadow-lg p-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+              <i class="fas fa-check-circle text-emerald-600 mr-2"></i>
               入力内容の確認
             </h2>
 
@@ -552,7 +552,7 @@ class ReservationApp {
                 <i class="fas fa-arrow-left mr-2"></i>戻る
               </button>
               <button onclick="app.submitReservation()"
-                      class="flex-1 px-6 py-3 bg-blue-500 text-white font-bold hover:bg-blue-600 transition">
+                      class="flex-1 px-6 py-3 bg-gray-700 text-white font-bold hover:bg-gray-800 transition">
                 応募を確定する <i class="fas fa-check ml-2"></i>
               </button>
             </div>

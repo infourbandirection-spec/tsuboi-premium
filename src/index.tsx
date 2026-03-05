@@ -1759,12 +1759,12 @@ app.get('/success', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
-    <body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
+    <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
         <div class="max-w-2xl w-full bg-white shadow-2xl rounded-lg p-8">
             <!-- 成功アイコン -->
             <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                    <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 rounded-full mb-4">
+                    <i class="fas fa-check-circle text-5xl text-emerald-600"></i>
                 </div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">
                     応募が完了しました
@@ -1775,12 +1775,12 @@ app.get('/success', (c) => {
             </div>
 
             <!-- 応募ID -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+            <div class="bg-slate-50 border-l-4 border-slate-500 p-4 mb-6">
                 <p class="text-sm text-gray-600 mb-1">応募ID</p>
                 <div class="flex items-center gap-3">
-                    <p id="reservationId" class="text-2xl font-bold text-blue-600 font-mono flex-1">${reservationId || 'N/A'}</p>
+                    <p id="reservationId" class="text-2xl font-bold text-gray-700 font-mono flex-1">${reservationId || 'N/A'}</p>
                     <button onclick="copyReservationId(this)" 
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 font-bold">
+                            class="bg-slate-500 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 font-bold">
                         <i class="fas fa-copy"></i>
                         <span class="hidden sm:inline">コピー</span>
                     </button>
@@ -1800,14 +1800,14 @@ app.get('/success', (c) => {
                     // 成功フィードバック
                     const originalHTML = button.innerHTML;
                     button.innerHTML = '<i class="fas fa-check"></i><span class="hidden sm:inline ml-2">コピー完了</span>';
-                    button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
-                    button.classList.add('bg-green-500');
+                    button.classList.remove('bg-slate-500', 'hover:bg-gray-800');
+                    button.classList.add('bg-emerald-600');
                     
                     // 2秒後に元に戻す
                     setTimeout(() => {
                         button.innerHTML = originalHTML;
-                        button.classList.remove('bg-green-500');
-                        button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        button.classList.remove('bg-emerald-600');
+                        button.classList.add('bg-slate-500', 'hover:bg-gray-800');
                     }, 2000);
                 }).catch(err => {
                     alert('コピーに失敗しました。手動でコピーしてください。');
@@ -1817,30 +1817,30 @@ app.get('/success', (c) => {
             </script>
 
             <!-- 重要な注意事項 -->
-            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
                 <h2 class="font-bold text-gray-800 mb-3 flex items-center">
-                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    <i class="fas fa-exclamation-triangle text-amber-600 mr-2"></i>
                     重要な注意事項
                 </h2>
                 <ul class="space-y-2 text-sm text-gray-700">
                     <li class="flex items-start">
-                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
                         <span>購入日を過ぎると<strong>自動的にキャンセル</strong>されます</span>
                     </li>
                     <li class="flex items-start">
-                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
                         <span>応募IDを<strong>必ず保管</strong>してください</span>
                     </li>
                     <li class="flex items-start">
-                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
                         <span>お一人様<strong>1回のみ</strong>の応募となります</span>
                     </li>
                     <li class="flex items-start">
-                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
                         <span>購入時は<strong>ご本人様</strong>がご来店ください（代理不可）</span>
                     </li>
                     <li class="flex items-start">
-                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        <i class="fas fa-check text-emerald-600 mr-2 mt-1"></i>
                         <span>購入時に<strong>身分証明書</strong>をご提示ください</span>
                     </li>
                 </ul>
@@ -1849,7 +1849,7 @@ app.get('/success', (c) => {
             <!-- メール送信通知 -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
                 <p class="text-sm text-gray-700">
-                    <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                    <i class="fas fa-envelope text-gray-600 mr-2"></i>
                     確認メールをお送りしました。メールが届かない場合は、迷惑メールフォルダをご確認ください。
                 </p>
             </div>
@@ -1857,7 +1857,7 @@ app.get('/success', (c) => {
             <!-- ボタン -->
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="/lookup" 
-                   class="flex-1 text-center bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition font-bold">
+                   class="flex-1 text-center bg-slate-600 text-white px-6 py-3 rounded-lg hover:bg-slate-700 transition font-bold">
                     <i class="fas fa-search mr-2"></i>
                     応募照会
                 </a>
@@ -1922,7 +1922,7 @@ app.get('/lookup', (c) => {
                 <!-- ヘッダー -->
                 <div class="text-center mb-8">
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                        <i class="fas fa-search mr-2 text-blue-600"></i>
+                        <i class="fas fa-search mr-2 text-gray-700"></i>
                         応募照会
                     </h1>
                     <p class="text-gray-600">
@@ -1957,7 +1957,7 @@ app.get('/lookup', (c) => {
                                     <i class="fas fa-id-card mr-1"></i> 応募ID
                                 </label>
                                 <input type="text" id="input-reservation-id" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500"
                                        placeholder="例: PRE-20260227-ABCD12">
                                 <p class="mt-2 text-sm text-gray-500">
                                     <i class="fas fa-info-circle mr-1"></i>
@@ -1966,7 +1966,7 @@ app.get('/lookup', (c) => {
                             </div>
 
                             <button type="submit" 
-                                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                                    class="w-full px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-bold shadow-lg transition">
                                 <i class="fas fa-search mr-2"></i> 照会する
                             </button>
                         </form>
@@ -1981,7 +1981,7 @@ app.get('/lookup', (c) => {
                                 </label>
                                 <input type="date" id="input-birth-date" required
                                        max="${new Date().toISOString().split('T')[0]}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 hide-calendar-icon">
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500 hide-calendar-icon">
                                 <p class="text-xs text-gray-500 mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>
                                     未来の日付は選択できません
@@ -1993,7 +1993,7 @@ app.get('/lookup', (c) => {
                                     <i class="fas fa-phone mr-1"></i> 電話番号
                                 </label>
                                 <input type="tel" id="input-phone-number" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500"
                                        placeholder="例: 090-1234-5678">
                                 <p class="mt-2 text-sm text-gray-500">
                                     <i class="fas fa-info-circle mr-1"></i>
@@ -2002,7 +2002,7 @@ app.get('/lookup', (c) => {
                             </div>
 
                             <button type="submit" 
-                                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                                    class="w-full px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-bold shadow-lg transition">
                                 <i class="fas fa-search mr-2"></i> 照会する
                             </button>
                         </form>
@@ -2014,7 +2014,7 @@ app.get('/lookup', (c) => {
 
                 <!-- トップページへ戻る -->
                 <div class="text-center mt-8">
-                    <a href="/" class="text-blue-600 hover:underline">
+                    <a href="/" class="text-gray-700 hover:underline">
                         <i class="fas fa-arrow-left mr-1"></i> トップページへ戻る
                     </a>
                 </div>
@@ -2105,7 +2105,7 @@ app.get('/privacy', (c) => {
     <body class="bg-gray-50 py-8 px-4">
         <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
             <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-shield-alt text-blue-500 mr-3"></i>
+                <i class="fas fa-shield-alt text-gray-600 mr-3"></i>
                 プライバシーポリシー
             </h1>
             
@@ -2185,15 +2185,15 @@ app.get('/privacy', (c) => {
                 </p>
             </section>
 
-            <section class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <section class="mb-8 bg-slate-50 border-l-4 border-slate-500 p-4 rounded">
                 <p class="text-sm text-gray-700">
-                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <i class="fas fa-info-circle text-gray-600 mr-2"></i>
                     <strong>最終更新日:</strong> ${new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
             </section>
 
             <div class="mt-8 text-center">
-                <a href="/" class="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold shadow-lg">
+                <a href="/" class="inline-block px-6 py-3 bg-slate-500 text-white rounded-lg hover:bg-gray-800 font-bold shadow-lg">
                     <i class="fas fa-home mr-2"></i>トップページに戻る
                 </a>
             </div>

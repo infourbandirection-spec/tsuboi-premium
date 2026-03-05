@@ -82,10 +82,10 @@ class AdminApp {
     }
     console.log('[Admin] admin-app element found, injecting HTML')
     app.innerHTML = `
-      <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
           <div class="text-center mb-8">
-            <i class="fas fa-shield-alt text-6xl text-blue-600 mb-4"></i>
+            <i class="fas fa-shield-alt text-6xl text-gray-700 mb-4"></i>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">管理者ログイン</h1>
             <p class="text-gray-600">
               IDとパスワードを入力してください
@@ -98,7 +98,7 @@ class AdminApp {
                 <i class="fas fa-user mr-1"></i> ユーザーID
               </label>
               <input type="text" id="adminUsername" required
-                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
                      placeholder="ユーザーIDを入力"
                      autocomplete="username">
             </div>
@@ -108,26 +108,26 @@ class AdminApp {
                 <i class="fas fa-lock mr-1"></i> パスワード
               </label>
               <input type="password" id="adminPassword" required
-                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
                      placeholder="パスワードを入力"
                      autocomplete="current-password">
             </div>
             
             <button type="submit" id="loginBtn"
-                    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                    class="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-bold shadow-lg transition">
               <i class="fas fa-sign-in-alt mr-2"></i> ログイン
             </button>
           </form>
           
           <div id="loginError" class="mt-4 hidden">
-            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+            <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-rose-700 text-sm">
               <i class="fas fa-exclamation-circle mr-1"></i>
               <span id="loginErrorMessage"></span>
             </div>
           </div>
           
           <div class="mt-6 text-center">
-            <a href="/" class="text-blue-600 hover:underline text-sm">
+            <a href="/" class="text-gray-700 hover:underline text-sm">
               <i class="fas fa-arrow-left mr-1"></i> トップページへ戻る
             </a>
           </div>
@@ -272,26 +272,26 @@ class AdminApp {
       
       // 成功メッセージ
       refreshBtn.innerHTML = '<i class="fas fa-check mr-2"></i> 更新完了'
-      refreshBtn.classList.remove('bg-green-500', 'hover:bg-green-600')
-      refreshBtn.classList.add('bg-blue-500')
+      refreshBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700')
+      refreshBtn.classList.add('bg-gray-600')
       
       setTimeout(() => {
         refreshBtn.innerHTML = originalHTML
         refreshBtn.disabled = false
-        refreshBtn.classList.remove('bg-blue-500')
-        refreshBtn.classList.add('bg-green-500', 'hover:bg-green-600')
+        refreshBtn.classList.remove('bg-gray-600')
+        refreshBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700')
       }, 2000)
     } catch (error) {
       console.error('Refresh error:', error)
       refreshBtn.innerHTML = '<i class="fas fa-times mr-2"></i> エラー'
-      refreshBtn.classList.remove('bg-green-500', 'hover:bg-green-600')
-      refreshBtn.classList.add('bg-red-500')
+      refreshBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700')
+      refreshBtn.classList.add('bg-rose-600')
       
       setTimeout(() => {
         refreshBtn.innerHTML = originalHTML
         refreshBtn.disabled = false
-        refreshBtn.classList.remove('bg-red-500')
-        refreshBtn.classList.add('bg-green-500', 'hover:bg-green-600')
+        refreshBtn.classList.remove('bg-rose-600')
+        refreshBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700')
       }, 2000)
     }
   }
@@ -333,7 +333,7 @@ class AdminApp {
   renderHeader() {
     const username = localStorage.getItem('adminUsername') || 'admin'
     return `
-      <header class="bg-blue-600 text-white shadow-lg">
+      <header class="bg-gray-800 text-white shadow-lg">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold flex items-center">
@@ -345,15 +345,15 @@ class AdminApp {
                 <i class="fas fa-user mr-1"></i>${username}
               </span>
               <button onclick="adminApp.refreshData()" 
-                      class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg font-bold transition text-sm">
+                      class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-bold transition text-sm">
                 <i class="fas fa-sync-alt mr-2"></i> 更新
               </button>
               <button onclick="adminApp.showPasswordChangeModal()" 
-                      class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition text-sm">
+                      class="px-4 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg font-bold transition text-sm">
                 <i class="fas fa-key mr-2"></i> パスワード変更
               </button>
               <button onclick="adminApp.logout()" 
-                      class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-bold transition">
+                      class="px-4 py-2 bg-rose-600 hover:bg-rose-700 rounded-lg font-bold transition">
                 <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
               </button>
             </div>
@@ -382,7 +382,7 @@ class AdminApp {
             <button onclick="adminApp.switchView('${tab.id}')"
                     class="flex-1 px-3 py-3 text-center text-sm transition
                            ${this.currentView === tab.id ? 
-                             'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 
+                             'bg-slate-50 text-slate-700 border-b-2 border-slate-600' : 
                              'text-gray-600 hover:bg-gray-50'}">
               <i class="fas ${tab.icon} mr-1 text-xs"></i>
               ${tab.label}
@@ -409,7 +409,7 @@ class AdminApp {
 
   renderDashboard() {
     if (!this.statistics) {
-      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>'
+      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-gray-600"></i></div>'
     }
 
     const stats = this.statistics.total
@@ -426,7 +426,7 @@ class AdminApp {
                 <p class="text-sm text-gray-600">総応募数</p>
                 <p class="text-3xl font-bold text-gray-800">${stats.total_reservations || 0}</p>
               </div>
-              <i class="fas fa-ticket-alt text-4xl text-blue-500"></i>
+              <i class="fas fa-ticket-alt text-4xl text-gray-600"></i>
             </div>
           </div>
 
@@ -434,9 +434,9 @@ class AdminApp {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">応募済み冊数</p>
-                <p class="text-3xl font-bold text-green-600">${stats.reserved_books || 0}</p>
+                <p class="text-3xl font-bold text-emerald-600">${stats.reserved_books || 0}</p>
               </div>
-              <i class="fas fa-shopping-cart text-4xl text-green-500"></i>
+              <i class="fas fa-shopping-cart text-4xl text-emerald-600"></i>
             </div>
           </div>
 
@@ -444,9 +444,9 @@ class AdminApp {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">購入完了冊数</p>
-                <p class="text-3xl font-bold text-purple-600">${stats.completed_books || 0}</p>
+                <p class="text-3xl font-bold text-slate-600">${stats.completed_books || 0}</p>
               </div>
-              <i class="fas fa-check-circle text-4xl text-purple-500"></i>
+              <i class="fas fa-check-circle text-4xl text-slate-600"></i>
             </div>
           </div>
 
@@ -456,7 +456,7 @@ class AdminApp {
                 <div class="flex items-center justify-between mb-2">
                   <p class="text-sm text-gray-600">残り冊数</p>
                   <button onclick="adminApp.showEditMaxTotalModal()" 
-                          class="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                          class="text-xs text-gray-600 hover:text-gray-900 hover:underline">
                     <i class="fas fa-edit mr-1"></i>上限編集
                   </button>
                 </div>
@@ -478,7 +478,7 @@ class AdminApp {
                 <span class="font-bold">${((stats.reserved_books || 0) / maxTotal * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
-                <div class="bg-green-500 rounded-full h-4" style="width: ${((stats.reserved_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
+                <div class="bg-emerald-600 rounded-full h-4" style="width: ${((stats.reserved_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
               </div>
             </div>
             <div>
@@ -487,7 +487,7 @@ class AdminApp {
                 <span class="font-bold">${((stats.completed_books || 0) / maxTotal * 100).toFixed(1)}%</span>
               </div>
               <div class="bg-gray-200 rounded-full h-4">
-                <div class="bg-purple-500 rounded-full h-4" style="width: ${((stats.completed_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
+                <div class="bg-slate-600 rounded-full h-4" style="width: ${((stats.completed_books || 0) / maxTotal * 100).toFixed(1)}%"></div>
               </div>
             </div>
           </div>
@@ -538,7 +538,7 @@ class AdminApp {
             <input type="text" id="filterSearch" 
                    placeholder="応募ID、氏名、または電話番号で検索..." 
                    oninput="adminApp.applyFilters()"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -570,7 +570,7 @@ class AdminApp {
           </div>
           <div class="mt-4 flex gap-4">
             <button onclick="adminApp.exportCSV()" 
-                    class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                    class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
               <i class="fas fa-download mr-2"></i> CSV出力
             </button>
             <button onclick="adminApp.resetFilters()" 
@@ -582,8 +582,8 @@ class AdminApp {
 
         <!-- 検索結果表示 -->
         ${this.filters.search || this.filters.status || this.filters.lottery_status || this.filters.date ? `
-          <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
-            <p class="text-sm text-blue-700">
+          <div class="px-6 py-3 bg-slate-50 border-b border-slate-100">
+            <p class="text-sm text-slate-700">
               <i class="fas fa-info-circle mr-1"></i>
               <strong>${this.getFilteredReservations().length}件</strong>の応募が見つかりました
               ${this.filters.search ? `（検索: "${this.filters.search}"）` : ''}
@@ -641,11 +641,11 @@ class AdminApp {
                   <td class="px-6 py-4 whitespace-nowrap text-center">
                     ${reservation.excluded_from_lottery ? `
                       <div class="flex flex-col items-center gap-1">
-                        <span class="inline-block px-1.5 py-0.5 bg-red-100 text-red-800 rounded text-xs font-medium">
+                        <span class="inline-block px-1.5 py-0.5 bg-rose-100 text-red-800 rounded text-xs font-medium">
                           <i class="fas fa-ban text-xs"></i> 除外済み
                         </span>
                         <button onclick="adminApp.confirmExclude('${reservation.reservation_id}', false)"
-                                class="px-1.5 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-xs">
+                                class="px-1.5 py-0.5 bg-gray-700 text-white rounded hover:bg-gray-800 transition text-xs">
                           <i class="fas fa-undo text-xs"></i> 解除
                         </button>
                       </div>
@@ -653,7 +653,7 @@ class AdminApp {
                       <span class="text-gray-400 text-xs">-</span>
                     ` : (reservation.lottery_status === 'pending' || !reservation.lottery_status) && reservation.status === 'reserved' ? `
                       <button onclick="adminApp.showExcludeModal('${reservation.reservation_id}', '${reservation.reservation_id}', '管理者による除外')"
-                              class="px-1.5 py-0.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-xs">
+                              class="px-1.5 py-0.5 bg-amber-500 text-white rounded hover:bg-amber-600 transition text-xs">
                         <i class="fas fa-ban text-xs"></i> 除外
                       </button>
                     ` : `
@@ -670,11 +670,11 @@ class AdminApp {
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
                     ${reservation.status === 'reserved' && reservation.lottery_status === 'won' ? `
                       <button onclick="adminApp.confirmPickup(${reservation.id}, '${reservation.reservation_id}')"
-                              class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-bold transition">
+                              class="w-full px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 font-bold transition">
                         <i class="fas fa-check mr-1"></i> 購入完了にする
                       </button>
                     ` : reservation.status === 'picked_up' ? `
-                      <span class="inline-block px-4 py-2 bg-green-500 text-white rounded font-bold">
+                      <span class="inline-block px-4 py-2 bg-emerald-600 text-white rounded font-bold">
                         <i class="fas fa-check-circle mr-1"></i> 購入完了
                       </span>
                       ${reservation.picked_up_by ? `<div class="text-xs text-gray-500">担当: ${reservation.picked_up_by}</div>` : ''}
@@ -724,7 +724,7 @@ class AdminApp {
           </div>
 
           <button onclick="adminApp.searchReservation()" 
-                  class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
+                  class="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-bold">
             <i class="fas fa-search mr-2"></i> 検索
           </button>
         </div>
@@ -737,9 +737,9 @@ class AdminApp {
   renderStatusBadge(status) {
     const statusConfig = {
       reserved: { label: '応募済み（未購入）', color: 'bg-gray-100 text-gray-800 border border-gray-300' },
-      picked_up: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
-      completed: { label: '✓ 購入完了', color: 'bg-green-100 text-green-800 border border-green-300' },
-      canceled: { label: 'キャンセル', color: 'bg-red-100 text-red-800' }
+      picked_up: { label: '✓ 購入完了', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300' },
+      completed: { label: '✓ 購入完了', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300' },
+      canceled: { label: 'キャンセル', color: 'bg-rose-100 text-red-800' }
     }
     const config = statusConfig[status] || { label: status, color: 'bg-gray-100 text-gray-800' }
     return `<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${config.color}">${config.label}</span>`
@@ -748,13 +748,13 @@ class AdminApp {
   renderLotteryStatusBadge(lotteryStatus, phase) {
     // Phase 2の場合は抽選なし
     if (phase === 2) {
-      return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-300">Phase 2</span>'
+      return '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800 border border-slate-300">Phase 2</span>'
     }
     
     // Phase 1の場合は抽選ステータスに応じて表示
     const lotteryConfig = {
-      won: { label: '✓ 当選', color: 'bg-green-100 text-green-800 border border-green-300' },
-      lost: { label: '× 落選', color: 'bg-red-100 text-red-800 border border-red-300' },
+      won: { label: '✓ 当選', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300' },
+      lost: { label: '× 落選', color: 'bg-rose-100 text-red-800 border border-red-300' },
       pending: { label: '抽選前', color: 'bg-yellow-100 text-yellow-800 border border-yellow-300' }
     }
     
@@ -1320,7 +1320,7 @@ class AdminApp {
         <!-- 日別応募状況 -->
         <div class="bg-white rounded-lg shadow-lg p-6">
           <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            <i class="fas fa-calendar-alt text-gray-600 mr-2"></i>
             日別応募状況
           </h3>
           <div class="overflow-x-auto">
@@ -1337,17 +1337,17 @@ class AdminApp {
                   const data = dateMap[date]
                   const dayOfWeek = new Date(date).toLocaleDateString('ja-JP', { weekday: 'short' })
                   return `
-                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition">
+                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-slate-50 transition">
                       <td class="px-4 py-3 text-sm font-medium">
                         ${date} (${dayOfWeek})
                       </td>
                       <td class="px-4 py-3 text-center">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-800">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-slate-100 text-slate-800">
                           ${data.count}件
                         </span>
                       </td>
                       <td class="px-4 py-3 text-center">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-800">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800">
                           ${data.quantity}冊
                         </span>
                       </td>
@@ -1384,7 +1384,7 @@ class AdminApp {
                 <input 
                   type="date" 
                   id="heatmapDateSelector" 
-                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                   value="${selectedDate}"
                   min="2026-03-16"
                   onchange="adminApp.changeHeatmapDate(this.value)"
@@ -1394,11 +1394,11 @@ class AdminApp {
           </div>
           <div class="flex items-center gap-4 text-sm mb-4 flex-wrap">
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
+              <div class="w-4 h-4 bg-emerald-100 border border-emerald-300 rounded"></div>
               <span>空き（1～10件）</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-yellow-200 border border-yellow-400 rounded"></div>
+              <div class="w-4 h-4 bg-yellow-200 border border-amber-400 rounded"></div>
               <span>やや混雑（11～20件）</span>
             </div>
             <div class="flex items-center gap-2">
@@ -1410,9 +1410,9 @@ class AdminApp {
               <span>非常に混雑（50件以上）</span>
             </div>
           </div>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4">
             <p class="text-sm text-gray-700">
-              <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+              <i class="fas fa-info-circle text-gray-600 mr-2"></i>
               <strong>表示ルール:</strong>
               ${this.statistics?.lotteryExecuted 
                 ? '抽選実行済み - 当選者（Phase1）とPhase2応募のみ表示されます'
@@ -1529,7 +1529,7 @@ class AdminApp {
                             bgColor = 'bg-yellow-200'
                             textColor = 'text-gray-800'
                           } else if (count >= 1) {
-                            bgColor = 'bg-green-100'
+                            bgColor = 'bg-emerald-100'
                             textColor = 'text-gray-700'
                           }
                           
@@ -1543,7 +1543,7 @@ class AdminApp {
                             </td>
                           `
                         }).join('')}
-                        <td class="px-3 py-3 text-center text-sm font-bold text-gray-800 border bg-blue-50">
+                        <td class="px-3 py-3 text-center text-sm font-bold text-gray-800 border bg-slate-50">
                           ${dayTotal > 0 ? `<div>${dayTotal}冊</div><div class="text-xs font-normal">${dayCount}件</div>` : '-'}
                         </td>
                       </tr>
@@ -1585,7 +1585,7 @@ class AdminApp {
         <!-- ヘッダー -->
         <div class="bg-white rounded-lg shadow p-6">
           <h2 class="text-2xl font-bold text-gray-800 mb-2">
-            <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+            <i class="fas fa-trophy text-amber-500 mr-2"></i>
             抽選管理
           </h2>
           <p class="text-gray-600">応募の抽選実行と当選者管理</p>
@@ -1597,15 +1597,15 @@ class AdminApp {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">抽選状態</p>
-                <p class="text-2xl font-bold ${lotteryExecuted ? 'text-green-600' : 'text-yellow-600'}">
+                <p class="text-2xl font-bold ${lotteryExecuted ? 'text-emerald-600' : 'text-amber-600'}">
                   ${lotteryExecuted ? '実行済み' : '未実行'}
                 </p>
               </div>
-              <i class="fas ${lotteryExecuted ? 'fa-check-circle' : 'fa-clock'} text-4xl ${lotteryExecuted ? 'text-green-500' : 'text-yellow-500'}"></i>
+              <i class="fas ${lotteryExecuted ? 'fa-check-circle' : 'fa-clock'} text-4xl ${lotteryExecuted ? 'text-emerald-600' : 'text-amber-500'}"></i>
             </div>
             ${lotteryExecuted ? `
               <button onclick="adminApp.viewWinners()" 
-                      class="mt-4 w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded font-semibold transition">
+                      class="mt-4 w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-semibold transition">
                 <i class="fas fa-trophy mr-2"></i>
                 当選者一覧を表示
               </button>
@@ -1616,14 +1616,14 @@ class AdminApp {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">応募受付</p>
-                <p class="text-2xl font-bold ${reservationEnabled ? 'text-green-600' : 'text-red-600'}">
+                <p class="text-2xl font-bold ${reservationEnabled ? 'text-emerald-600' : 'text-red-600'}">
                   ${reservationEnabled ? '受付中' : '停止中'}
                 </p>
               </div>
-              <i class="fas ${reservationEnabled ? 'fa-play-circle' : 'fa-stop-circle'} text-4xl ${reservationEnabled ? 'text-green-500' : 'text-red-500'}"></i>
+              <i class="fas ${reservationEnabled ? 'fa-play-circle' : 'fa-stop-circle'} text-4xl ${reservationEnabled ? 'text-emerald-600' : 'text-red-500'}"></i>
             </div>
             <button onclick="adminApp.toggleReservationEnabled()" 
-                    class="mt-4 w-full px-4 py-2 ${reservationEnabled ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded font-bold transition">
+                    class="mt-4 w-full px-4 py-2 ${reservationEnabled ? 'bg-rose-500 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded font-bold transition">
               ${reservationEnabled ? '受付停止' : '受付再開'}
             </button>
           </div>
@@ -1632,9 +1632,9 @@ class AdminApp {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">現在フェーズ</p>
-                <p class="text-2xl font-bold text-blue-600">Phase ${currentPhase}</p>
+                <p class="text-2xl font-bold text-gray-600">Phase ${currentPhase}</p>
               </div>
-              <i class="fas fa-layer-group text-4xl text-blue-500"></i>
+              <i class="fas fa-layer-group text-4xl text-gray-600"></i>
             </div>
             <p class="text-xs text-gray-500 mt-2">
               ${currentPhase === 1 ? '固定日応募期間' : '自由日選択期間'}
@@ -1649,17 +1649,17 @@ class AdminApp {
             Phase 1 応募状況
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-              <p class="text-sm text-blue-600 mb-1">応募者数</p>
-              <p class="text-3xl font-bold text-blue-700">${phase1Count} 名</p>
+            <div class="bg-slate-50 rounded-lg p-4 border-l-4 border-slate-500">
+              <p class="text-sm text-gray-600 mb-1">応募者数</p>
+              <p class="text-3xl font-bold text-slate-700">${phase1Count} 名</p>
             </div>
-            <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
-              <p class="text-sm text-purple-600 mb-1">応募総冊数</p>
-              <p class="text-3xl font-bold text-purple-700">${phase1Total} 冊</p>
+            <div class="bg-slate-50 rounded-lg p-4 border-l-4 border-slate-500">
+              <p class="text-sm text-slate-600 mb-1">応募総冊数</p>
+              <p class="text-3xl font-bold text-slate-700">${phase1Total} 冊</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-500">
               <p class="text-sm text-gray-600 mb-1">抽選判定</p>
-              <p class="text-2xl font-bold ${phase1Total <= 1000 ? 'text-green-600' : 'text-red-600'}">
+              <p class="text-2xl font-bold ${phase1Total <= 1000 ? 'text-emerald-600' : 'text-red-600'}">
                 ${phase1Total <= 1000 ? '全員当選' : '抽選必要'}
               </p>
             </div>
@@ -1669,7 +1669,7 @@ class AdminApp {
         <!-- 抽選実行 -->
         <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow p-6 border-2 border-yellow-300">
           <h3 class="text-xl font-bold text-gray-800 mb-4">
-            <i class="fas fa-dice mr-2 text-yellow-600"></i>
+            <i class="fas fa-dice mr-2 text-amber-600"></i>
             抽選実行
           </h3>
           <p class="text-gray-700 mb-4">
@@ -1679,8 +1679,8 @@ class AdminApp {
               '応募総数が1000冊を超えているため、<strong>ランダム抽選</strong>を実行します。'}
           </p>
           ${lotteryExecuted ? `
-            <div class="bg-blue-100 border border-blue-300 rounded p-4 mb-4">
-              <p class="text-sm text-blue-800">
+            <div class="bg-slate-100 border border-slate-300 rounded p-4 mb-4">
+              <p class="text-sm text-slate-800">
                 <i class="fas fa-info-circle mr-2"></i>
                 <strong>情報:</strong> 前回の抽選は実行済みです。新しい応募に対して再度抽選を実行できます。
               </p>
@@ -1727,8 +1727,8 @@ class AdminApp {
                       <td class="px-4 py-3 text-sm text-gray-900">${new Date(result.execution_date).toLocaleString('ja-JP')}</td>
                       <td class="px-4 py-3 text-sm text-gray-900">${result.total_applications}名</td>
                       <td class="px-4 py-3 text-sm text-gray-900">${result.total_quantity_requested}冊</td>
-                      <td class="px-4 py-3 text-sm font-bold text-green-600">${result.winners_count}名</td>
-                      <td class="px-4 py-3 text-sm font-bold text-green-600">${result.winners_quantity}冊</td>
+                      <td class="px-4 py-3 text-sm font-bold text-emerald-600">${result.winners_count}名</td>
+                      <td class="px-4 py-3 text-sm font-bold text-emerald-600">${result.winners_quantity}冊</td>
                       <td class="px-4 py-3 text-sm text-red-600">${result.losers_count}名</td>
                       <td class="px-4 py-3 text-sm text-gray-600">${result.notes || '-'}</td>
                     </tr>
@@ -1874,7 +1874,7 @@ class AdminApp {
       <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">
-            <i class="fas fa-key text-yellow-500 mr-2"></i>
+            <i class="fas fa-key text-amber-500 mr-2"></i>
             パスワード変更
           </h2>
           <button onclick="adminApp.closePasswordChangeModal()" 
@@ -1883,15 +1883,15 @@ class AdminApp {
           </button>
         </div>
         
-        <div id="passwordChangeError" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 p-4 rounded">
-          <p class="text-sm text-red-700">
+        <div id="passwordChangeError" class="hidden mb-4 bg-rose-100 border-l-4 border-red-500 p-4 rounded">
+          <p class="text-sm text-rose-700">
             <i class="fas fa-exclamation-circle mr-2"></i>
             <span id="passwordChangeErrorText"></span>
           </p>
         </div>
         
-        <div id="passwordChangeSuccess" class="hidden mb-4 bg-green-100 border-l-4 border-green-500 p-4 rounded">
-          <p class="text-sm text-green-700">
+        <div id="passwordChangeSuccess" class="hidden mb-4 bg-emerald-100 border-l-4 border-emerald-500 p-4 rounded">
+          <p class="text-sm text-emerald-700">
             <i class="fas fa-check-circle mr-2"></i>
             <span id="passwordChangeSuccessText"></span>
           </p>
@@ -1903,7 +1903,7 @@ class AdminApp {
               <i class="fas fa-lock mr-1"></i> 現在のパスワード
             </label>
             <input type="password" id="currentPassword" required
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500"
                    placeholder="現在のパスワードを入力">
           </div>
           
@@ -1912,7 +1912,7 @@ class AdminApp {
               <i class="fas fa-key mr-1"></i> 新しいパスワード
             </label>
             <input type="password" id="newPassword" required minlength="8"
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500"
                    placeholder="新しいパスワード（8文字以上）">
           </div>
           
@@ -1921,18 +1921,18 @@ class AdminApp {
               <i class="fas fa-check mr-1"></i> 新しいパスワード（確認）
             </label>
             <input type="password" id="confirmPassword" required minlength="8"
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500"
                    placeholder="新しいパスワードを再入力">
           </div>
           
-          <div class="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-gray-700">
-            <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+          <div class="bg-amber-50 border border-amber-200 rounded p-3 text-sm text-gray-700">
+            <i class="fas fa-info-circle text-amber-500 mr-2"></i>
             パスワードは8文字以上で設定してください
           </div>
           
           <div class="flex gap-3 pt-4">
             <button type="submit" id="changePasswordBtn"
-                    class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg transition">
+                    class="flex-1 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-bold shadow-lg transition">
               <i class="fas fa-save mr-2"></i> 変更する
             </button>
             <button type="button" onclick="adminApp.closePasswordChangeModal()"
@@ -2037,7 +2037,7 @@ class AdminApp {
   // 重複チェックビューのレンダリング
   renderDuplicates() {
     if (!this.duplicates) {
-      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>'
+      return '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-gray-600"></i></div>'
     }
 
     const { phoneDuplicates, nameDuplicates } = this.duplicates
@@ -2046,19 +2046,19 @@ class AdminApp {
       <div class="space-y-4">
         <div class="bg-white rounded-lg shadow p-4 sm:p-6">
           <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
-            <i class="fas fa-copy mr-2 text-yellow-600"></i>
+            <i class="fas fa-copy mr-2 text-amber-600"></i>
             重複応募チェック
           </h2>
 
           <!-- 電話番号の重複 -->
           <div class="mb-6 sm:mb-8">
             <h3 class="text-lg sm:text-xl font-bold text-gray-700 mb-3 sm:mb-4 flex items-center">
-              <i class="fas fa-phone mr-2 text-blue-600"></i>
+              <i class="fas fa-phone mr-2 text-gray-600"></i>
               電話番号の重複 
-              <span class="ml-2 px-2 py-1 text-xs sm:text-sm bg-blue-100 text-blue-800 rounded-full">${phoneDuplicates.length}件</span>
+              <span class="ml-2 px-2 py-1 text-xs sm:text-sm bg-slate-100 text-slate-800 rounded-full">${phoneDuplicates.length}件</span>
             </h3>
             ${phoneDuplicates.length === 0 ? `
-              <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 text-green-800 text-sm sm:text-base">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 sm:p-4 text-emerald-800 text-sm sm:text-base">
                 <i class="fas fa-check-circle mr-2"></i>
                 電話番号の重複はありません
               </div>
@@ -2069,13 +2069,13 @@ class AdminApp {
                   const names = dup.names.split(',')
                   const reservationIds = dup.reservation_ids.split(',')
                   return `
-                    <div class="border border-yellow-200 rounded-lg p-3 sm:p-4 bg-yellow-50 hover:bg-yellow-100 transition">
+                    <div class="border border-amber-200 rounded-lg p-3 sm:p-4 bg-amber-50 hover:bg-yellow-100 transition">
                       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-2">
                             <span class="text-xs sm:text-sm font-medium text-gray-500">電話番号</span>
                             <span class="text-sm sm:text-base font-bold text-gray-900">${dup.phone_number}</span>
-                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-100 text-red-800">
                               ${dup.count}件
                             </span>
                           </div>
@@ -2085,7 +2085,7 @@ class AdminApp {
                               <span class="font-medium text-gray-600">氏名:</span>
                               <div class="flex flex-wrap gap-1 mt-1">
                                 ${names.map((name, i) => `
-                                  <span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 rounded">
+                                  <span class="inline-flex items-center px-2 py-0.5 bg-slate-50 text-slate-700 rounded">
                                     ${i + 1}. ${name}
                                   </span>
                                 `).join('')}
@@ -2108,7 +2108,7 @@ class AdminApp {
                         <div class="flex flex-wrap gap-1 sm:flex-col sm:items-end">
                           ${ids.map((id, i) => `
                             <button onclick="adminApp.showExcludeModal('${reservationIds[i]}', '${reservationIds[i]}', '電話番号重複')"
-                                    class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-xs whitespace-nowrap">
+                                    class="px-2 py-1 bg-rose-500 text-white rounded hover:bg-rose-700 transition text-xs whitespace-nowrap">
                               <i class="fas fa-ban mr-1"></i>${i + 1}を除外
                             </button>
                           `).join('')}
@@ -2124,12 +2124,12 @@ class AdminApp {
           <!-- 名前の重複 -->
           <div>
             <h3 class="text-lg sm:text-xl font-bold text-gray-700 mb-3 sm:mb-4 flex items-center">
-              <i class="fas fa-user mr-2 text-purple-600"></i>
+              <i class="fas fa-user mr-2 text-slate-600"></i>
               氏名の重複
-              <span class="ml-2 px-2 py-1 text-xs sm:text-sm bg-purple-100 text-purple-800 rounded-full">${nameDuplicates.length}件</span>
+              <span class="ml-2 px-2 py-1 text-xs sm:text-sm bg-slate-100 text-slate-800 rounded-full">${nameDuplicates.length}件</span>
             </h3>
             ${nameDuplicates.length === 0 ? `
-              <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 text-green-800 text-sm sm:text-base">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 sm:p-4 text-emerald-800 text-sm sm:text-base">
                 <i class="fas fa-check-circle mr-2"></i>
                 氏名の重複はありません
               </div>
@@ -2140,7 +2140,7 @@ class AdminApp {
                   const phones = dup.phone_numbers.split(',')
                   const reservationIds = dup.reservation_ids.split(',')
                   return `
-                    <div class="border border-purple-200 rounded-lg p-3 sm:p-4 bg-purple-50 hover:bg-purple-100 transition">
+                    <div class="border border-slate-200 rounded-lg p-3 sm:p-4 bg-slate-50 hover:bg-slate-100 transition">
                       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-2">
@@ -2149,7 +2149,7 @@ class AdminApp {
                               <span class="text-sm sm:text-base font-bold text-gray-900">${dup.full_name}</span>
                               ${dup.kana ? `<span class="ml-2 text-xs text-gray-500">(${dup.kana})</span>` : ''}
                             </div>
-                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-100 text-red-800">
                               ${dup.count}件
                             </span>
                           </div>
@@ -2159,7 +2159,7 @@ class AdminApp {
                               <span class="font-medium text-gray-600">電話番号:</span>
                               <div class="flex flex-wrap gap-1 mt-1">
                                 ${phones.map((phone, i) => `
-                                  <span class="inline-flex items-center px-2 py-0.5 bg-green-50 text-green-700 rounded">
+                                  <span class="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded">
                                     ${i + 1}. ${phone}
                                   </span>
                                 `).join('')}
@@ -2182,7 +2182,7 @@ class AdminApp {
                         <div class="flex flex-wrap gap-1 sm:flex-col sm:items-end">
                           ${ids.map((id, i) => `
                             <button onclick="adminApp.showExcludeModal('${reservationIds[i]}', '${reservationIds[i]}', '氏名重複')"
-                                    class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-xs whitespace-nowrap">
+                                    class="px-2 py-1 bg-rose-500 text-white rounded hover:bg-rose-700 transition text-xs whitespace-nowrap">
                               <i class="fas fa-ban mr-1"></i>${i + 1}を除外
                             </button>
                           `).join('')}
@@ -2228,7 +2228,7 @@ class AdminApp {
             キャンセル
           </button>
           <button onclick="adminApp.excludeFromLottery(${id}, '${reservationId}')"
-                  class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-bold">
+                  class="flex-1 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-700 transition font-bold">
             <i class="fas fa-ban mr-2"></i>除外する
           </button>
         </div>
@@ -2267,13 +2267,13 @@ class AdminApp {
             追加メモ（任意）
           </label>
           <textarea id="exclude-reason" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500"
                     rows="3"
                     placeholder="除外理由を記入してください"></textarea>
         </div>
         <div class="flex gap-3">
           <button onclick="adminApp.confirmExclude('${reservationId}', true)"
-                  class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold transition">
+                  class="flex-1 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-700 font-bold transition">
             <i class="fas fa-ban mr-2"></i>除外する
           </button>
           <button onclick="adminApp.closeExcludeModal()"
@@ -2363,11 +2363,11 @@ class AdminApp {
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">
-            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+            <i class="fas fa-calendar-alt mr-2 text-gray-600"></i>
             購入日管理
           </h2>
           <button onclick="adminApp.showAddPickupDateModal()" 
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                  class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">
             <i class="fas fa-plus mr-2"></i> 新規追加
           </button>
         </div>
@@ -2387,7 +2387,7 @@ class AdminApp {
 
         <div id="pickup-dates-list">
           <div class="text-center py-8">
-            <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
+            <i class="fas fa-spinner fa-spin text-4xl text-gray-600"></i>
           </div>
         </div>
       </div>
@@ -2463,7 +2463,7 @@ class AdminApp {
                   <button onclick="adminApp.togglePickupDateStatus(${date.id}, ${date.is_active})"
                           class="px-4 py-2 text-sm font-semibold rounded-lg transition
                                  ${date.is_active ? 
-                                   'bg-green-500 text-white hover:bg-green-600' : 
+                                   'bg-emerald-600 text-white hover:bg-emerald-700' : 
                                    'bg-gray-400 text-white hover:bg-gray-500'}">
                     ${date.is_active ? 
                       '<i class="fas fa-toggle-on mr-1"></i> 有効' : 
@@ -2472,11 +2472,11 @@ class AdminApp {
                 </td>
                 <td class="px-4 py-3 text-center">
                   <button onclick="adminApp.showEditPickupDateModal(${date.id})" 
-                          class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 mr-2">
+                          class="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 mr-2">
                     <i class="fas fa-edit"></i> 編集
                   </button>
                   <button onclick="adminApp.deletePickupDate(${date.id})" 
-                          class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+                          class="px-3 py-1 text-sm bg-rose-500 text-white rounded hover:bg-rose-700">
                     <i class="fas fa-trash"></i> 削除
                   </button>
                 </td>
@@ -2495,27 +2495,27 @@ class AdminApp {
     modal.innerHTML = `
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h3 class="text-xl font-bold mb-4">
-          <i class="fas fa-calendar-plus mr-2 text-blue-500"></i>
+          <i class="fas fa-calendar-plus mr-2 text-gray-600"></i>
           購入日を追加
         </h3>
         <form id="add-pickup-date-form" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">購入日 *</label>
             <input type="date" id="pickup-date-input" required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">表示ラベル *</label>
             <input type="text" id="pickup-label-input" required
                    placeholder="例: 3月16日（月）"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">表示順序</label>
             <input type="number" id="pickup-order-input" value="0" min="0"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
@@ -2526,7 +2526,7 @@ class AdminApp {
           </div>
 
           <div class="flex space-x-3 mt-6">
-            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button type="submit" class="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900">
               <i class="fas fa-save mr-2"></i> 登録
             </button>
             <button type="button" onclick="document.getElementById('pickup-date-modal').remove()"
@@ -2555,7 +2555,7 @@ class AdminApp {
     modal.innerHTML = `
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h3 class="text-xl font-bold mb-4">
-          <i class="fas fa-edit mr-2 text-blue-500"></i>
+          <i class="fas fa-edit mr-2 text-gray-600"></i>
           購入日を編集
         </h3>
         <form id="edit-pickup-date-form" class="space-y-4">
@@ -2564,20 +2564,20 @@ class AdminApp {
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">購入日 *</label>
             <input type="date" id="pickup-date-input" required value="${date.pickup_date}"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">表示ラベル *</label>
             <input type="text" id="pickup-label-input" required value="${date.display_label}"
                    placeholder="例: 3月16日（月）"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">表示順序</label>
             <input type="number" id="pickup-order-input" value="${date.display_order}" min="0"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
           </div>
           
           <div>
@@ -2588,7 +2588,7 @@ class AdminApp {
           </div>
 
           <div class="flex space-x-3 mt-6">
-            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button type="submit" class="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900">
               <i class="fas fa-save mr-2"></i> 更新
             </button>
             <button type="button" onclick="document.getElementById('pickup-date-modal').remove()"
@@ -2799,7 +2799,7 @@ class AdminApp {
             購入時間管理
           </h2>
           <button onclick="adminApp.showAddTimeSlotModal()" 
-                  class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                  class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition">
             <i class="fas fa-plus mr-2"></i>
             新規追加
           </button>
@@ -2915,7 +2915,7 @@ class AdminApp {
                   <button onclick="adminApp.toggleTimeSlotStatus(${slot.id})"
                           class="px-3 py-1 rounded text-white transition ${
                             slot.is_active === 1 
-                              ? 'bg-green-500 hover:bg-green-600' 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
                               : 'bg-gray-400 hover:bg-gray-500'
                           }">
                     <i class="fas ${slot.is_active === 1 ? 'fa-check-circle' : 'fa-ban'} mr-1"></i>
@@ -2924,12 +2924,12 @@ class AdminApp {
                 </td>
                 <td class="px-4 py-2 border text-center">
                   <button onclick="adminApp.showEditTimeSlotModal(${slot.id})"
-                          class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2">
+                          class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800 mr-2">
                     <i class="fas fa-edit mr-1"></i>
                     編集
                   </button>
                   <button onclick="adminApp.deleteTimeSlot(${slot.id})"
-                          class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                          class="bg-rose-500 text-white px-3 py-1 rounded hover:bg-rose-700">
                     <i class="fas fa-trash mr-1"></i>
                     削除
                   </button>
@@ -2957,7 +2957,7 @@ class AdminApp {
               </label>
               <input type="text" id="time-slot-input" required
                      placeholder="例: 10:00～11:00"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
               <p class="text-sm text-gray-500 mt-1">形式: HH:MM～HH:MM</p>
             </div>
 
@@ -2967,7 +2967,7 @@ class AdminApp {
               </label>
               <input type="text" id="time-label-input" required
                      placeholder="例: 10:00～11:00"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
             </div>
 
             <div class="mb-4">
@@ -2976,7 +2976,7 @@ class AdminApp {
               </label>
               <input type="number" id="time-order-input" min="0"
                      placeholder="0"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
             </div>
 
             <div class="mb-4">
@@ -2988,7 +2988,7 @@ class AdminApp {
             </div>
 
             <div class="flex gap-2">
-              <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <button type="submit" class="flex-1 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
                 <i class="fas fa-save mr-2"></i>
                 登録
               </button>
@@ -3030,7 +3030,7 @@ class AdminApp {
               <input type="text" id="time-slot-input" required
                      value="${slot.time_slot}"
                      placeholder="例: 10:00～11:00"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
             </div>
 
             <div class="mb-4">
@@ -3039,7 +3039,7 @@ class AdminApp {
               </label>
               <input type="text" id="time-label-input" required
                      value="${slot.display_label}"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
             </div>
 
             <div class="mb-4">
@@ -3048,7 +3048,7 @@ class AdminApp {
               </label>
               <input type="number" id="time-order-input" min="0"
                      value="${slot.display_order}"
-                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500">
             </div>
 
             <div class="mb-4">
@@ -3060,7 +3060,7 @@ class AdminApp {
             </div>
 
             <div class="flex gap-2">
-              <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <button type="submit" class="flex-1 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
                 <i class="fas fa-save mr-2"></i>
                 更新
               </button>
@@ -3296,14 +3296,14 @@ class AdminApp {
               新しい上限冊数 <span class="text-red-500">*</span>
             </label>
             <input type="number" id="newMaxTotal" value="${currentMax}" min="0" step="1"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
             <p class="text-xs text-gray-500 mt-1">
               <i class="fas fa-info-circle mr-1"></i>
               0以上の整数を入力してください
             </p>
           </div>
 
-          <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
+          <div class="bg-amber-50 border border-amber-200 rounded p-3">
             <p class="text-xs text-yellow-800">
               <i class="fas fa-exclamation-triangle mr-1"></i>
               <strong>注意:</strong> この変更は直ちに反映され、応募受付の上限が変更されます。既存の応募には影響しません。
@@ -3316,7 +3316,7 @@ class AdminApp {
               キャンセル
             </button>
             <button onclick="adminApp.updateMaxTotal()" 
-                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    class="flex-1 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900">
               <i class="fas fa-save mr-1"></i>
               更新
             </button>
@@ -3395,4 +3395,5 @@ let adminApp
 document.addEventListener('DOMContentLoaded', () => {
   adminApp = new AdminApp()
   window.adminApp = adminApp // グローバルに公開
+})
 })
