@@ -12,6 +12,7 @@ class AdminApp {
     this.currentPickupPhase = 1
     this.pickupTimeSlots = []
     this.currentTimeSlotPhase = 1
+    this.selectedHeatmapDate = null  // 初期値null（自動選定される）
     this.filters = {
       status: '',
       store: '',
@@ -1218,8 +1219,24 @@ class AdminApp {
       `
     }
 
-    // 選択された日付を取得（デフォルトは3月16日）
-    const selectedDate = this.selectedHeatmapDate || '2026-03-16'
+    // 選択された日付を取得
+    // デフォルトは実際の購入予定日の最小値（リアルな日程）
+    let selectedDate = this.selectedHeatmapDate
+    
+    if (!selectedDate) {
+      // 実際の購入予定日から最小値を自動選定
+      const allPickupDates = reservationsForHeatmap
+        .filter(r => r.pickup_date && (r.status === 'reserved' || r.status === 'picked_up'))
+        .map(r => r.pickup_date)
+        .sort()
+      
+      if (allPickupDates.length > 0) {
+        selectedDate = allPickupDates[0]  // 最も早い購入日
+        this.selectedHeatmapDate = selectedDate  // 保存
+      } else {
+        selectedDate = '2026-03-16'  // フォールバック
+      }
+    }
 
     // 日別データ集計
     const dateMap = {}
@@ -1228,16 +1245,24 @@ class AdminApp {
     
     // 実際のデータから店舗を抽出
     const storesSet = new Set()
+    const allPickupDatesSet = new Set()  // 全ての購入日を収集
     
     reservationsForHeatmap.forEach(r => {
       if (r.status === 'reserved' || r.status === 'picked_up') {
         // 落選者は除外
         if (r.lottery_status === 'lost') return
         storesSet.add(r.store_location)
+        if (r.pickup_date) {
+          allPickupDatesSet.add(r.pickup_date)  // 購入日を記録
+        }
       }
     })
     
     const stores = Array.from(storesSet).sort()
+    
+    // カレンダーのmin値を計算（実際の購入日の最小値）
+    const allPickupDates = Array.from(allPickupDatesSet).sort()
+    const minPickupDate = allPickupDates.length > 0 ? allPickupDates[0] : '2026-03-16'
     
     // 時間帯は常に固定の7つを使用
     const timeSlots = [
@@ -1386,7 +1411,7 @@ class AdminApp {
                   id="heatmapDateSelector" 
                   class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                   value="${selectedDate}"
-                  min="2026-03-16"
+                  min="${minPickupDate}"
                   onchange="adminApp.changeHeatmapDate(this.value)"
                 >
               </div>
