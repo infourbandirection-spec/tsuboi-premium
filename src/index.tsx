@@ -3574,4 +3574,17 @@ app.delete('/api/admin/pickup-time-slots/:id', async (c) => {
   }
 })
 
+// デバッグ用: 環境変数確認エンドポイント
+app.get('/api/debug/env-check', async (c) => {
+  const { env } = c
+  
+  return c.json({
+    hasResendApiKey: !!env.RESEND_API_KEY,
+    resendApiKeyPrefix: env.RESEND_API_KEY ? env.RESEND_API_KEY.substring(0, 8) + '...' : 'NOT_SET',
+    hasResendFromEmail: !!env.RESEND_FROM_EMAIL,
+    resendFromEmail: env.RESEND_FROM_EMAIL || 'NOT_SET',
+    timestamp: new Date().toISOString()
+  })
+})
+
 export default app
