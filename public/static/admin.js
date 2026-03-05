@@ -3060,10 +3060,20 @@ class AdminApp {
     if (!listContainer) return
 
     if (this.pickupTimeSlots.length === 0) {
+      // フェーズ2でデータが空の場合、初期化ボタンを表示
+      const initButton = this.currentTimeSlotPhase === 2 ? `
+        <button onclick="adminApp.initPhase2TimeSlots()" 
+                class="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+          <i class="fas fa-copy mr-2"></i>
+          フェーズ1の購入時間をコピーして初期化
+        </button>
+      ` : ''
+      
       listContainer.innerHTML = `
         <div class="text-center py-8 text-gray-500">
           <i class="far fa-clock text-4xl mb-2"></i>
           <p>登録されている購入時間はありません</p>
+          ${initButton}
         </div>
       `
       return
@@ -3381,6 +3391,41 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Delete time slot error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  // フェーズ2の購入時間を初期化（フェーズ1からコピー）
+  async initPhase2TimeSlots() {
+    if (!confirm('フェーズ1の購入時間設定をフェーズ2にコピーしますか？\n\n※フェーズ2に既に登録されている時間スロットがある場合は実行できません')) {
+      return
+    }
+
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/pickup-time-slots/init-phase2', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(data.message || 'フェーズ2の購入時間を初期化しました')
+        await this.loadPickupTimeSlots()
+      } else {
+        alert('初期化に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Init phase 2 time slots error:', error)
       alert('システムエラーが発生しました')
     }
   }
