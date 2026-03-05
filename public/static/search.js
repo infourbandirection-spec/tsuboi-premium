@@ -213,6 +213,17 @@ class SearchApp {
 
     const statusColor = statusColors[reservation.status] || 'bg-gray-100 text-gray-800'
     const statusLabel = statusLabels[reservation.status] || reservation.status
+    
+    // APIレスポンスのキャメルケースとスネークケースの両方をサポート
+    const resId = reservation.id || reservation.reservation_id || 'N/A'
+    const fullName = reservation.fullName || reservation.full_name || ''
+    const kana = reservation.kana || ''
+    const phoneNumber = reservation.phoneNumber || reservation.phone_number || ''
+    const quantity = reservation.quantity || 0
+    const storeLocation = reservation.storeLocation || reservation.store_location || ''
+    const createdAt = reservation.createdAt || reservation.created_at || ''
+    const pickupDate = reservation.pickupDate || reservation.pickup_date || ''
+    const pickupTimeSlot = reservation.pickupTimeSlot || reservation.pickup_time_slot || ''
 
     return `
       <div class="border-2 border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
@@ -223,11 +234,11 @@ class SearchApp {
               ${this.escapeHtml(statusLabel)}
             </span>
             <h3 class="text-2xl font-bold text-gray-800 break-all">
-              ${this.escapeHtml(reservation.reservation_id)}
+              ${this.escapeHtml(resId)}
             </h3>
             <p class="text-sm text-gray-500 mt-1">応募ID</p>
           </div>
-          <button onclick="searchApp.copyToClipboard('${reservation.reservation_id}')" 
+          <button onclick="searchApp.copyToClipboard('${resId}')" 
                   class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold text-sm">
             <i class="fas fa-copy mr-1"></i> コピー
           </button>
@@ -239,36 +250,36 @@ class SearchApp {
             <p class="text-sm text-gray-600 mb-1">
               <i class="fas fa-user mr-2"></i>氏名
             </p>
-            <p class="text-lg font-bold">${this.escapeHtml(reservation.full_name)}</p>
-            ${reservation.kana ? `<p class="text-sm text-gray-500 mt-1">（${this.escapeHtml(reservation.kana)}）</p>` : ''}
+            <p class="text-lg font-bold">${this.escapeHtml(fullName)}</p>
+            ${kana ? `<p class="text-sm text-gray-500 mt-1">（${this.escapeHtml(kana)}）</p>` : ''}
           </div>
           
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
               <i class="fas fa-phone mr-2"></i>電話番号
             </p>
-            <p class="text-lg font-bold">${this.escapeHtml(reservation.phone_number)}</p>
+            <p class="text-lg font-bold">${this.escapeHtml(phoneNumber)}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
               <i class="fas fa-ticket-alt mr-2"></i>購入冊数
             </p>
-            <p class="text-lg font-bold">${this.escapeHtml(String(reservation.quantity))} 冊</p>
+            <p class="text-lg font-bold">${this.escapeHtml(String(quantity))} 冊</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
               <i class="fas fa-map-marker-alt mr-2"></i>購入場所
             </p>
-            <p class="text-lg font-bold">${this.escapeHtml(reservation.store_location)}</p>
+            <p class="text-lg font-bold">${this.escapeHtml(storeLocation)}</p>
           </div>
           
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">
               <i class="fas fa-calendar mr-2"></i>応募日時
             </p>
-            <p class="text-lg font-bold">${reservation.created_at ? new Date(reservation.created_at).toLocaleString('ja-JP') : '不明'}</p>
+            <p class="text-lg font-bold">${createdAt ? new Date(createdAt).toLocaleString('ja-JP') : '不明'}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
@@ -276,7 +287,7 @@ class SearchApp {
               <i class="fas fa-clock mr-2"></i>購入日時
             </p>
             <p class="text-lg font-bold">
-              ${this.escapeHtml(reservation.pickup_date)} ${this.escapeHtml(reservation.pickup_time_slot)}
+              ${this.escapeHtml(pickupDate)} ${this.escapeHtml(pickupTimeSlot)}
             </p>
           </div>
         </div>
