@@ -919,11 +919,11 @@ app.get('/api/status', async (c) => {
 
     const reservedCount = result?.total || 0
 
-    // システム設定取得
+    // システム設定取得（抽選実行フラグも追加）
     const settings = await db.prepare(`
       SELECT setting_key, setting_value 
       FROM system_settings 
-      WHERE setting_key IN ('max_total_books', 'current_phase', 'reservation_enabled')
+      WHERE setting_key IN ('max_total_books', 'current_phase', 'reservation_enabled', 'lottery_executed')
     `).all()
 
     const settingsMap: Record<string, string> = {}
@@ -934,11 +934,23 @@ app.get('/api/status', async (c) => {
     const maxTotal = parseInt(settingsMap['max_total_books'] || '1000')
     const currentPhase = parseInt(settingsMap['current_phase'] || '1')
     const reservationEnabled = settingsMap['reservation_enabled'] === 'true'
+    const lotteryExecuted = settingsMap['lottery_executed'] === 'true'
     const remaining = Math.max(0, maxTotal - Number(reservedCount))
     
     // Phase 1（応募期間）は在庫に関係なく受け付ける
     // Phase 2（応募期間）は在庫がある場合のみ受け付ける
     const isAccepting = currentPhase === 1 ? reservationEnabled : (remaining > 0 && reservationEnabled)
+
+    // 当選者数を取得（抽選実行済みの場合のみ）
+    let winnersCount = 0
+    if (lotteryExecuted) {
+      const winnersResult = await db.prepare(`
+        SELECT COUNT(*) as count 
+        FROM reservations 
+        WHERE lottery_status = 'won'
+      `).first() as any
+      winnersCount = winnersResult?.count || 0
+    }
 
     return c.json({
       success: true,
@@ -948,7 +960,9 @@ app.get('/api/status', async (c) => {
         remaining,
         isAccepting,
         currentPhase,
-        reservationEnabled
+        reservationEnabled,
+        lotteryExecuted,
+        winnersCount
       }
     })
   } catch (error) {

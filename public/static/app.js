@@ -149,7 +149,7 @@ class ReservationApp {
         <div class="max-w-4xl mx-auto">
           <!-- ヘッダー -->
           <div class="bg-white shadow-lg p-4 sm:p-6 mb-6">
-            <div class="flex justify-between items-center gap-2">
+            <div class="flex justify-between items-start gap-2">
               <div class="flex-1 min-w-0">
                 <h1 class="text-base sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 flex items-start">
                   <i class="fas fa-ticket-alt text-gray-600 mr-1 sm:mr-2 mt-1 text-sm sm:text-base"></i>
@@ -161,10 +161,18 @@ class ReservationApp {
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">ご希望の商品券をご応募いただけます</p>
               </div>
-              <button onclick="location.href='/lookup'" 
-                      class="flex-shrink-0 px-3 sm:px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition text-xs sm:text-sm whitespace-nowrap rounded">
-                <i class="fas fa-search mr-1 sm:mr-2"></i><span>応募照会</span>
-              </button>
+              <div class="flex flex-col gap-2">
+                <button onclick="location.href='/lookup'" 
+                        class="flex-shrink-0 px-3 sm:px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition text-xs sm:text-sm whitespace-nowrap rounded">
+                  <i class="fas fa-search mr-1 sm:mr-2"></i><span>応募照会</span>
+                </button>
+                ${this.systemStatus?.lotteryExecuted && this.systemStatus?.winnersCount > 0 ? `
+                <button onclick="location.href='/winners'" 
+                        class="flex-shrink-0 px-3 sm:px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition text-xs sm:text-sm whitespace-nowrap rounded">
+                  <i class="fas fa-trophy mr-1 sm:mr-2"></i><span>当選者照会</span>
+                </button>
+                ` : ''}
+              </div>
             </div>
           </div>
 
