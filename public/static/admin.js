@@ -213,6 +213,40 @@ class AdminApp {
       const statsData = await statsResponse.json()
       if (statsData.success) {
         this.statistics = statsData.data
+        
+        // 時間帯を3つにグループ化（10:00-12:00、13:00-15:00、16:00-18:00）
+        if (this.statistics.byTime && this.statistics.byTime.length > 0) {
+          const timeGroups = {
+            '10:00～12:00': { count: 0, total_quantity: 0 },
+            '13:00～15:00': { count: 0, total_quantity: 0 },
+            '16:00～18:00': { count: 0, total_quantity: 0 }
+          }
+          
+          this.statistics.byTime.forEach(slot => {
+            const time = slot.pickup_time_slot || ''
+            // 時間帯を正規化（～を-に統一）
+            const normalizedTime = time.replace(/～/g, '-')
+            
+            // 各時間帯を対応するグループに振り分け
+            if (normalizedTime.match(/^(10:00|11:00|12:00)/)) {
+              timeGroups['10:00～12:00'].count += slot.count
+              timeGroups['10:00～12:00'].total_quantity += slot.total_quantity
+            } else if (normalizedTime.match(/^(13:00|14:00|15:00)/)) {
+              timeGroups['13:00～15:00'].count += slot.count
+              timeGroups['13:00～15:00'].total_quantity += slot.total_quantity
+            } else if (normalizedTime.match(/^(16:00|17:00|18:00)/)) {
+              timeGroups['16:00～18:00'].count += slot.count
+              timeGroups['16:00～18:00'].total_quantity += slot.total_quantity
+            }
+          })
+          
+          // グループ化されたデータに置き換え
+          this.statistics.byTime = Object.entries(timeGroups).map(([slot, data]) => ({
+            pickup_time_slot: slot,
+            count: data.count,
+            total_quantity: data.total_quantity
+          }))
+        }
       }
 
       // システム設定取得
