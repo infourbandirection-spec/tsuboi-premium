@@ -73,7 +73,7 @@ class LotteryResultsApp {
                 当選者照会
               </h1>
               <p class="text-xl text-gray-600 mb-2">
-                坪井繁栄会プレミアム商品券
+                坪井繁栄会プレミアム商品券応募抽選
               </p>
               <p class="text-gray-500">
                 おめでとうございます！以下の応募IDの方が当選されました
