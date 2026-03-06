@@ -1621,7 +1621,9 @@ class AdminApp {
     
     // Phase 1の応募統計
     const phase1Reservations = this.reservations.filter(r => 
-      r.reservation_phase === 1 && r.status === 'reserved'
+      r.reservation_phase === 1 && 
+      r.status === 'reserved' &&
+      (r.excluded_from_lottery === 0 || r.excluded_from_lottery === null || r.excluded_from_lottery === undefined)
     )
     const phase1Total = phase1Reservations.reduce((sum, r) => sum + r.quantity, 0)
     const phase1Count = phase1Reservations.length
