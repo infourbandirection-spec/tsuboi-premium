@@ -2824,7 +2824,7 @@ app.post('/api/admin/reservations/check-duplicates/name', async (c) => {
   try {
     const db = c.env.DB
 
-    // 同じ氏名で複数応募がある場合を検出
+    // 同じ氏名で複数応募がある場合を検出（抽選除外されたものは除く）
     const duplicates = await db.prepare(`
       SELECT 
         full_name,
@@ -2833,7 +2833,7 @@ app.post('/api/admin/reservations/check-duplicates/name', async (c) => {
         GROUP_CONCAT(reservation_id) as reservation_ids,
         GROUP_CONCAT(phone_number) as phone_numbers
       FROM reservations
-      WHERE status = 'reserved'
+      WHERE status = 'reserved' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       GROUP BY full_name
       HAVING COUNT(*) > 1
       ORDER BY count DESC, full_name
@@ -2860,7 +2860,7 @@ app.post('/api/admin/reservations/check-duplicates/phone', async (c) => {
   try {
     const db = c.env.DB
 
-    // 同じ電話番号で複数応募がある場合を検出
+    // 同じ電話番号で複数応募がある場合を検出（抽選除外されたものは除く）
     const duplicates = await db.prepare(`
       SELECT 
         phone_number,
@@ -2869,7 +2869,7 @@ app.post('/api/admin/reservations/check-duplicates/phone', async (c) => {
         GROUP_CONCAT(reservation_id) as reservation_ids,
         GROUP_CONCAT(full_name) as names
       FROM reservations
-      WHERE status = 'reserved'
+      WHERE status = 'reserved' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       GROUP BY phone_number
       HAVING COUNT(*) > 1
       ORDER BY count DESC, phone_number
