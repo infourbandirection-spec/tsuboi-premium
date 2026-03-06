@@ -117,6 +117,12 @@ SELECT * FROM reservations WHERE 1=1
 - 日付別応募推移グラフ
 - 時間帯別応募状況グラフ
 
+### 抽選管理タブ - **除外される**
+- Phase 1 応募状況の「応募者数」
+- Phase 1 応募状況の「応募総冊数」
+- 抽選判定（全員当選 / 抽選必要）
+- 抽選実行ボタンのカウント表示
+
 ### 混雑状況タブ - **表示される**
 - ヒートマップ（日付×時間帯の集計）
 - 除外・キャンセルした応募も**表示される**（フロントエンドでフィルタ可能）
@@ -153,8 +159,9 @@ SELECT * FROM reservations WHERE 1=1
 ## デプロイ情報
 - **初回コミット**: `a296191` - 統計から除外
 - **修正コミット**: `15244ce` - リストには表示、統計のみ除外
-- **メッセージ**: "Keep excluded/canceled reservations in list view, exclude only from statistics"
-- **ファイル変更**: `src/index.tsx` (10 deletions)
+- **最新コミット**: `b83c3c9` - 抽選管理画面の応募者数・応募総冊数も除外
+- **メッセージ**: "Exclude lottery-excluded reservations from lottery management stats (phase1Count, phase1Total)"
+- **ファイル変更**: `public/static/admin.js` (3 insertions, 1 deletion)
 - **ビルドサイズ**: `dist/_worker.js` (114.29 kB)
 - **デプロイ先**: https://tsuboi-premium.pages.dev/admin
 
