@@ -1448,6 +1448,11 @@ app.get('/api/admin/reservations', async (c) => {
     let query = 'SELECT * FROM reservations WHERE 1=1'
     const params: any[] = []
 
+    // 除外・キャンセルした応募を除外
+    query += ' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)'
+    query += ' AND status != ?'
+    params.push('canceled')
+
     // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
     if (include_lost !== 'true' && !lottery_status) {
       query += ' AND (lottery_status IS NULL OR lottery_status != ?)'
@@ -1491,6 +1496,11 @@ app.get('/api/admin/reservations', async (c) => {
     // 総件数取得
     let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1'
     const countParams: any[] = []
+
+    // 除外・キャンセルした応募を除外
+    countQuery += ' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)'
+    countQuery += ' AND status != ?'
+    countParams.push('canceled')
 
     // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
     if (include_lost !== 'true' && !lottery_status) {
@@ -1643,7 +1653,7 @@ app.get('/api/admin/statistics', async (c) => {
   try {
     const db = c.env.DB
 
-    // 総応募数・総冊数
+    // 総応募数・総冊数（除外・キャンセルを除く）
     const totalStats = await db.prepare(`
       SELECT 
         COUNT(*) as total_reservations,
@@ -1652,9 +1662,11 @@ app.get('/api/admin/statistics', async (c) => {
         SUM(CASE WHEN status = 'picked_up' OR status = 'completed' THEN quantity ELSE 0 END) as completed_books,
         SUM(CASE WHEN status = 'canceled' THEN quantity ELSE 0 END) as canceled_books
       FROM reservations
+      WHERE (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
+        AND status != 'canceled'
     `).first()
 
-    // 店舗別集計
+    // 店舗別集計（除外・キャンセルを除く）
     const storeStats = await db.prepare(`
       SELECT 
         store_location,
@@ -1662,11 +1674,12 @@ app.get('/api/admin/statistics', async (c) => {
         SUM(quantity) as total_quantity
       FROM reservations
       WHERE status = 'reserved'
+        AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       GROUP BY store_location
       ORDER BY total_quantity DESC
     `).all()
 
-    // 日付別集計
+    // 日付別集計（除外・キャンセルを除く）
     const dateStats = await db.prepare(`
       SELECT 
         pickup_date,
@@ -1674,11 +1687,12 @@ app.get('/api/admin/statistics', async (c) => {
         SUM(quantity) as total_quantity
       FROM reservations
       WHERE status = 'reserved'
+        AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       GROUP BY pickup_date
       ORDER BY pickup_date
     `).all()
 
-    // 時間帯別集計
+    // 時間帯別集計（除外・キャンセルを除く）
     const timeStats = await db.prepare(`
       SELECT 
         pickup_time_slot,
@@ -1686,6 +1700,7 @@ app.get('/api/admin/statistics', async (c) => {
         SUM(quantity) as total_quantity
       FROM reservations
       WHERE status = 'reserved'
+        AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
       GROUP BY pickup_time_slot
       ORDER BY pickup_time_slot
     `).all()
