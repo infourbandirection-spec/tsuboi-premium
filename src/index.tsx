@@ -1448,11 +1448,6 @@ app.get('/api/admin/reservations', async (c) => {
     let query = 'SELECT * FROM reservations WHERE 1=1'
     const params: any[] = []
 
-    // 除外・キャンセルした応募を除外
-    query += ' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)'
-    query += ' AND status != ?'
-    params.push('canceled')
-
     // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
     if (include_lost !== 'true' && !lottery_status) {
       query += ' AND (lottery_status IS NULL OR lottery_status != ?)'
@@ -1496,11 +1491,6 @@ app.get('/api/admin/reservations', async (c) => {
     // 総件数取得
     let countQuery = 'SELECT COUNT(*) as total FROM reservations WHERE 1=1'
     const countParams: any[] = []
-
-    // 除外・キャンセルした応募を除外
-    countQuery += ' AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)'
-    countQuery += ' AND status != ?'
-    countParams.push('canceled')
 
     // ヒートマップ用にinclude_lost=trueが指定されていない場合、落選者を除外
     if (include_lost !== 'true' && !lottery_status) {
