@@ -1179,11 +1179,11 @@ app.post('/api/search', async (c) => {
     let params: string[] = []
 
     if (searchType === 'id') {
-      query = 'SELECT * FROM reservations WHERE reservation_id = ?'
-      params = [searchValue]
+      query = 'SELECT * FROM reservations WHERE reservation_id = ? AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL) AND status != ?'
+      params = [searchValue, 'canceled']
     } else if (searchType === 'phone') {
-      query = 'SELECT * FROM reservations WHERE phone_number = ?'
-      params = [searchValue]
+      query = 'SELECT * FROM reservations WHERE phone_number = ? AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL) AND status != ?'
+      params = [searchValue, 'canceled']
     } else {
       return c.json({
         success: false,
@@ -1223,7 +1223,10 @@ app.post('/api/reservation/lookup/id',
     }
 
     const reservation = await db.prepare(`
-      SELECT * FROM reservations WHERE reservation_id = ?
+      SELECT * FROM reservations 
+      WHERE reservation_id = ? 
+      AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL) 
+      AND status != 'canceled'
     `).bind(reservationId).first()
 
     if (!reservation) {
@@ -1281,6 +1284,8 @@ app.post('/api/reservation/lookup/birthdate',
       SELECT * FROM reservations 
       WHERE birth_date = ? 
       AND (phone_number = ? OR REPLACE(phone_number, '-', '') = ?)
+      AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL)
+      AND status != 'canceled'
       ORDER BY created_at DESC
     `).bind(birthDate, phoneNumber, phoneClean).all()
 
