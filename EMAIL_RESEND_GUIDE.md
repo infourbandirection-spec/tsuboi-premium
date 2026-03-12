@@ -3,6 +3,8 @@
 ## 概要
 抽選後の当選メール送信で失敗が発生した場合の対処方法と再送手順をまとめています。
 
+**重要な修正（2026-03-06）**: 再送ボタンは**最新の送信結果のみ**を確認するように修正されました。再送で成功した人に重複してメールが送られることはありません。
+
 ## 失敗原因の主な要因
 
 ### 1. メールアドレスの問題
@@ -134,11 +136,35 @@ POST /api/admin/resend-failed-emails
 Authorization: Bearer <admin_token>
 ```
 
-### 処理内容
-1. `email_logs` テーブルから失敗したメール（`status='failed'`, `email_type='winner'`）を取得
-2. 該当する `reservations` の情報を結合
-3. 当選メールを再度送信（50ms間隔でレート制限対策）
+### 処理内容（修正版）
+1. 各 `reservation_id` の**最新の送信結果のみ**を確認（サブクエリで `MAX(sent_at)` を使用）
+2. 最新の送信が `status='failed'` かつ `email_type='winner'` のものを取得
+3. 当選メールを再送信（50ms間隔でレート制限対策）
 4. 送信結果を `email_logs` に記録
+5. **重要**: 再送で成功した人は次回の再送対象から除外される
+
+### SQLクエリ（修正版）
+```sql
+SELECT DISTINCT r.reservation_id, e.recipient_email, r.full_name, r.quantity, 
+       r.store_location, r.pickup_date, r.pickup_time_slot
+FROM reservations r
+INNER JOIN email_logs e ON r.reservation_id = e.reservation_id
+WHERE r.lottery_status = 'won'
+AND e.email_type = 'winner'
+AND e.sent_at = (
+  SELECT MAX(sent_at) 
+  FROM email_logs 
+  WHERE reservation_id = r.reservation_id 
+  AND email_type = 'winner'
+)
+AND e.status = 'failed'
+ORDER BY e.sent_at DESC
+```
+
+**修正理由**:
+- 旧実装では、全ての `status='failed'` レコードを取得していた
+- 再送で成功しても古い失敗レコードが残るため、重複送信が発生
+- 新実装では、**最新の送信結果のみ**を確認するため、重複送信を防止
 
 ### レスポンス例
 ```json
@@ -206,4 +232,5 @@ CREATE TABLE email_logs (
 - [Cloudflare D1 ドキュメント](https://developers.cloudflare.com/d1/)
 
 ## 更新履歴
-- 2026-03-06: 初版作成（メール再送機能追加）
+- 2026-03-06 14:00: 初版作成（メール再送機能追加）
+- 2026-03-06 15:30: 重複送信問題の修正（最新の送信結果のみを確認するように変更）
