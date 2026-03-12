@@ -3247,15 +3247,22 @@ app.post('/api/admin/resend-failed-emails', async (c) => {
   try {
     const db = c.env.DB
     
-    // 失敗したメールログを取得（当選メールのみ）
+    // 失敗したメールログを取得（当選メールのみ、最新の送信結果のみ）
+    // サブクエリで各reservation_idの最新sent_atを取得し、そのステータスがfailedのものだけを抽出
     const failedEmails = await db.prepare(`
-      SELECT DISTINCT e.reservation_id, e.recipient_email, r.full_name, r.quantity, 
+      SELECT DISTINCT r.reservation_id, e.recipient_email, r.full_name, r.quantity, 
              r.store_location, r.pickup_date, r.pickup_time_slot
-      FROM email_logs e
-      INNER JOIN reservations r ON e.reservation_id = r.reservation_id
-      WHERE e.status = 'failed' 
+      FROM reservations r
+      INNER JOIN email_logs e ON r.reservation_id = e.reservation_id
+      WHERE r.lottery_status = 'won'
       AND e.email_type = 'winner'
-      AND r.lottery_status = 'won'
+      AND e.sent_at = (
+        SELECT MAX(sent_at) 
+        FROM email_logs 
+        WHERE reservation_id = r.reservation_id 
+        AND email_type = 'winner'
+      )
+      AND e.status = 'failed'
       ORDER BY e.sent_at DESC
     `).all()
 
