@@ -1772,6 +1772,11 @@ class AdminApp {
                 <i class="fas fa-envelope-open-text mr-2"></i>
                 メール一括送信
               </button>
+              <button id="resend-failed-emails-btn" onclick="adminApp.resendFailedEmails()" 
+                      class="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 font-bold text-lg shadow-lg transition">
+                <i class="fas fa-redo mr-2"></i>
+                失敗メール再送
+              </button>
               <button onclick="adminApp.resetLottery()" 
                       class="w-full px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-lg transition">
                 <i class="fas fa-undo mr-2"></i>
@@ -2040,6 +2045,65 @@ class AdminApp {
       if (sendButton) {
         sendButton.disabled = false
         sendButton.innerHTML = '<i class="fas fa-envelope-open-text mr-2"></i>メール一括送信'
+      }
+    }
+  }
+
+  // 失敗したメールを再送
+  async resendFailedEmails() {
+    if (!confirm('失敗したメールを再送しますか？\n\n当選メールのうち、送信に失敗したものを再送信します。')) {
+      return
+    }
+
+    try {
+      const resendButton = document.getElementById('resend-failed-emails-btn')
+      if (resendButton) {
+        resendButton.disabled = true
+        resendButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>再送信中...'
+      }
+
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/resend-failed-emails', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        let message = `メール再送が完了しました！\n\n`
+        message += `成功: ${data.sent}件\n`
+        message += `失敗: ${data.failed}件\n`
+        
+        if (data.failed > 0 && data.failedRecipients && data.failedRecipients.length > 0) {
+          message += `\n⚠️ 失敗した宛先:\n`
+          message += data.failedRecipients.slice(0, 10).join('\n')
+          if (data.failedRecipients.length > 10) {
+            message += `\n...他 ${data.failedRecipients.length - 10}件`
+          }
+        } else if (data.sent === 0) {
+          message = '再送対象のメールがありません'
+        } else {
+          message += `\n✅ 全てのメールが正常に送信されました`
+        }
+
+        alert(message)
+        await this.loadData()
+        this.render()
+      } else {
+        alert('エラー: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Resend failed emails error:', error)
+      alert('システムエラーが発生しました')
+    } finally {
+      const resendButton = document.getElementById('resend-failed-emails-btn')
+      if (resendButton) {
+        resendButton.disabled = false
+        resendButton.innerHTML = '<i class="fas fa-redo mr-2"></i>失敗メール再送'
       }
     }
   }

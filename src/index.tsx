@@ -3239,6 +3239,158 @@ app.get('/api/admin/email-logs/:reservationId', async (c) => {
   }
 })
 
+// 失敗したメールを再送するAPI
+app.post('/api/admin/resend-failed-emails', async (c) => {
+  const authResponse = await verifySessionToken(c)
+  if (authResponse) return authResponse
+
+  try {
+    const db = c.env.DB
+    
+    // 失敗したメールログを取得（当選メールのみ）
+    const failedEmails = await db.prepare(`
+      SELECT DISTINCT e.reservation_id, e.recipient_email, r.full_name, r.quantity, 
+             r.store_location, r.pickup_date, r.pickup_time_slot
+      FROM email_logs e
+      INNER JOIN reservations r ON e.reservation_id = r.reservation_id
+      WHERE e.status = 'failed' 
+      AND e.email_type = 'winner'
+      AND r.lottery_status = 'won'
+      ORDER BY e.sent_at DESC
+    `).all()
+
+    if (!failedEmails.results || failedEmails.results.length === 0) {
+      return c.json({
+        success: true,
+        message: '再送対象のメールがありません',
+        sent: 0,
+        failed: 0
+      })
+    }
+
+    let successCount = 0
+    let failCount = 0
+    const failedRecipients: string[] = []
+
+    // 各メールを再送
+    for (const record of failedEmails.results) {
+      const r = record as any
+      
+      try {
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html lang="ja">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>当選のお知らせ</title>
+          </head>
+          <body style="font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">🎉 当選おめでとうございます！</h1>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+              <p style="font-size: 16px; margin-bottom: 20px;">
+                ${r.full_name} 様
+              </p>
+              
+              <p style="font-size: 14px; margin-bottom: 20px;">
+                プレミアム商品券の抽選に当選されました！<br>
+                以下の内容をご確認ください。
+              </p>
+              
+              <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                <h2 style="color: #667eea; font-size: 18px; margin-top: 0;">📋 当選内容</h2>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr style="border-bottom: 1px solid #e9ecef;">
+                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">応募ID</td>
+                    <td style="padding: 10px 0; text-align: right;">${r.reservation_id}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e9ecef;">
+                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">当選冊数</td>
+                    <td style="padding: 10px 0; text-align: right; color: #667eea; font-size: 18px; font-weight: bold;">${r.quantity}冊</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e9ecef;">
+                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">購入場所</td>
+                    <td style="padding: 10px 0; text-align: right;">${r.store_location}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e9ecef;">
+                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">購入日</td>
+                    <td style="padding: 10px 0; text-align: right;">${r.pickup_date}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; font-weight: bold; color: #495057;">購入時間</td>
+                    <td style="padding: 10px 0; text-align: right;">${r.pickup_time_slot}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <h3 style="color: #856404; font-size: 16px; margin-top: 0;">⚠️ 重要なお知らせ</h3>
+                <ul style="margin: 10px 0; padding-left: 20px; color: #856404;">
+                  <li>指定の購入日・時間帯に必ずご来店ください</li>
+                  <li>本人確認書類（免許証・保険証等）をご持参ください</li>
+                  <li>購入期限を過ぎると無効となりますのでご注意ください</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                <p style="font-size: 12px; color: #6c757d; margin: 5px 0;">
+                  坪井繁栄会 プレミアム商品券事務局
+                </p>
+                <p style="font-size: 12px; color: #6c757d; margin: 5px 0;">
+                  このメールは自動送信されています
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+
+        const result = await sendEmail(
+          r.recipient_email,
+          '【プレミアム商品券】当選のお知らせ',
+          emailHtml,
+          c.env,
+          r.reservation_id,
+          'winner'
+        )
+
+        if (result.success) {
+          successCount++
+        } else {
+          failCount++
+          failedRecipients.push(`${r.recipient_email} (${r.full_name})`)
+        }
+
+        // レート制限対策：50msの待機
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+      } catch (error) {
+        console.error(`Failed to resend email to ${r.recipient_email}:`, error)
+        failCount++
+        failedRecipients.push(`${r.recipient_email} (${r.full_name})`)
+      }
+    }
+
+    return c.json({
+      success: true,
+      message: `メール再送完了: 成功 ${successCount}件、失敗 ${failCount}件`,
+      sent: successCount,
+      failed: failCount,
+      failedRecipients: failedRecipients
+    })
+
+  } catch (error) {
+    logSecureError('ResendFailedEmails', error)
+    return c.json({
+      success: false,
+      error: 'システムエラーが発生しました'
+    }, 500)
+  }
+})
+
 // ============================================
 // 購入日管理API（管理者専用）
 // ============================================
