@@ -719,6 +719,7 @@ class AdminApp {
                               class="px-3 py-1 border border-gray-300 rounded">
                         <option value="">操作選択</option>
                         <option value="reserved" ${reservation.status === 'reserved' ? 'disabled' : ''}>応募済みに変更</option>
+                        <option value="picked_up" ${reservation.status === 'picked_up' ? 'disabled' : ''}>購入完了に変更</option>
                         <option value="canceled" ${reservation.status === 'canceled' ? 'disabled' : ''}>キャンセルに変更</option>
                       </select>
                     `}

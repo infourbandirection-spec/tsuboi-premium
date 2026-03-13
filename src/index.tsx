@@ -1179,11 +1179,11 @@ app.post('/api/search', async (c) => {
     let params: string[] = []
 
     if (searchType === 'id') {
-      query = 'SELECT * FROM reservations WHERE reservation_id = ? AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL) AND status != ?'
-      params = [searchValue, 'canceled']
+      query = 'SELECT * FROM reservations WHERE reservation_id = ?'
+      params = [searchValue]
     } else if (searchType === 'phone') {
-      query = 'SELECT * FROM reservations WHERE phone_number = ? AND (excluded_from_lottery = 0 OR excluded_from_lottery IS NULL) AND status != ?'
-      params = [searchValue, 'canceled']
+      query = 'SELECT * FROM reservations WHERE phone_number = ?'
+      params = [searchValue]
     } else {
       return c.json({
         success: false,
@@ -1559,7 +1559,7 @@ app.put('/api/admin/reservations/:id/status', async (c) => {
     const { status } = await c.req.json()
     const db = c.env.DB
 
-    if (!['reserved', 'completed', 'canceled'].includes(status)) {
+    if (!['reserved', 'picked_up', 'canceled'].includes(status)) {
       return c.json({
         success: false,
         error: '無効なステータスです'
