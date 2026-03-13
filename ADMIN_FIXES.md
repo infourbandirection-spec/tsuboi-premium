@@ -33,7 +33,7 @@ if (searchType === 'id') {
 
 ---
 
-### 2. 購入完了処理の修正
+### 2. 購入完了処理の修正（ドロップダウン）
 **問題**: 応募一覧のステータス変更で「購入完了」が選択できない
 
 **原因**:
@@ -80,6 +80,63 @@ if (!['reserved', 'picked_up', 'canceled'].includes(status)) {
 
 ---
 
+### 3. 購入完了処理の修正（認証トークン）⭐ NEW
+**問題**: 「購入完了にする」ボタンをクリックすると 401 Unauthorized エラーが発生
+
+**原因**: 
+- `confirmPickup()` 関数で **認証トークン（Authorization ヘッダー）を送信していない**
+- `updateStatus()` 関数では認証トークンを送信していたが、`confirmPickup()` では実装されていなかった
+
+**修正**:
+
+**フロントエンド (admin.js)**:
+```javascript
+// 修正前
+async confirmPickup(id, reservationId) {
+  // ... プロンプト処理 ...
+  
+  try {
+    const response = await fetch(`/api/admin/reservations/${id}/pickup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ staffName: staffName || 'スタッフ' })
+    })
+  }
+}
+
+// 修正後
+async confirmPickup(id, reservationId) {
+  // ... プロンプト処理 ...
+  
+  const token = localStorage.getItem('adminToken')
+  if (!token) {
+    alert('認証が必要です。再度ログインしてください。')
+    window.location.href = '/admin'
+    return
+  }
+
+  try {
+    const response = await fetch(`/api/admin/reservations/${id}/pickup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`  // 追加
+      },
+      body: JSON.stringify({ staffName: staffName || 'スタッフ' })
+    })
+  }
+}
+```
+
+**結果**:
+- 購入完了ボタンが正常に動作するようになった
+- 認証エラー（401）が解消された
+- 担当者名を記録して購入完了処理が完了する
+
+---
+
 ## 検証手順
 
 ### 1. 応募検索の検証
@@ -89,13 +146,22 @@ if (!['reserved', 'picked_up', 'canceled'].includes(status)) {
 4. 除外・キャンセルされた応募のIDまたは電話番号で検索
 5. 結果が表示されることを確認
 
-### 2. 購入完了処理の検証
+### 2. 購入完了処理の検証（ドロップダウン）
 1. 管理画面「応募一覧」タブを開く
 2. status が `reserved` の応募を探す
 3. 操作選択ドロップダウンをクリック
 4. 「購入完了に変更」オプションが表示されることを確認
 5. 選択して確認ダイアログで OK をクリック
 6. ステータスが「購入完了」に変更されることを確認
+
+### 3. 購入完了処理の検証（ボタン）⭐ NEW
+1. 管理画面「応募一覧」タブを開く
+2. status が `reserved` かつ lottery_status が `won`（当選）の応募を探す
+3. 「購入完了にする」ボタンをクリック
+4. 担当者名入力プロンプトが表示される（省略可）
+5. 確認ダイアログで OK をクリック
+6. **エラーなく「✅ 購入完了を記録しました」が表示される**
+7. ステータスが「購入完了」に変更され、担当者名が表示される
 
 ---
 
@@ -114,6 +180,11 @@ if (!['reserved', 'picked_up', 'canceled'].includes(status)) {
 
 -- ステータス更新（/api/admin/reservations/:id/status）
 UPDATE reservations SET status = ? WHERE id = ?
+
+-- 購入完了処理（/api/admin/reservations/:id/pickup）
+UPDATE reservations 
+SET status = 'picked_up', picked_up_at = ?, picked_up_by = ? 
+WHERE id = ?
 
 -- 抽選除外設定（/api/admin/reservations/:id/exclude）
 UPDATE reservations 
@@ -136,7 +207,7 @@ WHERE id IN (...)
 
 ## デプロイ情報
 - **ビルド**: `dist/_worker.js` (120.21 kB)
-- **Git コミット**: `5b88a55`
+- **Git コミット**: `48daa36`
 - **GitHub リポジトリ**: https://github.com/infourbandirection-spec/tsuboi-premium
 - **Cloudflare Pages**: 自動デプロイ完了（約90秒待機）
 
