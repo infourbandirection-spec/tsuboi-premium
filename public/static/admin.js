@@ -13,7 +13,6 @@ class AdminApp {
     this.pickupTimeSlots = []
     this.currentTimeSlotPhase = 1
     this.selectedHeatmapDate = null  // 初期値null（自動選定される）
-    this.searchDebounceTimer = null  // デバウンス用タイマー
     this.filters = {
       status: '',
       store: '',
@@ -571,16 +570,22 @@ class AdminApp {
             <label class="block text-sm font-medium text-gray-700 mb-2">
               <i class="fas fa-search mr-1"></i> 検索（応募ID・氏名・電話番号）
             </label>
-            <input type="text" id="filterSearch" 
-                   placeholder="応募ID、氏名、または電話番号で検索..." 
-                   oninput="adminApp.applyFilters()"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
+            <div class="flex gap-2">
+              <input type="text" id="filterSearch" 
+                     placeholder="応募ID、氏名、または電話番号で検索..." 
+                     onkeypress="if(event.key === 'Enter') adminApp.applySearchFilter()"
+                     class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-slate-500">
+              <button onclick="adminApp.applySearchFilter()" 
+                      class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-bold whitespace-nowrap">
+                <i class="fas fa-search mr-1"></i> 検索
+              </button>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
-              <select id="filterStatus" onchange="adminApp.applyFilters(true)" 
+              <select id="filterStatus" onchange="adminApp.applyFilters()" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
                 <option value="reserved">応募済み（未購入）</option>
@@ -590,7 +595,7 @@ class AdminApp {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">抽選結果</label>
-              <select id="filterLotteryStatus" onchange="adminApp.applyFilters(true)" 
+              <select id="filterLotteryStatus" onchange="adminApp.applyFilters()" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
                 <option value="won">当選</option>
@@ -600,7 +605,7 @@ class AdminApp {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">購入日</label>
-              <input type="date" id="filterDate" onchange="adminApp.applyFilters(true)"
+              <input type="date" id="filterDate" onchange="adminApp.applyFilters()"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
             </div>
           </div>
@@ -831,23 +836,19 @@ class AdminApp {
     }
   }
 
-  async applyFilters(immediate = false) {
-    // 検索入力の場合はデバウンス（300ms待機）
-    if (!immediate) {
-      if (this.searchDebounceTimer) {
-        clearTimeout(this.searchDebounceTimer)
-      }
-      
-      this.searchDebounceTimer = setTimeout(async () => {
-        await this.applyFilters(true)
-      }, 300)
-      return
-    }
-    
+  async applySearchFilter() {
+    // 検索ボタン専用の関数
+    this.filters.search = document.getElementById('filterSearch')?.value || ''
+    await this.loadData()
+    this.render()
+  }
+
+  async applyFilters() {
+    // ドロップダウン変更時の関数（検索ボックスは含まない）
     this.filters.status = document.getElementById('filterStatus')?.value || ''
     this.filters.lottery_status = document.getElementById('filterLotteryStatus')?.value || ''
     this.filters.date = document.getElementById('filterDate')?.value || ''
-    this.filters.search = document.getElementById('filterSearch')?.value || ''
+    // 検索ボックスの値は変更しない（既存の値を保持）
     await this.loadData()
     this.render()
   }
