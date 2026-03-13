@@ -1305,6 +1305,10 @@ class AdminApp {
       
       // 落選者は除外
       if (r.lottery_status === 'lost') return
+      
+      // 除外・キャンセルした応募は除外（統計と一致させる）
+      if (r.excluded_from_lottery === 1) return
+      if (r.status === 'canceled') return
 
       // 日別集計
       if (!dateMap[r.pickup_date]) {
