@@ -13,6 +13,7 @@ class AdminApp {
     this.pickupTimeSlots = []
     this.currentTimeSlotPhase = 1
     this.selectedHeatmapDate = null  // 初期値null（自動選定される）
+    this.searchDebounceTimer = null  // デバウンス用タイマー
     this.filters = {
       status: '',
       store: '',
@@ -579,7 +580,7 @@ class AdminApp {
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
-              <select id="filterStatus" onchange="adminApp.applyFilters()" 
+              <select id="filterStatus" onchange="adminApp.applyFilters(true)" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
                 <option value="reserved">応募済み（未購入）</option>
@@ -589,7 +590,7 @@ class AdminApp {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">抽選結果</label>
-              <select id="filterLotteryStatus" onchange="adminApp.applyFilters()" 
+              <select id="filterLotteryStatus" onchange="adminApp.applyFilters(true)" 
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="">すべて</option>
                 <option value="won">当選</option>
@@ -599,7 +600,7 @@ class AdminApp {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">購入日</label>
-              <input type="date" id="filterDate" onchange="adminApp.applyFilters()"
+              <input type="date" id="filterDate" onchange="adminApp.applyFilters(true)"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg">
             </div>
           </div>
@@ -829,7 +830,19 @@ class AdminApp {
     }
   }
 
-  async applyFilters() {
+  async applyFilters(immediate = false) {
+    // 検索入力の場合はデバウンス（300ms待機）
+    if (!immediate) {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer)
+      }
+      
+      this.searchDebounceTimer = setTimeout(async () => {
+        await this.applyFilters(true)
+      }, 300)
+      return
+    }
+    
     this.filters.status = document.getElementById('filterStatus')?.value || ''
     this.filters.lottery_status = document.getElementById('filterLotteryStatus')?.value || ''
     this.filters.date = document.getElementById('filterDate')?.value || ''
