@@ -913,11 +913,19 @@ class AdminApp {
       return
     }
 
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      alert('認証が必要です。再度ログインしてください。')
+      window.location.href = '/admin'
+      return
+    }
+
     try {
       const response = await fetch(`/api/admin/reservations/${id}/pickup`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ staffName: staffName || 'スタッフ' })
       })
