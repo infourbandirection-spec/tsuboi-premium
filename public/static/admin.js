@@ -369,27 +369,31 @@ class AdminApp {
     const username = localStorage.getItem('adminUsername') || 'admin'
     return `
       <header class="bg-gray-800 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold flex items-center">
-              <i class="fas fa-cog mr-3"></i>
-              坪井繁栄会 プレミアム商品券 管理画面
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h1 class="text-lg sm:text-2xl lg:text-3xl font-bold flex items-center">
+              <i class="fas fa-cog mr-2"></i>
+              <span class="hidden sm:inline">坪井繁栄会 プレミアム商品券 管理画面</span>
+              <span class="sm:hidden">管理画面</span>
             </h1>
-            <div class="flex items-center gap-4">
-              <span class="text-sm opacity-90">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs sm:text-sm opacity-90 mr-2">
                 <i class="fas fa-user mr-1"></i>${username}
               </span>
               <button onclick="adminApp.refreshData()" 
-                      class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-bold transition text-sm">
-                <i class="fas fa-sync-alt mr-2"></i> 更新
+                      class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-bold transition text-xs sm:text-sm">
+                <i class="fas fa-sync-alt sm:mr-2"></i>
+                <span class="hidden sm:inline">更新</span>
               </button>
               <button onclick="adminApp.showPasswordChangeModal()" 
-                      class="px-4 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg font-bold transition text-sm">
-                <i class="fas fa-key mr-2"></i> パスワード変更
+                      class="px-3 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg font-bold transition text-xs sm:text-sm">
+                <i class="fas fa-key sm:mr-2"></i>
+                <span class="hidden sm:inline">パスワード変更</span>
               </button>
               <button onclick="adminApp.logout()" 
-                      class="px-4 py-2 bg-rose-600 hover:bg-rose-700 rounded-lg font-bold transition">
-                <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
+                      class="px-3 py-2 bg-rose-600 hover:bg-rose-700 rounded-lg font-bold transition text-xs sm:text-sm">
+                <i class="fas fa-sign-out-alt sm:mr-2"></i>
+                <span class="hidden sm:inline">ログアウト</span>
               </button>
             </div>
           </div>
@@ -400,27 +404,28 @@ class AdminApp {
 
   renderNavigation() {
     const tabs = [
-      { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード' },
-      { id: 'lottery', icon: 'fa-trophy', label: '抽選管理' },
-      { id: 'pickup-dates', icon: 'fa-calendar-alt', label: '購入日管理' },
-      { id: 'pickup-times', icon: 'fa-clock', label: '購入時間管理' },
-      { id: 'heatmap', icon: 'fa-fire', label: '混雑状況' },
-      { id: 'reservations', icon: 'fa-list', label: '応募一覧' },
-      { id: 'search', icon: 'fa-search', label: '応募検索' },
-      { id: 'duplicates', icon: 'fa-copy', label: '重複チェック' }
+      { id: 'dashboard', icon: 'fa-chart-bar', label: 'ダッシュボード', shortLabel: 'ダッシュ' },
+      { id: 'lottery', icon: 'fa-trophy', label: '抽選管理', shortLabel: '抽選' },
+      { id: 'pickup-dates', icon: 'fa-calendar-alt', label: '購入日管理', shortLabel: '購入日' },
+      { id: 'pickup-times', icon: 'fa-clock', label: '購入時間管理', shortLabel: '時間' },
+      { id: 'heatmap', icon: 'fa-fire', label: '混雑状況', shortLabel: '混雑' },
+      { id: 'reservations', icon: 'fa-list', label: '応募一覧', shortLabel: '一覧' },
+      { id: 'search', icon: 'fa-search', label: '応募検索', shortLabel: '検索' },
+      { id: 'duplicates', icon: 'fa-copy', label: '重複チェック', shortLabel: '重複' }
     ]
 
     return `
       <nav class="bg-white rounded-lg shadow mb-6">
-        <div class="flex border-b">
+        <div class="flex overflow-x-auto border-b">
           ${tabs.map(tab => `
             <button onclick="adminApp.switchView('${tab.id}')"
-                    class="flex-1 px-3 py-3 text-center text-sm transition
+                    class="flex-shrink-0 px-2 sm:px-3 py-2 sm:py-3 text-center text-xs sm:text-sm transition whitespace-nowrap
                            ${this.currentView === tab.id ? 
-                             'bg-slate-50 text-slate-700 border-b-2 border-slate-600' : 
+                             'bg-slate-50 text-slate-700 border-b-2 border-slate-600 font-bold' : 
                              'text-gray-600 hover:bg-gray-50'}">
-              <i class="fas ${tab.icon} mr-1 text-xs"></i>
-              ${tab.label}
+              <i class="fas ${tab.icon} text-xs sm:mr-1"></i>
+              <span class="hidden sm:inline">${tab.label}</span>
+              <span class="sm:hidden ml-1">${tab.shortLabel}</span>
             </button>
           `).join('')}
         </div>
