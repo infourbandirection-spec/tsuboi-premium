@@ -12,6 +12,17 @@ type Bindings = {
   RESEND_FROM_EMAIL?: string
 }
 
+// Cloudflare Workers Types
+interface ScheduledEvent {
+  cron: string
+  scheduledTime: number
+}
+
+interface ExecutionContext {
+  waitUntil(promise: Promise<any>): void
+  passThroughOnException(): void
+}
+
 type Reservation = {
   birthDate: string
   fullName: string
@@ -3942,4 +3953,112 @@ app.post('/api/debug/init-phase2-timeslots', async (c) => {
 
 // デバッグエンドポイントは本番環境では削除されました（セキュリティ対策）
 
-export default app
+// ============================================
+// Cron Trigger - 購入日の自動ローテーション
+// ============================================
+
+/**
+ * 毎日午前0時に実行される購入日のローテーション処理
+ * - 当日から1週間後の日付を追加（有効化）
+ * - 前日の日付を無効化
+ */
+async function rotatePickupDates(env: Bindings): Promise<void> {
+  try {
+    const db = env.DB
+    
+    // 現在の日付（JST: UTC+9）
+    const now = new Date()
+    const jstOffset = 9 * 60 * 60 * 1000 // 9時間のミリ秒
+    const jstNow = new Date(now.getTime() + jstOffset)
+    
+    // 前日の日付（無効化対象）
+    const yesterday = new Date(jstNow)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    
+    // 1週間後の日付（追加対象）
+    const oneWeekLater = new Date(jstNow)
+    oneWeekLater.setDate(oneWeekLater.getDate() + 7)
+    const oneWeekLaterStr = oneWeekLater.toISOString().split('T')[0]
+    
+    // 曜日の取得
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土']
+    const dayOfWeek = dayNames[oneWeekLater.getDay()]
+    
+    // 表示ラベルの生成
+    const month = oneWeekLater.getMonth() + 1
+    const date = oneWeekLater.getDate()
+    const displayLabel = `${month}月${date}日（${dayOfWeek}）`
+    
+    console.log(`[Cron] Rotating pickup dates at ${jstNow.toISOString()}`)
+    console.log(`[Cron] Deactivating: ${yesterdayStr}`)
+    console.log(`[Cron] Adding: ${oneWeekLaterStr} (${displayLabel})`)
+    
+    // トランザクション開始
+    // 1. 前日の日付を無効化（Phase 2のみ）
+    const deactivateResult = await db.prepare(`
+      UPDATE pickup_dates
+      SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+      WHERE pickup_date = ? AND phase = 2
+    `).bind(yesterdayStr).run()
+    
+    console.log(`[Cron] Deactivated ${deactivateResult.meta.changes} rows for ${yesterdayStr}`)
+    
+    // 2. 1週間後の日付が既に存在するかチェック
+    const existing = await db.prepare(`
+      SELECT id, is_active FROM pickup_dates
+      WHERE pickup_date = ? AND phase = 2
+    `).bind(oneWeekLaterStr).first() as any
+    
+    if (existing) {
+      // 既に存在する場合は有効化のみ
+      await db.prepare(`
+        UPDATE pickup_dates
+        SET is_active = 1, updated_at = CURRENT_TIMESTAMP
+        WHERE pickup_date = ? AND phase = 2
+      `).bind(oneWeekLaterStr).run()
+      
+      console.log(`[Cron] Reactivated existing date: ${oneWeekLaterStr}`)
+    } else {
+      // 存在しない場合は新規追加
+      // display_orderは日付の昇順で自動採番
+      const maxOrderResult = await db.prepare(`
+        SELECT COALESCE(MAX(display_order), 0) + 1 as next_order
+        FROM pickup_dates
+        WHERE phase = 2
+      `).first() as any
+      
+      const nextOrder = maxOrderResult?.next_order || 1
+      
+      await db.prepare(`
+        INSERT INTO pickup_dates (pickup_date, display_label, phase, is_active, display_order, created_at, updated_at)
+        VALUES (?, ?, 2, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(oneWeekLaterStr, displayLabel, nextOrder).run()
+      
+      console.log(`[Cron] Added new date: ${oneWeekLaterStr} (${displayLabel}) with order ${nextOrder}`)
+    }
+    
+    console.log(`[Cron] Rotation completed successfully`)
+  } catch (error) {
+    console.error('[Cron] Rotation failed:', error)
+    logSecureError('RotatePickupDates', error)
+    throw error
+  }
+}
+
+// ============================================
+// Cloudflare Workers Export
+// ============================================
+
+export default {
+  fetch: app.fetch,
+  
+  // Cron Trigger: 毎日午前0時（JST）に実行
+  // UTC時間: 15:00（前日15時 = JST 0時）
+  async scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext): Promise<void> {
+    console.log('[Cron] Scheduled event triggered:', event.cron)
+    
+    // 購入日のローテーション処理を実行
+    await rotatePickupDates(env)
+  }
+}

@@ -22,7 +22,12 @@
       "binding": "RATE_LIMIT",
       "id": "8d09805b2d1b4b3db141bbe067e34537"
     }
-  ]
+  ],
+  // Cron Triggers - 購入日の自動ローテーション
+  // 毎日午前0時（JST）に実行 = UTC 15:00（前日）
+  "triggers": {
+    "crons": ["0 15 * * *"]
+  }
   // Resend API configuration
   // ローカル開発用: .dev.vars ファイルに RESEND_FROM_EMAIL を設定
   // 本番環境用: Cloudflare Pagesダッシュボードで RESEND_FROM_EMAIL を設定済み
