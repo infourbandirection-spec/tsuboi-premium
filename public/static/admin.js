@@ -454,7 +454,7 @@ class AdminApp {
 
     const stats = this.statistics.total
     const maxTotal = this.statistics.maxTotal || 1000
-    const remaining = maxTotal - (stats.reserved_books || 0)
+    const remaining = maxTotal - (stats.reserved_books || 0) - (stats.completed_books || 0)
 
     return `
       <div class="space-y-6">
