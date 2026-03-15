@@ -3966,6 +3966,21 @@ async function rotatePickupDates(env: Bindings): Promise<void> {
   try {
     const db = env.DB
     
+    // 自動ローテーション設定を確認
+    const settingResult = await db.prepare(`
+      SELECT setting_value FROM system_settings 
+      WHERE setting_key = 'auto_rotation_enabled'
+    `).first() as any
+    
+    const isEnabled = settingResult?.setting_value === '1'
+    
+    if (!isEnabled) {
+      console.log('[Cron] Auto rotation is disabled. Skipping...')
+      return
+    }
+    
+    console.log('[Cron] Auto rotation is enabled. Starting...')
+    
     // 現在の日付（JST: UTC+9）
     const now = new Date()
     const jstOffset = 9 * 60 * 60 * 1000 // 9時間のミリ秒

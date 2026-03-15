@@ -2663,6 +2663,10 @@ class AdminApp {
   // ============================================
 
   renderPickupDates() {
+    const autoRotationStatus = this.settings?.auto_rotation_enabled === '1' ? 
+      '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>稼働中</span>' : 
+      '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>停止中</span>'
+    
     return `
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-6">
@@ -2676,17 +2680,33 @@ class AdminApp {
           </button>
         </div>
 
-        <div class="mb-4">
-          <label class="inline-flex items-center mr-4">
-            <input type="radio" name="pickup-phase-filter" value="1" checked 
-                   onchange="adminApp.filterPickupDatesByPhase(1)" class="mr-2">
-            Phase 1
-          </label>
-          <label class="inline-flex items-center">
-            <input type="radio" name="pickup-phase-filter" value="2" 
-                   onchange="adminApp.filterPickupDatesByPhase(2)" class="mr-2">
-            Phase 2
-          </label>
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <label class="inline-flex items-center mr-4">
+              <input type="radio" name="pickup-phase-filter" value="1" checked 
+                     onchange="adminApp.filterPickupDatesByPhase(1)" class="mr-2">
+              Phase 1
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="pickup-phase-filter" value="2" 
+                     onchange="adminApp.filterPickupDatesByPhase(2)" class="mr-2">
+              Phase 2
+            </label>
+          </div>
+          
+          <!-- Phase 2自動ローテーション制御 -->
+          <div id="auto-rotation-control" class="flex items-center gap-3" style="display: ${this.currentPickupPhase === 2 ? 'flex' : 'none'}">
+            <div class="text-sm">
+              <span class="text-gray-600">自動ローテーション:</span>
+              <span id="auto-rotation-status">${autoRotationStatus}</span>
+            </div>
+            <button onclick="adminApp.toggleAutoRotation()" 
+                    id="auto-rotation-toggle-btn"
+                    class="px-3 py-1 text-sm rounded-lg transition ${this.settings?.auto_rotation_enabled === '1' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}">
+              <i class="fas ${this.settings?.auto_rotation_enabled === '1' ? 'fa-stop' : 'fa-play'} mr-1"></i>
+              ${this.settings?.auto_rotation_enabled === '1' ? '停止' : '開始'}
+            </button>
+          </div>
         </div>
 
         <div id="pickup-dates-list">
@@ -2701,6 +2721,12 @@ class AdminApp {
   async filterPickupDatesByPhase(phase) {
     this.currentPickupPhase = phase
     await this.loadPickupDates()
+    
+    // Phase 2の場合は自動ローテーション制御を表示
+    const control = document.getElementById('auto-rotation-control')
+    if (control) {
+      control.style.display = phase === 2 ? 'flex' : 'none'
+    }
   }
 
   async loadPickupDates() {
@@ -3680,6 +3706,62 @@ class AdminApp {
       }
     } catch (error) {
       console.error('Update max total error:', error)
+      alert('システムエラーが発生しました')
+    }
+  }
+
+  // 自動ローテーションの開始/停止
+  async toggleAutoRotation() {
+    const token = localStorage.getItem('adminToken')
+    if (!token) return
+
+    try {
+      const currentStatus = this.settings?.auto_rotation_enabled === '1'
+      const newStatus = currentStatus ? '0' : '1'
+      const action = currentStatus ? '停止' : '開始'
+
+      if (!confirm(`Phase 2購入日の自動ローテーションを${action}しますか？\n\n${currentStatus ? '停止後は、購入日が自動更新されなくなります。' : '開始後は、毎日午前0時に自動的に購入日がローテーションされます。'}`)) {
+        return
+      }
+
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: 'auto_rotation_enabled',
+          value: newStatus
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // settingsを更新
+        this.settings.auto_rotation_enabled = newStatus
+
+        // UIを更新
+        const statusEl = document.getElementById('auto-rotation-status')
+        const btnEl = document.getElementById('auto-rotation-toggle-btn')
+
+        if (newStatus === '1') {
+          statusEl.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>稼働中</span>'
+          btnEl.className = 'px-3 py-1 text-sm rounded-lg transition bg-red-100 text-red-700 hover:bg-red-200'
+          btnEl.innerHTML = '<i class="fas fa-stop mr-1"></i>停止'
+        } else {
+          statusEl.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>停止中</span>'
+          btnEl.className = 'px-3 py-1 text-sm rounded-lg transition bg-green-100 text-green-700 hover:bg-green-200'
+          btnEl.innerHTML = '<i class="fas fa-play mr-1"></i>開始'
+        }
+
+        alert(`自動ローテーションを${action}しました`)
+      } else {
+        alert('更新に失敗しました: ' + (data.error || ''))
+      }
+    } catch (error) {
+      console.error('Toggle auto rotation error:', error)
       alert('システムエラーが発生しました')
     }
   }
