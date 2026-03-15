@@ -2663,10 +2663,6 @@ class AdminApp {
   // ============================================
 
   renderPickupDates() {
-    const autoRotationStatus = this.settings?.auto_rotation_enabled === '1' ? 
-      '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>稼働中</span>' : 
-      '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>停止中</span>'
-    
     return `
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex justify-between items-center mb-6">
@@ -2695,16 +2691,15 @@ class AdminApp {
           </div>
           
           <!-- Phase 2自動ローテーション制御 -->
-          <div id="auto-rotation-control" class="flex items-center gap-3" style="display: ${this.currentPickupPhase === 2 ? 'flex' : 'none'}">
+          <div id="auto-rotation-control" class="flex items-center gap-3" style="display: none">
             <div class="text-sm">
               <span class="text-gray-600">自動ローテーション:</span>
-              <span id="auto-rotation-status">${autoRotationStatus}</span>
+              <span id="auto-rotation-status"><i class="fas fa-spinner fa-spin"></i></span>
             </div>
             <button onclick="adminApp.toggleAutoRotation()" 
                     id="auto-rotation-toggle-btn"
-                    class="px-3 py-1 text-sm rounded-lg transition ${this.settings?.auto_rotation_enabled === '1' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}">
-              <i class="fas ${this.settings?.auto_rotation_enabled === '1' ? 'fa-stop' : 'fa-play'} mr-1"></i>
-              ${this.settings?.auto_rotation_enabled === '1' ? '停止' : '開始'}
+                    class="px-3 py-1 text-sm rounded-lg transition bg-gray-100 text-gray-500">
+              <i class="fas fa-spinner fa-spin"></i>
             </button>
           </div>
         </div>
@@ -2722,10 +2717,32 @@ class AdminApp {
     this.currentPickupPhase = phase
     await this.loadPickupDates()
     
-    // Phase 2の場合は自動ローテーション制御を表示
+    // Phase 2の場合は自動ローテーション制御を表示し、UIを更新
     const control = document.getElementById('auto-rotation-control')
-    if (control) {
-      control.style.display = phase === 2 ? 'flex' : 'none'
+    if (control && phase === 2) {
+      control.style.display = 'flex'
+      this.updateAutoRotationUI()
+    } else if (control) {
+      control.style.display = 'none'
+    }
+  }
+  
+  updateAutoRotationUI() {
+    const statusEl = document.getElementById('auto-rotation-status')
+    const btnEl = document.getElementById('auto-rotation-toggle-btn')
+    
+    if (!statusEl || !btnEl || !this.settings) return
+    
+    const isEnabled = this.settings.auto_rotation_enabled === '1'
+    
+    if (isEnabled) {
+      statusEl.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>稼働中</span>'
+      btnEl.className = 'px-3 py-1 text-sm rounded-lg transition bg-red-100 text-red-700 hover:bg-red-200'
+      btnEl.innerHTML = '<i class="fas fa-stop mr-1"></i>停止'
+    } else {
+      statusEl.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-1"></i>停止中</span>'
+      btnEl.className = 'px-3 py-1 text-sm rounded-lg transition bg-green-100 text-green-700 hover:bg-green-200'
+      btnEl.innerHTML = '<i class="fas fa-play mr-1"></i>開始'
     }
   }
 
